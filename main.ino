@@ -1,81 +1,129 @@
 
 #include <Arduino.h>
-#include <arduinoFFT.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
 #include <FastLED.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
-#include <DS1307RTC.h>
-#include "clock.cpp"
-#include "ripple.cpp"
+
+#include <arduinoFFT.h>
+#include "colorWipe.cpp"
 #include "buttons.cpp"
+#include "clock.cpp"
+#include "pixelChase.cpp"
+#include "rainbow.h"
 
-boolean showMenu = false;
-boolean moreTime = false;
-int menuname = 0;
-int percentage = 0;
-int COLORS = 255;
-int stripeBrightness = 10;
-int clockBright = 125;
-unsigned long patternInterval = 0;
-
-//////////////////////   MATRIX   /////////////////////////
-#define SAMPLES 16 // Must be a power of 2 (64)
-#define LED_PIN 4  // Data pin to LEDS
-#define NUM_LEDS 256
-#define MULTIPLY_BY 3
-#define BRIGHTNESS 125 // LED information
-#define LED_TYPE WS2811
-#define COLOR_ORDER GRB
-#define BUTTON_PIN 3
-#define xres 8  // Total number of  columns in the display
-#define yres 16 // Total number of  rows in the display
-
+#define SAMPLES 512 // Must be a power of 2 (64)
+#define MULTIPLY_BY 1
+#define xres 32 // Total number of  columns in the display
+#define yres 8  // Total number of  rows in the display
+#define audio 35
 double vReal[SAMPLES];
 double vImag[SAMPLES];
-
-int Intensity[xres] = {}; // initialize Frequency Intensity to zero
+int Intensity[6] = {}; // initialize Frequency Intensity to zero
 int Displacement = 1;
-
-CRGB matrix[NUM_LEDS];
-CRGB firstStripe[15];          // Create LED Object
 arduinoFFT FFT = arduinoFFT(); // Create FFT object
-//////////////////////   MATRIX END  /////////////////////////
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+//=======================MENU=============================
 
-int selected = 5;
-int counter = 5;
+#define LED_PIN 15 // Data pin to Long Led Light
+#define NUM_LEDS_MATRIX (xres * yres)
 
-int longstrip = 15;         // 86;
-int shortstrip = 15;        // 80;
-int longerstrip = 15;       // 88;
-#define allPixelsAmount 181 // 988 //= longstrip * 2 + longerstrip * 2 + shortstrip * 8;
-int halfofPixels = allPixelsAmount / 2;
+#define BRIGHTNESS 125 // LED information
+#define LED_TYPE WS2812B
+#define COLOR_ORDER GRB
+#define BUTTON_PIN 3
 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(longstrip, 13, NEO_GRB + NEO_KHZ800);   // 86 pixels
-Adafruit_NeoPixel strip1 = Adafruit_NeoPixel(shortstrip, 14, NEO_GRB + NEO_KHZ800);  // 80 pixels
-Adafruit_NeoPixel strip2 = Adafruit_NeoPixel(shortstrip, 27, NEO_GRB + NEO_KHZ800);  // 80 pixels
-Adafruit_NeoPixel strip3 = Adafruit_NeoPixel(shortstrip, 26, NEO_GRB + NEO_KHZ800);  // 80 pixels
-Adafruit_NeoPixel strip4 = Adafruit_NeoPixel(shortstrip, 25, NEO_GRB + NEO_KHZ800);  // 80 pixels
-Adafruit_NeoPixel strip5 = Adafruit_NeoPixel(longerstrip, 32, NEO_GRB + NEO_KHZ800); // 88 pixels
-Adafruit_NeoPixel strip6 = Adafruit_NeoPixel(longerstrip, 23, NEO_GRB + NEO_KHZ800); // 88 pixels
-Adafruit_NeoPixel strip7 = Adafruit_NeoPixel(shortstrip, 15, NEO_GRB + NEO_KHZ800);  // 80 pixels
-Adafruit_NeoPixel strip8 = Adafruit_NeoPixel(shortstrip, 2, NEO_GRB + NEO_KHZ800);   // 80 pixels
-Adafruit_NeoPixel strip9 = Adafruit_NeoPixel(shortstrip, 19, NEO_GRB + NEO_KHZ800);  // 80 pixels
-Adafruit_NeoPixel strip10 = Adafruit_NeoPixel(shortstrip, 18, NEO_GRB + NEO_KHZ800); // 80 pixels
-Adafruit_NeoPixel strip11 = Adafruit_NeoPixel(longstrip, 5, NEO_GRB + NEO_KHZ800);   // 86 pixels
+//=======================FASTLED_MATRIX=============================
+CRGB matrix[NUM_LEDS_MATRIX]; // Create LED Object
 
-uint32_t red = pixels.Color(255, 0, 0);
-uint32_t green = pixels.Color(0, 255, 0);
-uint32_t blue = pixels.Color(0, 0, 255);
-uint32_t yellow = pixels.Color(255, 255, 0);
-uint32_t white = pixels.Color(255, 255, 255);
-uint32_t pink = pixels.Color(255, 0, 100);
-uint32_t cyan = pixels.Color(0, 255, 255);
-uint32_t orange = pixels.Color(230, 80, 0);
-uint32_t colors[] = {red, orange, yellow, green, cyan, blue, pink};
-uint32_t black = pixels.Color(0, 0, 0);
+//=======================AUDIO IN=============================
 
+//=======================AUDIO IN =============================
+
+//=======================FFT=============================
+
+//=======================FFT=============================
+
+#define FASTLED_ESP32_SPI_BUS HSPI
+//=======================MENU=============================
+unsigned long startTime = 0;
+unsigned long timeOut = 500;
+boolean showMenu = false; // goes true if button is pressed
+boolean moreTime = false; // goes true if button is pressed and menu is still shown
+int menuNumber = 0;       // menuname
+int percentage = 0;       //???
+int changeColor = 0;      // COLORS value from 0 to 20 to change color from array colors[]
+int changeLedBright = 0;  // stripeBrightness
+int bright = map(changeLedBright, 0, 20, 0, 255);
+int chageClockBright = 0;  // clockBright
+int chngePatternSpeed = 0; // patternInterval
+int selected = 12;         // number of pattern are now showing
+int counter = 12;          // number of patter to be selected
+int gCurrentPatternNumber = 2;
+//== END ================MENU===================== END ==
+
+Adafruit_NeoMatrix matrix2 = Adafruit_NeoMatrix(32, 8, LED_PIN, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG, NEO_GRB + NEO_KHZ800);
+int x2 = matrix2.width();
+int pass = 0;
+
+CRGB blue(0, 0, 255);
+CRGB deep_blue_gatoraide(0, 32, 255);
+CRGB blue_gatoraide(0, 127, 255);
+CRGB cyan(0, 255, 255);
+CRGB aqua(0, 255, 127);
+CRGB electric_mint(0, 255, 32);
+CRGB green(0, 255, 0);
+CRGB electric_lime(32, 255, 0);
+CRGB green_yellow(127, 255, 0);
+CRGB yellow(255, 255, 0);
+CRGB orange(255, 127, 0);
+CRGB electric_pumpkin(255, 32, 0);
+CRGB red(255, 0, 0);
+CRGB deep_pink(255, 0, 32);
+CRGB pink(255, 0, 127);
+CRGB magenta(255, 0, 255);
+CRGB purple(127, 0, 255);
+CRGB deep_purple(32, 0, 255);
+CRGB white(255, 255, 255);
+CRGB orange2(230, 80, 0);
+CRGB black(0, 0, 0);
+CRGB arrayofcolors[]{blue, deep_blue_gatoraide, blue_gatoraide, cyan, aqua, electric_mint, orange2, deep_purple, purple, magenta, pink, deep_pink, red, electric_pumpkin, orange, yellow, green_yellow, electric_lime, green};
+/*                                            	    																		                   ▄███▄
+  --------------------------------------------------------------------------------------------------------------------------------------------█----█-----------
+|  O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O█O O █ O O O O  |
+|  O         O   O O   O         O   O O O   O O   O O O   O           O   O O   O O         O   O O O   O   O         O   O O O O O O O O O O█O O █ O O O O  |
+|  O   O O O O   O O   O   O O O O   O O   O O O O   O   O O   O O O   O   O O   O O   O O O O     O     O   O   O O O O   O O O O O O O O O O█O O █ O O O O  |
+|  O   O O O O   O O   O   O O O O   O   O O O O O O   O O O   O O O   O   O O   O O   O O O O   O   O   O   O   O O O O   O O O O O O▄███▄████O O ███▄O O O  |
+|  O         O   O O   O   O O O O     O O O O O O O   O O O   O O O   O   O O   O O         O   O O O   O   O         O   O O O O O O█O O█O O█O O █ O ███ O  |
+|  O   O O O O   O O   O   O O O O   O   O O O O O O   O O O   O O O   O   O O   O O   O O O O   O O O   O   O   O O O O   O O O O O O█O O█O O█O O █ O █  █O  |
+|  O   O O O O   O O   O   O O O O   O O   O O O O O   O O O   O O O   O   O O   O O   O O O O   O O O   O   O   O O O O   O O O O O O█O O O O█O O █ O O █ O  |
+|  O   O O O O         O         O   O O O   O O O O   O O O           O         O O         O   O O O   O   O         O         O O O█ O O O O O O O O█ O O  |
+|  O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O  |
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+ */
+//=======================LED STRIPS=============================
+int firstCornerPixelNumber = 0;
+int secondCornerPixelNumber = 255;
+int thirdCornerPixelNumber = 512;
+int fourthCornerPixelNumber = 767;
+
+#define LED_STRIP_PIXELS_AMOUNT 555
+int AllLEDSAmount = LED_STRIP_PIXELS_AMOUNT;
+int halfofPixels = LED_STRIP_PIXELS_AMOUNT / 2;
+uint8_t gHue = 0;
+CRGB strip1[LED_STRIP_PIXELS_AMOUNT]; // Create LED Object
+
+#define strip1_PIN 17 // Blue[1]
+uint16_t pixelCurrent = 0;
+//=======================LED STRIPS=============================
+
+//======================= RTC =============================
+// DS1307ESP rtc;
+//======================= RTC =============================
+
+//=======================BOUNCING BALLS=============================
 #define GRAVITY -9.81                     // Downward (negative) acceleration of gravity in m/s^2
 #define h0 2                              // Starting height, in meters, of the ball (strip length)
 #define NUM_BALLS 4                       // Number of bouncing balls you want (recommend < 7, but 20 is fun in its own way)
@@ -87,34 +135,306 @@ float tCycle[NUM_BALLS];                  // The time since the last time the ba
 int pos[NUM_BALLS];                       // The integer position of the dot on the strip (LED index)
 long tLast[NUM_BALLS];                    // The clock time of the last ground strike
 float COR[NUM_BALLS];                     // Coefficient of Restitution (bounce damping)
-tmElements_t tm;
-#define audio A0
-void clock(int hour, int min);
-void buttons();
+//=======================BOUNCING BALLS=============================
 
-const int sampleWindow = 1;   // Sample window width in mS (50 mS = 20Hz)
-const int sampleWindow1 = 10; // Sample window width in mS (50 mS = 20Hz)
-int maximum = 110;
-int maximum1 = 110;
-int peak;
-int peak1;
-int dotCount;
-int dotCount1;
-unsigned int sample;
-unsigned int sample1;
-bool gReverseDirection = false;
-#define COLOR_FROM 0
-#define COLOR_TO 255
-#define COLOR_START 0
-#define PEAK_FALL 4  // Rate of peak falling dot
-#define PEAK_FALL1 4 // Rate of peak falling dot
-Adafruit_NeoMatrix matrix2 = Adafruit_NeoMatrix(32, 8, LED_PIN, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG, NEO_GRB + NEO_KHZ800);
-const uint16_t colors2[] = {matrix2.Color(0, 255, 0), matrix2.Color(255, 255, 0), matrix2.Color(0, 0, 255), matrix2.Color(255, 0, 255), matrix2.Color(0, 255, 255), matrix2.Color(255, 255, 255)};
+//======================= BUTTONS OPTIONS =============================
+int buttonsValues[11][2] = {{86, 95}, {126, 134}, {194, 205}, {162, 173}, {332, 342}, {507, 512}, {678, 684}, {842, 856}, {927, 934}, {998, 1006}, {1018, 1023}};
+char *buttonNames[11] = {
+    "Select",
+    "Pattern Minus",
+    "Pattern Plus",
+    "Led Brighness Minus",
+    "Led Brighness Plus",
+    "Color Minus",
+    "Color Plus",
+    "Speed Minus",
+    "Speed Plus",
+    "Clock Brighness Minus",
+    "Clock Brighness Plus",
+};
+#define NUM_LEDS 180
+long delayss = 0;
+//======================= BUTTONS OPTIONS =============================
 
-int x2 = matrix2.width();
-int pass = 0;
+String currentPatternName = "None";
+void setup()
+{
+    Serial.begin(115200);
+
+    unsigned long setupStartTime = millis();
+    while (!Serial && millis() - setupStartTime < 3000)
+        ;
+
+    FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
+    FastLED.addLeds<LED_TYPE, strip1_PIN, COLOR_ORDER>(strip1, LED_STRIP_PIXELS_AMOUNT).setCorrection(TypicalLEDStrip);
+
+    FastLED.setBrightness(255);
+    Serial.println("start");
+    Wire.begin();
+    // rtc.begin(21, 22);
+    //  07:22:55.606 -> I2C device found at address 0x3C
+    //  07:22:55.653 -> I2C device found at address 0x50
+    //  07:22:55.653 -> I2C device found at address 0x68
+
+    // rtc.DSadjust(07, 01, 21, 2022, 12, 27); // 00:19:21 16 Mar 2022}
+    randomSeed(analogRead(1));
+    selected = EEPROM.read(0);
+    counter = selected;
+    changeLedBright = EEPROM.read(1);
+    changeColor = EEPROM.read(2);
+    chngePatternSpeed = EEPROM.read(3);
+    chageClockBright = EEPROM.read(4);
+    pinMode(audio, INPUT);
+
+    matrix2.begin();
+    matrix2.setTextWrap(false);
+    matrix2.setBrightness(100);
+    matrix2.setTextColor(electric_pumpkin);
+    // scrollText();
+
+    Serial.println("setup done");
+}
+/*void intro()
+{
+  EVERY_N_MILLISECONDS(50)
+  {
+    gHue >= 255 ? gHue = 0 : gHue++;
+    fill_rainbow(strip1, 15, gHue - 1, 7);
+    fill_rainbow(strip2, 15, gHue - 2, 7);
+    fill_rainbow(strip3, 15, gHue - 3, 7);
+    fill_rainbow(strip4, 15, gHue - 4, 7);
+    fill_rainbow(strip5, 15, gHue - 5, 7);
+    fill_rainbow(strip6, 15, gHue - 6, 7);
+    fill_rainbow(strip7, 15, gHue - 7, 7);
+    fill_rainbow(strip8, 15, gHue - 8, 7);
+    fill_rainbow(strip9, 15, gHue - 9, 7);
+    fill_rainbow(strip10, 15, gHue - 10, 7);
+    fill_rainbow(strip11, 15, gHue - 11, 7);
+    fill_rainbow(strip12, 15, gHue - 12, 7);
+    FastLED.show();
+  }
+}*/
+
+void loop()
+{
+    Visualizer();
+    // Visualizer();
+    //  test2(CRGB::Red);
+    //  test(CRGB::Blue);
+
+    // displayVUWhite();
+    // EVERY_N_MILLISECONDS(500) { gHue >= 255 ? gHue = 0 : gHue++; }
+    if (millis() - startTime >= 100)
+    {
+
+        startTime = millis();
+    }
+
+    //   buttons();
+
+    //  displayUpdate(map(chageClockBright, 0, 20, 0, 255));
+    //  buttons();
+    // inputState = digitalRead(modeButtonSelect);
+    /* if (showMenu == false)
+     {
+       // clock(tm.Hour, tm.Minute, false, 0, 0);
+       moreTime = false;
+       startTime = millis();
+     }
+     else if (showMenu == true)
+     {
+       //  clock(counter, selected, true, menuname, percentage);
+       if (millis() - startTime >= timeOut)
+       {
+         showMenu = false;
+         moreTime = false;
+       }
+       if (moreTime)
+       {
+         startTime = millis();
+         moreTime = false;
+       }
+     }*/
+    //  unsigned long currentMillis = millis();
+
+    // setBrightness(stripeBrightness);
+    EVERY_N_SECONDS(20)
+    {
+        nextPattern();
+
+        Serial.print(currentPatternName);
+        Serial.print(" - number: ");
+        Serial.print(gCurrentPatternNumber);
+        Serial.print(" - TOTAL: ");
+        Serial.println("16");
+
+    } // change patterns periodically
+    updatePattern(gCurrentPatternNumber);
+}
+
+void nextPattern()
+{
+    gCurrentPatternNumber == 7 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
+    FastLED.clear();
+}
+
+void test()
+{
+    currentPatternName = "test";
+    if (millis() - startTime >= 5)
+    {
+        startTime = millis();
+
+        for (int x = 0; x < LED_STRIP_PIXELS_AMOUNT; x++)
+        {
+
+            setPixelRGB(x, CRGB::Yellow);
+            FastLED.show();
+            setPixelRGB(x, CRGB::Black);
+        }
+    }
+}
+CRGB coliber;
+long randomTime = 0;
+void test2()
+{
+
+    if (millis() - randomTime >= 2)
+    {
+        randomTime = millis();
+        coliber = arrayofcolors[random(18)];
+    }
+    currentPatternName = "test2";
+    if (millis() - startTime >= 2)
+    {
+        startTime = millis();
+
+        // This outer loop will go over each strip, one at a time
+        for (int x = 0; x < LED_STRIP_PIXELS_AMOUNT; x++)
+        {
+
+            setPixelRGB(x, coliber);
+            FastLED.show();
+        }
+    }
+}
+void buttons()
+{
+    // int buttonVal = digitalRead(button);
+    /*
+      int sensorValue = analogRead(34);
+
+      unsigned long currentMillis = millis();
+      if (sensorValue > 86 && sensorValue < 1023)
+      {
+        if (showMenu)
+        {
+          moreTime = true;
+        }
+        else
+        {
+          showMenu = true;
+        }
+
+        EEPROM.write(0, selected);
+        EEPROM.write(1, changeLedBright);
+        EEPROM.write(2, changeColor);
+        EEPROM.write(3, chngePatternSpeed);
+        EEPROM.write(4, chageClockBright);
+        // delayEEPROM = millis();
+        Serial.println("EEPROM Updated");
+      }
+      for (int i = 0; i < 12; i++)
+      {
+        if (sensorValue > buttonsValues[i][0] && sensorValue < buttonsValues[i][1])
+        {
+          // button 1
+          if (millis() - delayss > 200)
+          {
+            // Serial.println("Button pressed! SELECT ");
+            //  selected = counter;
+            // AllOff();
+            delayss = millis();
+          }
+        }
+      }*/
+}
+void updatePattern(int pat)
+{ // call the pattern currently being created
+    switch (pat)
+    {
+    case 0:
+        displayVURainbow();
+        break;
+    case 1:
+        displayVURainbow();
+        break;
+    case 2:
+        displayVU();
+        break;
+    case 3:
+        bpm();
+        break;
+    case 4:
+        displayVUWhite();
+        break;
+    case 5:
+        rainbow();
+        break;
+    case 6:
+        test();
+        break;
+    case 7:
+        test2();
+        break;
+    case 8:
+
+        break;
+    case 9:
+
+        break;
+    case 10:
+
+        break;
+    case 11:
+
+        break;
+    }
+}
+void Visualizer()
+{
+    // Collect Samples
+    getSamples();
+    // Update Display
+    // displayVU();
+}
+void getSamples()
+{
+    for (int i = 0; i < SAMPLES; i++)
+    {
+        vReal[i] = analogRead(audio) * MULTIPLY_BY;
+        vImag[i] = 0;
+    }
+
+    // FFT
+    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
+    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
+
+    // Update Intensity Array
+    for (int i = 2; i < (6 * Displacement) + 2; i += 2)
+    {
+        vReal[i] = constrain(vReal[i], 0, 2047);    // set max value for input data
+        vReal[i] = map(vReal[i], 0, 2047, 0, yres); // map data to fit our display
+
+        Intensity[(i / Displacement) - 2]--;              // Decrease displayed value
+        if (vReal[i] > Intensity[(i / Displacement) - 2]) // Match displayed value to measured value
+            Intensity[(i / Displacement) - 2] = vReal[i];
+    }
+}
 void scrollText()
 {
+    CRGB color = arrayofcolors[random8(8)];
     for (int i = 0; i < 80; i++)
     {
 
@@ -126,365 +446,57 @@ void scrollText()
             x2 = matrix2.width();
             if (++pass >= 8)
                 pass = 0;
-            matrix2.setTextColor(colors2[pass]);
+            matrix2.setTextColor(color);
         }
         matrix2.show();
         delay(20);
     }
-    delay(1);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void setup()
-{
-
-    delay(3000);
-
-    Serial.begin(115200); // Initialize Serial
-    randomSeed(analogRead(A0));
-    selected = EEPROM.read(0);
-    counter = selected;
-    stripeBrightness = EEPROM.read(1);
-    COLORS = EEPROM.read(2);
-    patternInterval = EEPROM.read(3);
-    clockBright = EEPROM.read(4);
-    pinMode(audio, INPUT);
-
-    FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(matrix, NUM_LEDS).setCorrection(TypicalLEDStrip); // Initialize LED strips
-    FastLED.addLeds<LED_TYPE, 23, COLOR_ORDER>(firstStripe, 15).setCorrection(TypicalLEDStrip);
-    FastLED.setBrightness(clockBright);
-
-    pixels.begin();
-    strip1.begin();
-    strip2.begin();
-    strip3.begin();
-    strip4.begin();
-    strip5.begin();
-    strip6.begin();
-    strip7.begin();
-    strip8.begin();
-    strip9.begin();
-    strip10.begin();
-    strip11.begin();
-    setBrightness(stripeBrightness);
-    ////////////////////////// MATRIX TEXT SCROLL //////////////////////////
-    matrix2.begin();
-    matrix2.setTextWrap(false);
-    matrix2.setBrightness(clockBright);
-    matrix2.setTextColor(colors2[0]);
-    scrollText();
-    //------------------------ MATRIX TEXT SCROLL ----------------------
-    intro();
-    AllOff();
-
-    for (int i = 0; i < NUM_BALLS; i++)
-    {
-        tLast[i] = millis();
-        h[i] = h0;
-        pos[i] = 0;            // Balls start on the ground
-        vImpact[i] = vImpact0; // And "pop" up at vImpact0
-        tCycle[i] = 0;
-        COR[i] = 0.90 - float(i) / pow(NUM_BALLS, 2);
-    }
+    delay(1000);
 }
 
-void loop()
+void displayVU()
 {
-    RTC.read(tm);
-    buttons();
-    Visualizer();
+    currentPatternName = "displayVU";
 
-    unsigned long currentMillis = millis();
+    FastLED.clear();
 
-    setBrightness(stripeBrightness);
-
-    updatePattern(selected);
-}
-unsigned long startTime = 0;
-boolean timing = false;
-unsigned long timeOut = 5000;
-
-byte inputState = HIGH;
-byte lastInputState = HIGH;
-void Visualizer()
-{
-    // Collect Samples
-    getSamples();
-    // Update Display
-
-    displayUpdate();
-    buttons();
-    // inputState = digitalRead(modeButtonSelect);
-    if (showMenu == false)
+    for (int i = 0; i < Intensity[0]; i++)
     {
-        clock(tm.Hour, tm.Minute, false, 0, 0);
-        moreTime = false;
-        startTime = millis();
+        strip1[i + LED_STRIP_PIXELS_AMOUNT / 2] = arrayofcolors[0];
+        strip1[LED_STRIP_PIXELS_AMOUNT / 2 - i] = arrayofcolors[0];
     }
-    else if (showMenu == true)
-    {
-        clock(counter, selected, true, menuname, percentage);
-        if (millis() - startTime >= timeOut)
-        {
-            showMenu = false;
-            moreTime = false;
-        }
-        if (moreTime)
-        {
-            startTime = millis();
-            moreTime = false;
-        }
-    }
+
     FastLED.show();
 }
 
-long previousMillisa = 0;
-
-void getSamples()
-{
-    for (int i = 0; i < SAMPLES; i++)
-    {
-        vReal[i] = analogRead(audio) * MULTIPLY_BY;
-        // Serial.print(i);
-        // Serial.print(" - ");
-        //  Serial.println(vReal[i]);
-        vImag[i] = 0;
-    }
-
-    // FFT
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
-
-    // Update Intensity Array
-    for (int i = 2; i < (xres * Displacement) + 2; i += Displacement)
-    {
-        vReal[i] = constrain(vReal[i], 0, 2047);    // set max value for input data
-        vReal[i] = map(vReal[i], 0, 2047, 0, yres); // map data to fit our display
-
-        Intensity[(i / Displacement) - 2]--;              // Decrease displayed value
-        if (vReal[i] > Intensity[(i / Displacement) - 2]) // Match displayed value to measured value
-            Intensity[(i / Displacement) - 2] = vReal[i];
-    }
-}
-void displayVU()
-{
-
-    AllOff();
-    for (int i = 0; i < Intensity[0]; i++)
-    {
-        pixels.setPixelColor(i + longstrip / 2, colors[0]);
-        pixels.setPixelColor(longstrip / 2 - i, colors[0]);
-    }
-    for (int i = 0; i < Intensity[1]; i++)
-    {
-        strip1.setPixelColor(i + shortstrip / 2, colors[1]);
-        strip1.setPixelColor(shortstrip / 2 - i, colors[1]);
-    }
-    for (int i = 0; i < Intensity[2]; i++)
-    {
-        strip2.setPixelColor(i + shortstrip / 2, colors[2]);
-        strip2.setPixelColor(shortstrip / 2 - i, colors[2]);
-    }
-    for (int i = 0; i < Intensity[3]; i++)
-    {
-        strip3.setPixelColor(i + shortstrip / 2, colors[3]);
-        strip3.setPixelColor(shortstrip / 2 - i, colors[3]);
-    }
-    for (int i = 0; i < Intensity[4]; i++)
-    {
-        strip4.setPixelColor(i + shortstrip / 2, colors[4]);
-        strip4.setPixelColor(shortstrip / 2 - i, colors[4]);
-    }
-    for (int i = 0; i < Intensity[5]; i++)
-    {
-        strip5.setPixelColor(i + longerstrip / 2, colors[5]);
-        strip5.setPixelColor(longerstrip / 2 - i, colors[5]);
-    }
-    for (int i = 0; i < Intensity[5]; i++)
-    {
-        strip6.setPixelColor(i + longerstrip / 2, colors[5]);
-        strip6.setPixelColor(longerstrip / 2 - i, colors[5]);
-    }
-    for (int i = 0; i < Intensity[4]; i++)
-    {
-        strip7.setPixelColor(i + shortstrip / 2, colors[4]);
-        strip7.setPixelColor(shortstrip / 2 - i, colors[4]);
-    }
-    for (int i = 0; i < Intensity[3]; i++)
-    {
-        strip8.setPixelColor(i + shortstrip / 2, colors[3]);
-        strip8.setPixelColor(shortstrip / 2 - i, colors[3]);
-    }
-    for (int i = 0; i < Intensity[2]; i++)
-    {
-        strip9.setPixelColor(i + shortstrip / 2, colors[2]);
-        strip9.setPixelColor(shortstrip / 2 - i, colors[2]);
-    }
-    for (int i = 0; i < Intensity[1]; i++)
-    {
-        strip10.setPixelColor(i + shortstrip / 2, colors[1]);
-        strip10.setPixelColor(shortstrip / 2 - i, colors[1]);
-    }
-    for (int i = 0; i < Intensity[0]; i++)
-    {
-        strip11.setPixelColor(i + longstrip / 2, colors[0]);
-        strip11.setPixelColor(longstrip / 2 - i, colors[0]);
-    }
-    showAllStrips();
-}
-// #define PEAK_FALL 5 // Rate of peak falling dot
-// byte peak = 0; // Used for falling dot
 void displayVUWhite()
 {
-    if (Intensity[0] > peak)
-        peak = Intensity[0]; // Keep 'peak' dot at top
-    if (peak > 0 && peak <= 15 - 1)
-    {
-        pixels.setPixelColor(peak, white);
-    }
-    if (++dotCount >= PEAK_FALL)
-    { // fall rate
+    currentPatternName = "VuWhite";
+    FastLED.clear();
 
-        if (peak > 0)
-            peak--;
-        dotCount = 0;
-    }
-    AllOff();
     for (int i = 0; i < Intensity[0]; i++)
     {
-        pixels.setPixelColor(i + longstrip / 2, white);
-        pixels.setPixelColor(longstrip / 2 - i, white);
+        strip1[i + LED_STRIP_PIXELS_AMOUNT / 2] = CRGB::White;
+        strip1[LED_STRIP_PIXELS_AMOUNT / 2 - i] = CRGB::White;
     }
-    for (int i = 0; i < Intensity[1]; i++)
-    {
-        strip1.setPixelColor(i + shortstrip / 2, white);
-        strip1.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[2]; i++)
-    {
-        strip2.setPixelColor(i + shortstrip / 2, white);
-        strip2.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[3]; i++)
-    {
-        strip3.setPixelColor(i + shortstrip / 2, white);
-        strip3.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[4]; i++)
-    {
-        strip4.setPixelColor(i + shortstrip / 2, white);
-        strip4.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[5]; i++)
-    {
-        strip5.setPixelColor(i + longerstrip / 2, white);
-        strip5.setPixelColor(longerstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[5]; i++)
-    {
-        strip6.setPixelColor(i + longerstrip / 2, white);
-        strip6.setPixelColor(longerstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[4]; i++)
-    {
-        strip7.setPixelColor(i + shortstrip / 2, white);
-        strip7.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[3]; i++)
-    {
-        strip8.setPixelColor(i + shortstrip / 2, white);
-        strip8.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[2]; i++)
-    {
-        strip9.setPixelColor(i + shortstrip / 2, white);
-        strip9.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[1]; i++)
-    {
-        strip10.setPixelColor(i + shortstrip / 2, white);
-        strip10.setPixelColor(shortstrip / 2 - i, white);
-    }
-    for (int i = 0; i < Intensity[0]; i++)
-    {
-        strip11.setPixelColor(i + longstrip / 2, white);
-        strip11.setPixelColor(longstrip / 2 - i, white);
-    }
-    showAllStrips();
+
+    FastLED.show();
 }
 int countplus = 0;
 void displayVURainbow()
 {
+    currentPatternName = "VURainbow";
+    FastLED.clear();
+    for (int i = 0; i < Intensity[0]; i++)
+    {
+        strip1[i + LED_STRIP_PIXELS_AMOUNT / 2] = CHSV(((i * 256 / 12) + 10 + countplus), 255, bright);
+        strip1[LED_STRIP_PIXELS_AMOUNT / 2 - i] = CHSV(((i * 256 / 12) + 10 + countplus), 255, bright);
+    }
 
-    AllOff();
-    for (int i = 0; i < Intensity[0]; i++)
-    {
-        pixels.setPixelColor(i + longstrip / 2, Wheel(((i * 256 / 12) + 10 + countplus) & 255, 1));
-        pixels.setPixelColor(longstrip / 2 - i, Wheel(((i * 256 / 12) + 10 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[1]; i++)
-    {
-        strip1.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 20 + countplus) & 255, 1));
-        strip1.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 20 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[2]; i++)
-    {
-        strip2.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 30 + countplus) & 255, 1));
-        strip2.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 30 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[3]; i++)
-    {
-        strip3.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 40 + countplus) & 255, 1));
-        strip3.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 40 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[4]; i++)
-    {
-        strip4.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 50 + countplus) & 255, 1));
-        strip4.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 50 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[5]; i++)
-    {
-        strip5.setPixelColor(i + longerstrip / 2, Wheel(((i * 256 / 12) + 60 + countplus) & 255, 1));
-        strip5.setPixelColor(longerstrip / 2 - i, Wheel(((i * 256 / 12) + 60 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[5]; i++)
-    {
-        strip6.setPixelColor(i + longerstrip / 2, Wheel(((i * 256 / 12) + 70 + countplus) & 255, 1));
-        strip6.setPixelColor(longerstrip / 2 - i, Wheel(((i * 256 / 12) + 70 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[4]; i++)
-    {
-        strip7.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 80 + countplus) & 255, 1));
-        strip7.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 80 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[3]; i++)
-    {
-        strip8.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 90 + countplus) & 255, 1));
-        strip8.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 90 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[2]; i++)
-    {
-        strip9.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 100 + countplus) & 255, 1));
-        strip9.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 100 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[1]; i++)
-    {
-        strip10.setPixelColor(i + shortstrip / 2, Wheel(((i * 256 / 12) + 110 + countplus) & 255, 1));
-        strip10.setPixelColor(shortstrip / 2 - i, Wheel(((i * 256 / 12) + 110 + countplus) & 255, 1));
-    }
-    for (int i = 0; i < Intensity[0]; i++)
-    {
-        strip11.setPixelColor(i + longstrip / 2, Wheel(((i * 256 / 12) + 120 + countplus) & 255, 1));
-        strip11.setPixelColor(longstrip / 2 - i, Wheel(((i * 256 / 12) + 120 + countplus) & 255, 1));
-    }
-    showAllStrips();
     countplus == 255 ? countplus = 0 : countplus += 5;
+    FastLED.show();
 }
-void displayUpdate()
+void displayUpdate(int bright)
 {
     int color = 0;
     for (int i = 0; i < xres; i++)
@@ -495,13 +507,13 @@ void displayUpdate()
             { // Light everything within the intensity range
                 if (j % 2 == 0)
                 {
-                    matrix[((xres * (j + 1)) - i - 1)] = CHSV(color, 255, clockBright);
-                    matrix[255 - ((xres * (j + 1)) - i - 1)] = CHSV(color, 255, clockBright);
+                    matrix[((xres * (j + 1)) - i - 1)] = CHSV(color, 255, bright);
+                    matrix[255 - ((xres * (j + 1)) - i - 1)] = CHSV(color, 255, bright);
                 }
                 else
                 {
-                    matrix[((xres * j) + i)] = CHSV(color, 255, clockBright);
-                    matrix[255 - ((xres * j) + i)] = CHSV(color, 255, clockBright);
+                    matrix[((xres * j) + i)] = CHSV(color, 255, bright);
+                    matrix[255 - ((xres * j) + i)] = CHSV(color, 255, bright);
                 }
             }
             else
@@ -520,812 +532,109 @@ void displayUpdate()
         }
         color += 255 / xres; // Increment the Hue to get the Rainbow
     }
+    FastLED.show();
 }
 
-void updatePattern(int pat)
-{ // call the pattern currently being created
-    switch (pat)
+void rainbow() // rainbowWithGlitter()//confetti
+{
+    currentPatternName = "Rainbow";
+
+    static uint16_t j = 0;
+    for (int i = 0; i < LED_STRIP_PIXELS_AMOUNT; i++)
     {
-    case 0:
-        Balls();
-        break;
+        setPixelRGB(i, Wheel(((i * 256 / LED_STRIP_PIXELS_AMOUNT) + j)));
+    }
+    FastLED.show();
+    j++;
+    if (j >= 256)
+        j = 0;
+}
+
+void bpm()
+{
+    currentPatternName = "bpm";
+    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+    uint8_t BeatsPerMinute = 62;
+    CRGBPalette16 palette = PartyColors_p;
+    uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
+    for (int i = 0; i < NUM_LEDS; i++)
+    { // 9948
+        setPixelRGB(i, ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10)));
+    }
+    FastLED.show();
+}
+
+void setPixelHSV(int i, CHSV colorHSV)
+{
+    CRGB dupa = CRGB(0, 0, 0);
+    setPixel(i, colorHSV, dupa, true);
+}
+void setPixelRGB(int i, CRGB colorRGB)
+{
+    CHSV dupa = CHSV(0, 0, 0);
+    setPixel(i, dupa, colorRGB, false);
+}
+void mirrorSides(int pixel, CHSV colorCHSV, CRGB colorRGB, boolean isHSV)
+{
+    if (pixel > halfofPixels)
+    {
+        Serial.println("Pixel number too high, over half for mirror image");
+    }
+    else
+    {
+
+        isHSV ? (strip1[pixel] = colorCHSV) : (strip1[pixel] = colorRGB);
+        isHSV ? (strip1[pixel] = colorCHSV) : (strip1[pixel] = colorRGB);
+    }
+}
+void setPixel(int pixel, CHSV colorCHSV, CRGB colorRGB, boolean isHSV)
+{
+
+    isHSV ? (strip1[pixel] = colorCHSV) : (strip1[pixel] = colorRGB);
+}
+void setLeftSide(int pixel, CHSV colorCHSV, CRGB colorRGB, boolean isHSV)
+{
+    isHSV ? (strip1[halfofPixels - pixel] = colorCHSV) : (strip1[halfofPixels - pixel] = colorRGB);
+}
+void setRightSide(int pixel, CHSV colorCHSV, CRGB colorRGB, boolean isHSV)
+{
+    isHSV ? (strip1[pixel] = colorCHSV) : (strip1[pixel] = colorRGB);
+}
+void setCorner(int cornerNumber, int pixel, CHSV colorCHSV, CRGB colorRGB, boolean isHSV)
+{
+
+    int additionalNumber;
+    switch (cornerNumber)
+    {
     case 1:
-        strobo();
+        additionalNumber = firstCornerPixelNumber;
         break;
     case 2:
-        around();
+        additionalNumber = secondCornerPixelNumber;
         break;
     case 3:
-        Twinkle();
+        additionalNumber = thirdCornerPixelNumber;
         break;
     case 4:
-        vu3();
+        additionalNumber = fourthCornerPixelNumber;
         break;
-    case 5:
-        ripple();
-        break;
-    case 6:
-        rainbowCycle();
-        break;
-    case 7:
-        color();
-        break;
-    case 8:
-        vutest();
-        break;
-    case 9:
-        vutest();
-        break;
-    case 10:
-        fill();
-        break;
-    case 11:
-        fillCenter();
-        break;
-    case 12:
-        displayVU();
-        break;
-    case 13:
-        displayVUWhite();
-        break;
-    case 14:
-        displayVURainbow();
-        break;
-    case 15:
-        theaterChaseRainbow();
-        break;
-    case 16:
-        theaterChase();
-        break;
+        isHSV ? (strip1[pixel + additionalNumber] = colorCHSV) : (strip1[pixel + additionalNumber] = colorRGB);
     }
 }
-
-void AllOff()
+CRGB Wheel(byte WheelPos)
 {
-    pixels.clear();
-    pixels.show();
-    strip1.clear();
-    strip1.show();
-    strip2.clear();
-    strip2.show();
-    strip3.clear();
-    strip3.show();
-    strip4.clear();
-    strip4.show();
-    strip5.clear();
-    strip5.show();
-    strip6.clear();
-    strip6.show();
-    strip7.clear();
-    strip7.show();
-    strip8.clear();
-    strip8.show();
-    strip9.clear();
-    strip9.show();
-    strip10.clear();
-    strip10.show();
-    strip11.clear();
-    strip11.show();
-}
-void AllStripSame(int i, uint32_t color)
-{
-    pixels.setPixelColor(i, color);
-    strip1.setPixelColor(i, color);
-    strip2.setPixelColor(i, color);
-    strip3.setPixelColor(i, color);
-    strip4.setPixelColor(i, color);
-    strip5.setPixelColor(i, color);
-    strip6.setPixelColor(i, color);
-    strip7.setPixelColor(i, color);
-    strip8.setPixelColor(i, color);
-    strip9.setPixelColor(i, color);
-    strip10.setPixelColor(i, color);
-    strip11.setPixelColor(i, color);
-}
-uint32_t Wheel(byte WheelPos, float opacity)
-{
-
     if (WheelPos < 85)
     {
-        return pixels.Color((WheelPos * 3) * opacity, (255 - WheelPos * 3) * opacity, 0);
+        return CRGB(WheelPos * 3, 255 - WheelPos * 3, 0);
     }
     else if (WheelPos < 170)
     {
         WheelPos -= 85;
-        return pixels.Color((255 - WheelPos * 3) * opacity, 0, (WheelPos * 3) * opacity);
+        return CRGB(255 - WheelPos * 3, 0, WheelPos * 3);
     }
     else
     {
         WheelPos -= 170;
-        return pixels.Color(0, (WheelPos * 3) * opacity, (255 - WheelPos * 3) * opacity);
-    }
-}
-// Input a value 0 to 255 to get a color value.
-// The colors are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos)
-{
-    if (WheelPos < 85)
-    {
-        return pixels.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-    }
-    else if (WheelPos < 170)
-    {
-        WheelPos -= 85;
-        return pixels.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-    }
-    else
-    {
-        WheelPos -= 170;
-        return pixels.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-    }
-}
-// pixels.Color(r, g, b));
-void SetMyLED(int i, int r, int g, int b)
-{
-
-    if (i <= longstrip - 1) // 1
-    {
-        pixels.setPixelColor(longstrip - 1 - i, pixels.Color(r, g, b));
-        //   pixels.show();
-    }
-    else if (i <= (longstrip + shortstrip) && i > longstrip) // 2
-    {
-        strip1.setPixelColor(i - longstrip - 1, pixels.Color(r, g, b));
-        //   strip1.show();
-    }
-    else if (i < (longstrip + shortstrip * 2) + 1 && i >= (shortstrip + longstrip)) // 3
-    {
-        strip2.setPixelColor((longstrip + shortstrip * 2) - i, pixels.Color(r, g, b));
-        //    strip2.show();
-    }
-    else if (i <= (longstrip + shortstrip * 3) && i > (longstrip + shortstrip * 2)) // 4
-    {
-        strip3.setPixelColor(i - (longstrip + shortstrip * 2) - 1, pixels.Color(r, g, b));
-        //     strip3.show();
-    }
-    else if (i < (longstrip + shortstrip * 4) + 1 && i >= (shortstrip * 3 + longstrip)) // 5
-    {
-        strip4.setPixelColor((longstrip + shortstrip * 4) - i, pixels.Color(r, g, b));
-        //   strip4.show();
-    }
-    else if (i <= (longstrip + longerstrip + shortstrip * 4) && i > (longstrip + shortstrip * 4)) // 6
-    {
-        strip5.setPixelColor(i - (longstrip + shortstrip * 4) - 1, pixels.Color(r, g, b));
-        //   strip5.show();
-    }
-    else if (i < (longerstrip * 2 + longstrip + shortstrip * 4) + 1 && i >= (shortstrip * 4 + longstrip + longstrip)) // 7
-    {
-        strip6.setPixelColor((longstrip + shortstrip * 4 + longerstrip * 2) - i, pixels.Color(r, g, b));
-        //   strip6.show();
-    }
-    else if (i <= (longstrip + longerstrip * 2 + shortstrip * 5) && i > (longstrip + longerstrip * 2 + shortstrip * 4)) // 8
-    {
-        strip7.setPixelColor(i - (longstrip + longerstrip * 2 + shortstrip * 4) - 1, pixels.Color(r, g, b));
-        //   strip7.show();
-    }
-    else if (i < (longerstrip * 2 + longstrip + shortstrip * 6) + 1 && i >= (shortstrip * 6 + longstrip + longstrip)) // 9
-    {
-        strip8.setPixelColor((longstrip + longerstrip * 2 + shortstrip * 6) - i, pixels.Color(r, g, b));
-        //     strip8.show();
-    }
-    else if (i <= (longstrip + longerstrip * 2 + shortstrip * 7) && i > (longstrip + longerstrip * 2 + shortstrip * 6)) // 10
-    {
-        strip9.setPixelColor(i - (longstrip + longerstrip * 2 + shortstrip * 6) - 1, pixels.Color(r, g, b));
-        //    strip9.show();
-    }
-    else if (i < (longerstrip * 2 + longstrip + shortstrip * 8) + 1 && i >= (shortstrip * 7 + longerstrip * 2 + longstrip)) // 11
-    {
-        strip10.setPixelColor((longstrip + longerstrip * 2 + shortstrip * 8) - i, pixels.Color(r, g, b));
-        //    strip10.show();
-    }
-    else if (i < (longstrip * 2 + longerstrip * 2 + shortstrip * 8) + 1 && i > (longstrip + longerstrip * 2 + shortstrip * 8)) // 12
-    {
-        strip11.setPixelColor(i - (longstrip + longerstrip * 2 + shortstrip * 8) - 1, pixels.Color(r, g, b));
-        //   strip11.show();
-    }
-}
-void SetLeftStripe(int i, uint32_t color)
-{
-    SetMyLED(halfofPixels + i, color);
-}
-void SetRightStripe(int i, uint32_t color)
-{
-    SetMyLED(halfofPixels - i, color);
-}
-void SetLeftCenterDouble(int i, uint32_t color)
-{
-    int centerNumber = longstrip + shortstrip + shortstrip;
-    SetMyLED(centerNumber - i + 1, color);
-    SetMyLED(centerNumber + i, color);
-}
-void SetRightCenterDouble(int i, uint32_t color)
-{
-    int centerNumber = longstrip + shortstrip + shortstrip;
-    SetMyLED(centerNumber + halfofPixels - i + 1, color);
-    SetMyLED(centerNumber + halfofPixels + i, color);
-}
-
-void SetMyLED(int i, uint32_t color)
-{
-    if (i <= longstrip - 1) // 1
-    {
-        pixels.setPixelColor(longstrip - 1 - i, color);
-        //   pixels.show();
-    }
-    else if (i <= (longstrip + shortstrip) && i > longstrip) // 2
-    {
-        strip1.setPixelColor(i - longstrip - 1, color);
-        //   strip1.show();
-    }
-    else if (i < (longstrip + shortstrip * 2) + 1 && i >= (shortstrip + longstrip)) // 3
-    {
-        strip2.setPixelColor((longstrip + shortstrip * 2) - i, color);
-        //    strip2.show();
-    }
-    else if (i <= (longstrip + shortstrip * 3) && i > (longstrip + shortstrip * 2)) // 4
-    {
-        strip3.setPixelColor(i - (longstrip + shortstrip * 2) - 1, color);
-        //     strip3.show();
-    }
-    else if (i < (longstrip + shortstrip * 4) + 1 && i >= (shortstrip * 3 + longstrip)) // 5
-    {
-        strip4.setPixelColor((longstrip + shortstrip * 4) - i, color);
-        //   strip4.show();
-    }
-    else if (i <= (longstrip + longerstrip + shortstrip * 4) && i > (longstrip + shortstrip * 4)) // 6
-    {
-        strip5.setPixelColor(i - (longstrip + shortstrip * 4) - 1, color);
-        //   strip5.show();
-    }
-    else if (i < (longerstrip * 2 + longstrip + shortstrip * 4) + 1 && i >= (shortstrip * 4 + longstrip + longstrip)) // 7
-    {
-        strip6.setPixelColor((longstrip + shortstrip * 4 + longerstrip * 2) - i, color);
-        //   strip6.show();
-    }
-    else if (i <= (longstrip + longerstrip * 2 + shortstrip * 5) && i > (longstrip + longerstrip * 2 + shortstrip * 4)) // 8
-    {
-        strip7.setPixelColor(i - (longstrip + longerstrip * 2 + shortstrip * 4) - 1, color);
-        //   strip7.show();
-    }
-    else if (i < (longerstrip * 2 + longstrip + shortstrip * 6) + 1 && i >= (shortstrip * 6 + longstrip + longstrip)) // 9
-    {
-        strip8.setPixelColor((longstrip + longerstrip * 2 + shortstrip * 6) - i, color);
-        //     strip8.show();
-    }
-    else if (i <= (longstrip + longerstrip * 2 + shortstrip * 7) && i > (longstrip + longerstrip * 2 + shortstrip * 6)) // 10
-    {
-        strip9.setPixelColor(i - (longstrip + longerstrip * 2 + shortstrip * 6) - 1, color);
-        //    strip9.show();
-    }
-    else if (i < (longerstrip * 2 + longstrip + shortstrip * 8) + 1 && i >= (shortstrip * 7 + longerstrip * 2 + longstrip)) // 11
-    {
-        strip10.setPixelColor((longstrip + longerstrip * 2 + shortstrip * 8) - i, color);
-        //    strip10.show();
-    }
-    else if (i < (longstrip * 2 + longerstrip * 2 + shortstrip * 8) + 1 && i > (longstrip + longerstrip * 2 + shortstrip * 8)) // 12
-    {
-        strip11.setPixelColor(i - (longstrip + longerstrip * 2 + shortstrip * 8) - 1, color);
-        //   strip11.show();
-    }
-}
-uint16_t getColorofpixel(int i)
-{
-    if (i <= 7)
-    {
-        return pixels.getPixelColor(7 - i);
-    }
-    else if (i < 15 && i > 7)
-    {
-        return strip1.getPixelColor(i - 8);
-    }
-    else if (i < 22 && i >= 15)
-    {
-        return strip2.getPixelColor(21 - i);
-    }
-    else if (i < 29 && i >= 22)
-    {
-        return strip3.getPixelColor(i - 22);
-    }
-    else if (i < 36 && i >= 29)
-    {
-        return strip4.getPixelColor(35 - i);
-    }
-    else if (i < 43 && i >= 36)
-    {
-        return strip5.getPixelColor(i - 36);
-    }
-
-    else if (i < 50 && i >= 43)
-    {
-        return strip6.getPixelColor(49 - i);
-    }
-    else if (i < 57 && i >= 50)
-    {
-        return strip7.getPixelColor(i - 50);
-    }
-
-    else if (i < 64 && i >= 57)
-    {
-        return strip8.getPixelColor(63 - i);
-    }
-    else if (i < 71 && i >= 64)
-    {
-        return strip9.getPixelColor(i - 64);
-    }
-
-    else if (i < 78 && i >= 71)
-    {
-        return strip10.getPixelColor(77 - i);
-    }
-    else if (i < 85 && i >= 78)
-    {
-        return strip11.getPixelColor(i - 78);
-    }
-}
-void setBrightness(int bNum)
-{
-    strip1.setBrightness(bNum);
-    strip2.setBrightness(bNum);
-    strip3.setBrightness(bNum);
-    strip4.setBrightness(bNum);
-    strip5.setBrightness(bNum);
-    strip6.setBrightness(bNum);
-    strip7.setBrightness(bNum);
-    strip8.setBrightness(bNum);
-    strip9.setBrightness(bNum);
-    strip10.setBrightness(bNum);
-    strip11.setBrightness(bNum);
-    pixels.setBrightness(bNum);
-
-    pixels.show();
-    strip1.show();
-    strip2.show();
-    strip3.show();
-    strip4.show();
-    strip5.show();
-    strip6.show();
-    strip7.show();
-    strip8.show();
-    strip9.show();
-    strip10.show();
-    strip11.show();
-}
-void showAllStrips()
-{
-    pixels.show();
-    strip1.show();
-    strip2.show();
-    strip3.show();
-    strip4.show();
-    strip5.show();
-    strip6.show();
-    strip7.show();
-    strip8.show();
-    strip9.show();
-    strip10.show();
-    strip11.show();
-}
-long previousMillis = 0;
-int aa = 1;
-void around()
-{
-    // AllOff();
-    int white;
-    int amount = 15;
-    unsigned long currentMillis = millis(); // Start of sample window
-                                            // if (currentMillis - previousMillis > patternInterval)
-    //    {
-    if (aa == allPixelsAmount + 13)
-    {
-        aa = 1;
-    }
-    // int EyeSize = 4;
-    // int red = 255;
-    // int blue = 0;
-    // int green = 0;
-    //  for (int i = 0; i < 85; i++) {
-    //  setAll(0,0,0);
-
-    SetMyLED(aa, 255, 255, 255);
-    SetMyLED(aa - 1, 0, 0, 0);
-    SetMyLED(aa - 2, 255, 255, 255);
-    SetMyLED(aa - 3, 0, 0, 0);
-
-    SetMyLED(aa - 10, 255, 255, 255);
-    SetMyLED(aa - 11, 0, 0, 0);
-    SetMyLED(aa - 12, 255, 255, 255);
-    SetMyLED(aa - 13, 0, 0, 0);
-    // for (int i = 3; i < amount; i++)
-    // {
-
-    //     SetMyLED(aa - i, 0, 255, 0);
-    // }
-    // SetMyLED(aa - 5, 0, 0, 0);
-    showAllStrips();
-    // AllOff();
-    // SetMyLED(aa + 3, 255, 0, 0);
-    //  for (int j = 1; j <= EyeSize; j++) {
-    //      SetMyLED(i + j, red, green, blue);
-    //    }>
-    //  SetMyLED(i + EyeSize + 1, red / 10, green / 10, blue / 10);
-    // showStrip();
-    // delay(SpeedDelay);
-    if (patternInterval > 150)
-    {
-    }
-    else
-    {
-        aa++;
-    }
-
-    previousMillis = currentMillis; // Remember the time
-                                    //   }
-    //}
-}
-static boolean one = true;
-void strobo()
-{
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
-    {
-
-        if (one)
-        {
-            for (int i = 0; i < allPixelsAmount; i++)
-            {
-                SetMyLED(i, 255, 255, 255);
-            }
-        }
-        else
-        {
-            for (int i = 0; i < allPixelsAmount; i++)
-            {
-                SetMyLED(i, 0, 0, 0);
-            }
-        }
-        one = !one;
-        previousMillis = currentMillis; // Remember the time
-    }
-    // toggel pixelse on or off for next time
-    showAllStrips(); //  strip.show(); // display
-}
-
-int ai = 0;
-int bi = 254;
-int aas = random(180);
-void Twinkle()
-{
-
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
-    {
-        if (getColorofpixel(aas) == black)
-        {
-
-            SetMyLED(aas, ai, ai, ai);
-            showAllStrips();
-            ai += 10;
-            if (ai >= 255)
-            {
-                aas = random(180);
-                ai = 0;
-                Serial.println(getColorofpixel(aa));
-            }
-        }
-        else
-        {
-
-            SetMyLED(aas, bi, bi, bi);
-            showAllStrips();
-            bi--;
-            if (bi <= 0)
-            {
-                aas = random(180);
-                bi = 255;
-                Serial.println("b");
-            }
-        }
-
-        previousMillis = currentMillis; // Remember the time
-    }
-}
-void intro()
-{
-    for (int i = 0; i < 88; i++)
-    {
-
-        AllStripSame(i, 255);
-        showAllStrips();
-        delay(50);
-    }
-}
-
-void theaterChase()
-{                                           // modified from Adafruit example to make it a state machine
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
-    {
-        static int j = 0, q = 0;
-        static boolean on = true;
-        if (on)
-        {
-            for (int i = 0; i < allPixelsAmount; i = i + 3)
-            {
-                SetMyLED(i + q, 255, 255, 255); // turn every third pixel on
-                                                /// SetMyLED(i + q, Wheel((i + j) % 255, 1));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < allPixelsAmount; i = i + 3)
-            {
-                SetMyLED(i + q, 0, 0, 0); // turn every third pixel off
-            }
-        }
-        on = !on;        // toggel pixelse on or off for next time
-        showAllStrips(); //  strip.show(); // display
-        q++;             // update the q variable
-        if (q >= 3)
-        { // if it overflows reset it and update the J variable
-            q = 0;
-            j++;
-            if (j >= 256)
-                j = 0;
-        }
-        previousMillis = currentMillis; // Remember the time
-    }
-}
-void theaterChaseRainbow()
-{                                           // modified from Adafruit example to make it a state machine
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
-    {
-        static int j = 0, q = 0;
-        static boolean on = true;
-        if (on)
-        {
-            for (int i = 0; i < allPixelsAmount; i = i + 3)
-            {
-                SetMyLED(i, Wheel(((i * 256 / allPixelsAmount) + j) & 255, 1)); // turn every third pixel on
-                                                                                /// SetMyLED(i + q, Wheel((i + j) % 255, 1));
-            }
-        }
-        else
-        {
-            for (int i = 0; i < allPixelsAmount; i = i + 3)
-            {
-                SetMyLED(i + q, 0, 0, 0); // turn every third pixel off
-            }
-        }
-        on = !on;        // toggel pixelse on or off for next time
-        showAllStrips(); //  strip.show(); // display
-        q++;             // update the q variable
-        if (q >= 3)
-        { // if it overflows reset it and update the J variable
-            q = 0;
-            j++;
-            if (j >= 256)
-                j = 0;
-        }
-        previousMillis = currentMillis; // Remember the time
-    }
-}
-void rainbowCycle()
-{                                           // modified from Adafruit example to make it a state machine
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
-    {
-        static uint16_t j = 0;
-        for (int i = 0; i < allPixelsAmount; i++)
-        {
-            SetMyLED(i, Wheel(((i * 256 / allPixelsAmount) + j) & 255, 1));
-        }
-        showAllStrips();
-        j++;
-        if (j >= 256 * 5)
-            j = 0;
-        previousMillis = currentMillis; // time for next change to the display
-    }
-}
-int old = -10;
-void color()
-{
-
-    // float smooth = 0.8 * smooth + 0.2 * patternInterval;
-    // int col = map(smooth, 0, 200, 0, 255);
-    int col = map(COLORS, 0, 200, 0, 255);
-    if (col - old > 5 || col - old < -5)
-    {
-
-        for (int i = 0; i < allPixelsAmount; i++)
-        {
-            SetMyLED(i, Wheel(col, 1));
-        }
-        showAllStrips();
-        old = col;
-    }
-}
-
-int outputValue = 0;
-int rememberOutputValue;
-int randNumber;
-int counterss = 0;
-int loopCounter = 0;
-//   Serial.println(analogRead(A5));
-void vu3()
-{
-    int sensorValue;
-    counterss = 0;
-    static uint16_t j = 0;
-    for (int i = 0; i < 100; i++)
-    {
-        sensorValue = analogRead(A0);
-        if (sensorValue > 100)
-            counterss++;
-    }
-
-    if (map(counterss, 10, 85, 80, 80) > outputValue)
-        outputValue = map(counterss, 00, 40, 0, 40);
-    else if (loopCounter % 2 == 0)
-        outputValue -= 1;
-
-    if (outputValue < 0)
-        outputValue = 0;
-    if (outputValue > 85)
-        outputValue = 85;
-
-    if (loopCounter % 100 == 0)
-        randNumber = random(255);
-    loopCounter++;
-
-    for (int i = 0; i < 85; i++)
-    {
-
-        SetMyLED(i, pixels.Color(0, 0, 0, 255));
-        SetLeftStripe(i, pixels.Color(0, 0, 0, 255));
-    }
-
-    if (rememberOutputValue != outputValue)
-    {
-        for (int i = 0; i < outputValue; i++)
-        {
-            SetMyLED(i, Wheel(((i * 256 / 85) + j) & 255, 1));
-            SetLeftStripe(i, Wheel(((i * 256 / 85)) & 255, 1));
-        }
-
-        showAllStrips();
-    }
-    j++;
-    if (j >= 256 * 5)
-        j = 0;
-    rememberOutputValue = outputValue;
-}
-int oldAmount = 0;
-void fill()
-{
-    AllOff();
-    int amount = map(patternInterval, 0, 255, 0, halfofPixels);
-    for (int i = 0; i < amount; i++)
-    {
-        SetLeftStripe(i, COLORS);
-        SetRightStripe(i, COLORS);
-        SetLeftStripe(i + 1, 0);
-        SetRightStripe(i + 1, 0);
-    }
-    showAllStrips();
-}
-
-void fillCenter()
-{
-
-    int col = map(patternInterval, 0, 255, 0, halfofPixels / 2);
-    AllOff();
-    for (int i = 0; i < col + 1; i++)
-    {
-        SetLeftCenterDouble(i, COLORS);
-        SetRightCenterDouble(i, COLORS);
-        SetRightCenterDouble(i + 1, 0);
-        SetLeftCenterDouble(i + 1, 0);
-    }
-    showAllStrips();
-}
-void Balls()
-{
-
-    for (int i = 0; i < NUM_BALLS; i++)
-    {
-        tCycle[i] = millis() - tLast[i]; // Calculate the time since the last time the ball was on the ground
-
-        // A little kinematics equation calculates positon as a function of time, acceleration (gravity) and intial velocity
-        h[i] = 0.5 * GRAVITY * pow(tCycle[i] / 1000, 2.0) + vImpact[i] * tCycle[i] / 1000;
-
-        if (h[i] < 0)
-        {
-            h[i] = 0;                         // If the ball crossed the threshold of the "ground," put it back on the ground
-            vImpact[i] = COR[i] * vImpact[i]; // and recalculate its new upward velocity as it's old velocity * COR
-            tLast[i] = millis();
-
-            if (vImpact[i] < 0.01)
-                vImpact[i] = vImpact0; // If the ball is barely moving, "pop" it back up at vImpact0
-        }
-        pos[i] = round(h[i] * (allPixelsAmount - 1) / h0); // Map "h" to a "pos" integer index position on the LED strip
-    }
-    if (patternInterval < 100)
-    {
-        // Choose color of LEDs, then the "pos" LED on
-        for (int i = 0; i < NUM_BALLS; i++)
-            SetMyLED(pos[i], colors[i]);
-        showAllStrips();
-        // FastLED.show();
-        //  Then off for the next loop around
-        for (int i = 0; i < NUM_BALLS; i++)
-        {
-            SetMyLED(pos[i], 0, 0, 0);
-        }
-    }
-    else if (patternInterval < 150 && patternInterval > 100)
-    {
-        // Choose color of LEDs, then the "pos" LED on
-        for (int i = 0; i < NUM_BALLS; i++)
-        {
-            SetLeftStripe(pos[i] / 2, colors[i]);
-            SetRightStripe(pos[i] / 2, colors[i]);
-        }
-        showAllStrips();
-        // FastLED.show();
-        //  Then off for the next loop around
-        for (int i = 0; i < NUM_BALLS; i++)
-        {
-            SetLeftStripe(pos[i] / 2, black);
-            SetRightStripe(pos[i] / 2, black);
-        }
-    }
-    else
-    {
-
-        for (int i = 0; i < NUM_BALLS; i++)
-        {
-            AllStripSame(pos[i] / 2, colors[i]);
-        }
-        showAllStrips();
-        // FastLED.show();
-        //  Then off for the next loop around
-        for (int i = 0; i < NUM_BALLS; i++)
-        {
-            AllStripSame(pos[i] / 2, black);
-        }
-    }
-}
-int maxi = 0;
-int led = 0;
-boolean last = true;
-void vutest()
-{
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
-    {
-        if (last)
-        {
-            int level = analogRead(A0);
-            if (level > maxi)
-                maxi = level;
-            int col = map(level, 0, maxi, 0, 7);
-            led = map(level, 0, maxi, 0, allPixelsAmount);
-            SetLeftStripe(led / 2, colors[col]);
-            SetRightStripe(led / 2, colors[col]);
-            // pixels.setBrightness(brightness);
-            showAllStrips();
-            last = false;
-        }
-        else
-        {
-
-            SetLeftStripe(led / 2, black);
-            SetRightStripe(led / 2, black);
-            // pixels.setBrightness(brightness);
-            showAllStrips();
-            last = true;
-        }
-        previousMillis = currentMillis;
+        return CRGB(0, WheelPos * 3, 255 - WheelPos * 3);
     }
 }

@@ -2,12 +2,7 @@
 
 #ifndef _IMPORTS_INO__
 #define _IMPORTS_INO__
-
-#include "main.ino"
-#include "buttons.ino"
-#include "clock.ino"
 #include "Defin_Config_Objects.h"
-
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
@@ -19,5 +14,9 @@
 // #include "effects/colorWipe.cpp"
 // #include "effects/pixelChase.cpp"
 // #include "effects/rainbow.h"
+
+#include "main.ino"
+#include "buttons.ino"
+#include "clock.ino"
 
 #endif

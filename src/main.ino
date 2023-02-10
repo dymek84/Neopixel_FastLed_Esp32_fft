@@ -1,11 +1,9 @@
 
+#ifndef _MAIN_INO__
+#define _MAIN_INO__
+
 #include "Imports.h"
 
-#define SAMPLES 512 // Must be a power of 2 (64)
-#define MULTIPLY_BY 1
-#define xres 32 // Total number of  columns in the display
-#define yres 8  // Total number of  rows in the display
-#define audio 35
 double vReal[SAMPLES];
 double vImag[SAMPLES];
 int Intensity[6] = {}; // initialize Frequency Intensity to zero
@@ -626,3 +624,4 @@ CRGB Wheel(byte WheelPos)
         return CRGB(0, WheelPos * 3, 255 - WheelPos * 3);
     }
 }
+#endif

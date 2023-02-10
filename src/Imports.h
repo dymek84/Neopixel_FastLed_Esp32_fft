@@ -13,6 +13,7 @@
 #include "main.ino"
 #include "buttons.cpp"
 #include "clock.cpp"
+#include "Definitions.h"
 
 // #include "effects/colorWipe.cpp"
 // #include "effects/pixelChase.cpp"

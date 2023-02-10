@@ -5,8 +5,6 @@
 
 #include "Imports.h"
 
-long delayss = 0;
-long delayEEPROM = 0;
 void buttons()
 {
     // int buttonVal = digitalRead(button);

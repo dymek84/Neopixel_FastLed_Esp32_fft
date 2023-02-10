@@ -131,9 +131,11 @@ char *buttonNames[11] = {
     "Clock Brighness Plus",
 };
 #define NUM_LEDS 180
-long delayss = 0;
 //======================= BUTTONS OPTIONS =============================
 uint8_t electric_pumpkinaaaaaa;
 String currentPatternName = "None";
+
+long delayss = 0;
+long delayEEPROM = 0;
 
 #endif

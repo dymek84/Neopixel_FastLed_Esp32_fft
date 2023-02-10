@@ -1,4 +1,9 @@
 
+#ifndef _CLOCK_INO__
+#define _CLOCK_INO__
+
+#include "Imports.h"
+
 int druga[]{94, 97, 110, 113, 114, 115, 116, 107, 100, 91, 90, 89, 88, 103, 104, 119};
 int trzecia[]{94, 97, 110, 113, 114, 115, 116, 107, 100, 91, 117, 118, 88, 103, 104, 119};
 int czwarta[]{94, 113, 114, 115, 116, 107, 100, 91, 92, 93, 117, 118, 119};
@@ -36,7 +41,7 @@ int minPierwszaOsiem[]{145, 158, 161, 174, 173, 172, 171, 164, 155, 148, 170, 16
 int minPierwszaDziewiec[]{145, 158, 161, 174, 173, 172, 171, 164, 155, 148, 170, 169, 151, 152, 167, 168, 146, 147};
 
 int celciusz[]{193, 206, 209, 210, 211, 204, 195, 194};
-int clockColor = 0; 
+int clockColor = 0;
 int sat = 0;
 void clock(int hour, int min, boolean menu, int menuname, int percent)
 {
@@ -621,3 +626,5 @@ void showPercent(int value)
         }
     }
 }
+
+#endif

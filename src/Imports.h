@@ -1,4 +1,8 @@
 
+
+#ifndef _IMPORTS_INO__
+#define _IMPORTS_INO__
+
 #include <Arduino.h>
 
 #include <Arduino.h>
@@ -13,8 +17,10 @@
 #include "main.ino"
 #include "buttons.cpp"
 #include "clock.cpp"
-#include "Definitions.h"
+#include "Defin_Config_Objects.h"
 
 // #include "effects/colorWipe.cpp"
 // #include "effects/pixelChase.cpp"
 // #include "effects/rainbow.h"
+
+#endif

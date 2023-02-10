@@ -1,11 +1,17 @@
 
+
+#ifndef _BUTTONS_INO__
+#define _BUTTONS_INO__
+
+#include "Imports.h"
+
 long delayss = 0;
 long delayEEPROM = 0;
 void buttons()
 {
     // int buttonVal = digitalRead(button);
 
-    int sensorValue = analogRead(A1);
+    int sensorValue = analogRead(36);
 
     unsigned long currentMillis = millis();
     if (sensorValue > 86 && sensorValue < 1023)
@@ -20,11 +26,11 @@ void buttons()
         }
         if (millis() - delayEEPROM > (1000 * 60))
         {
-            EEPROM.update(0, selected);
-            EEPROM.update(1, stripeBrightness);
-            EEPROM.update(2, COLORS);
-            EEPROM.update(3, patternInterval);
-            EEPROM.update(4, clockBright);
+            EEPROM.write(0, selected);
+            EEPROM.write(1, changeLedBright);
+            EEPROM.write(2, changeColor);
+            EEPROM.write(3, chngePatternSpeed);
+            EEPROM.write(4, chageClockBright);
             delayEEPROM = millis();
             Serial.println("EEPROM Updated");
         }
@@ -36,13 +42,12 @@ void buttons()
         {
             Serial.println("Button pressed! SELECT ");
             selected = counter;
-            AllOff();
         }
         delayss = millis();
     }
     if (sensorValue > 126 && sensorValue < 134)
     {
-        menuname = 0;
+        menuNumber = 0;
         // button 2
         if (millis() - delayss > 200)
         {
@@ -60,7 +65,7 @@ void buttons()
     }
     if (sensorValue > 194 && sensorValue < 205)
     {
-        menuname = 0;
+        menuNumber = 0;
         // button 3
         if (millis() - delayss > 200)
         {
@@ -84,17 +89,17 @@ void buttons()
         {
             Serial.println("Button pressed! stripeBrightness MINUS");
 
-            if (stripeBrightness <= 25)
+            if (changeLedBright <= 25)
             {
-                stripeBrightness = 0;
+                changeLedBright = 0;
             }
-            else if (stripeBrightness > 25)
+            else if (changeLedBright > 25)
             {
-                stripeBrightness -= 25;
+                changeLedBright -= 25;
             }
-            menuname = 1;
-            percentage = map(stripeBrightness, 0, 255, 0, 8);
-            Serial.println(stripeBrightness);
+            menuNumber = 1;
+            percentage = map(changeLedBright, 0, 255, 0, 8);
+            Serial.println(changeLedBright);
             delayss = millis();
         }
     }
@@ -104,17 +109,17 @@ void buttons()
         if (millis() - delayss > 200)
         {
             Serial.println("Button pressed! stripeBrightness PLUS");
-            if (stripeBrightness > 230)
+            if (changeLedBright > 230)
             {
-                stripeBrightness = 255;
+                changeLedBright = 255;
             }
-            else if (stripeBrightness < 230)
+            else if (changeLedBright < 230)
             {
-                stripeBrightness += 25;
+                changeLedBright += 25;
             }
-            menuname = 1;
-            percentage = map(stripeBrightness, 0, 255, 0, 8);
-            Serial.println(stripeBrightness);
+            menuNumber = 1;
+            percentage = map(changeLedBright, 0, 255, 0, 8);
+            Serial.println(changeLedBright);
             delayss = millis();
         }
         delayss = millis();
@@ -124,18 +129,18 @@ void buttons()
         // button 6
         if (millis() - delayss > 200)
         {
-            Serial.println("Button pressed! COLORS MINUS");
-            if (COLORS <= 25)
+            Serial.println("Button pressed! changeColor MINUS");
+            if (changeColor <= 25)
             {
-                COLORS = 0;
+                changeColor = 0;
             }
-            else if (COLORS > 25)
+            else if (changeColor > 25)
             {
-                COLORS -= 25;
+                changeColor -= 25;
             }
-            menuname = 2;
-            percentage = map(COLORS, 0, 255, 0, 8);
-            Serial.println(COLORS);
+            menuNumber = 2;
+            percentage = map(changeColor, 0, 255, 0, 8);
+            Serial.println(changeColor);
         }
         delayss = millis();
     }
@@ -144,18 +149,18 @@ void buttons()
         // button 7
         if (millis() - delayss > 200)
         {
-            Serial.println("Button pressed! COLORS PLUS");
-            if (COLORS > 255)
+            Serial.println("Button pressed! changeColor PLUS");
+            if (changeColor > 255)
             {
-                COLORS = 255;
+                changeColor = 255;
             }
-            else if (COLORS < 255)
+            else if (changeColor < 255)
             {
-                COLORS += 25;
+                changeColor += 25;
             }
-            menuname = 2;
-            percentage = map(COLORS, 0, 255, 0, 8);
-            Serial.println(COLORS);
+            menuNumber = 2;
+            percentage = map(changeColor, 0, 255, 0, 8);
+            Serial.println(changeColor);
         }
         delayss = millis();
     }
@@ -165,17 +170,17 @@ void buttons()
         if (millis() - delayss > 200)
         {
             Serial.println("Button pressed! SPEEDS MINUS");
-            if (patternInterval <= 25)
+            if (chngePatternSpeed <= 25)
             {
-                patternInterval = 0;
+                chngePatternSpeed = 0;
             }
-            else if (patternInterval > 25)
+            else if (chngePatternSpeed > 25)
             {
-                patternInterval -= 25;
+                chngePatternSpeed -= 25;
             }
-            menuname = 3;
-            percentage = map(patternInterval, 0, 255, 0, 8);
-            Serial.println(patternInterval);
+            menuNumber = 3;
+            percentage = map(chngePatternSpeed, 0, 255, 0, 8);
+            Serial.println(chngePatternSpeed);
         }
         delayss = millis();
     }
@@ -185,17 +190,17 @@ void buttons()
         if (millis() - delayss > 200)
         {
             Serial.println("Button pressed! SPEEDS PLUS");
-            if (patternInterval > 255)
+            if (chngePatternSpeed > 255)
             {
-                patternInterval = 255;
+                chngePatternSpeed = 255;
             }
-            else if (patternInterval < 255)
+            else if (chngePatternSpeed < 255)
             {
-                patternInterval += 25;
+                chngePatternSpeed += 25;
             }
-            menuname = 3;
-            percentage = map(patternInterval, 0, 255, 0, 8);
-            Serial.println(patternInterval);
+            menuNumber = 3;
+            percentage = map(chngePatternSpeed, 0, 255, 0, 8);
+            Serial.println(chngePatternSpeed);
         }
         delayss = millis();
     }
@@ -204,18 +209,18 @@ void buttons()
         // button 10
         if (millis() - delayss > 200)
         {
-            Serial.println("Button pressed! clockBright MINUS");
-            if (clockBright <= 25)
+            Serial.println("Button pressed! chageClockBright MINUS");
+            if (chageClockBright <= 25)
             {
-                clockBright = 0;
+                chageClockBright = 0;
             }
-            else if (clockBright > 25)
+            else if (chageClockBright > 25)
             {
-                clockBright -= 25;
+                chageClockBright -= 25;
             }
-            menuname = 4;
-            percentage = map(clockBright, 0, 255, 0, 8);
-            Serial.println(clockBright);
+            menuNumber = 4;
+            percentage = map(chageClockBright, 0, 255, 0, 8);
+            Serial.println(chageClockBright);
         }
         delayss = millis();
     }
@@ -224,19 +229,20 @@ void buttons()
         // button 11
         if (millis() - delayss > 200)
         {
-            Serial.println("Button pressed! clockBright PLUS");
-            if (clockBright > 230)
+            Serial.println("Button pressed! chageClockBright PLUS");
+            if (chageClockBright > 230)
             {
-                clockBright = 255;
+                chageClockBright = 255;
             }
-            else if (clockBright < 230)
+            else if (chageClockBright < 230)
             {
-                clockBright += 25;
+                chageClockBright += 25;
             }
-            menuname = 4;
-            percentage = map(clockBright, 0, 255, 0, 8);
-            Serial.println(clockBright);
+            menuNumber = 4;
+            percentage = map(chageClockBright, 0, 255, 0, 8);
+            Serial.println(chageClockBright);
         }
         delayss = millis();
     }
 }
+#endif

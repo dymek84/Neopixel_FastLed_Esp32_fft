@@ -1,17 +1,5 @@
 
-#include <Arduino.h>
-#include <EEPROM.h>
-#include <Adafruit_NeoPixel.h>
-#include <FastLED.h>
-#include <Adafruit_GFX.h>
-#include <Adafruit_NeoMatrix.h>
-
-#include <arduinoFFT.h>
-#include "colorWipe.cpp"
-#include "buttons.cpp"
-#include "clock.cpp"
-#include "pixelChase.cpp"
-#include "rainbow.h"
+#include "Imports.h"
 
 #define SAMPLES 512 // Must be a power of 2 (64)
 #define MULTIPLY_BY 1

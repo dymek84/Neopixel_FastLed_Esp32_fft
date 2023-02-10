@@ -4,8 +4,8 @@
 #define _IMPORTS_INO__
 
 #include "main.ino"
-#include "buttons.cpp"
-#include "clock.cpp"
+#include "buttons.ino"
+#include "clock.ino"
 #include "Defin_Config_Objects.h"
 
 #include <Arduino.h>

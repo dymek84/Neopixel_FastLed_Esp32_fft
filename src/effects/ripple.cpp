@@ -1,4 +1,4 @@
-uint32_t currentBg = random(256);
+/*uint32_t currentBg = random(256);
 uint32_t nextBg = currentBg;
 int colorripple;
 int center = 0;
@@ -136,4 +136,4 @@ int wrap2(int step)
     if (step2 > NUM_LEDS - 1)
         return step2 - NUM_LEDS;
     return step2;
-}
+}*/

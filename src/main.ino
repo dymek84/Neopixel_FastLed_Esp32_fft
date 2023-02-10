@@ -178,7 +178,7 @@ void test2()
         }
     }
 }
-void buttons()
+void buttons55()
 {
     // int buttonVal = digitalRead(button);
     /*
@@ -224,28 +224,28 @@ void updatePattern(int pat)
     switch (pat)
     {
     case 0:
-        displayVURainbow();
+        // displayVURainbow();
         break;
     case 1:
-        displayVURainbow();
+        //  displayVURainbow();
         break;
     case 2:
-        displayVU();
+        //  displayVU();
         break;
     case 3:
-        bpm();
+        //  bpm();
         break;
     case 4:
-        displayVUWhite();
+        // displayVUWhite();
         break;
     case 5:
-        rainbow();
+        //   rainbow();
         break;
     case 6:
-        test();
+        //    test();
         break;
     case 7:
-        test2();
+        //    test2();
         break;
     case 8:
 

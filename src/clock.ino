@@ -60,8 +60,8 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
         else
         {
 
-            matrix[130] = CHSV(clockColor, sat, clockBright);
-            matrix[134] = CHSV(clockColor, sat, clockBright);
+            matrix[130] = CHSV(clockColor, sat, chageClockBright);
+            matrix[134] = CHSV(clockColor, sat, chageClockBright);
         }
     }
     if (menuname == 0)
@@ -71,14 +71,14 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof minPierwszaZero / sizeof minPierwszaZero[0]; i++)
             {
                 // int s = ;
-                matrix[minPierwszaZero[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[minPierwszaZero[i]] = CHSV(clockColor, sat, chageClockBright);
             }
             if (min == 0)
             {
                 for (int i = 0; i < sizeof minPierwszaZero / sizeof minPierwszaZero[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaZero[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaZero[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 1)
@@ -86,7 +86,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaJeden / sizeof minPierwszaJeden[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaJeden[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaJeden[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 2)
@@ -94,7 +94,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaDwa / sizeof minPierwszaDwa[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaDwa[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaDwa[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 3)
@@ -102,7 +102,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaTrzy / sizeof minPierwszaTrzy[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaTrzy[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaTrzy[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 4)
@@ -110,7 +110,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaCztery / sizeof minPierwszaCztery[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaCztery[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaCztery[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 5)
@@ -118,7 +118,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaPiec / sizeof minPierwszaPiec[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaPiec[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaPiec[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 6)
@@ -126,7 +126,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaSzejsc / sizeof minPierwszaSzejsc[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaSzejsc[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaSzejsc[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 7)
@@ -134,7 +134,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaSiedem / sizeof minPierwszaSiedem[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaSiedem[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaSiedem[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 8)
@@ -142,7 +142,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaOsiem / sizeof minPierwszaOsiem[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaOsiem[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaOsiem[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (min == 9)
@@ -150,7 +150,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaDziewiec / sizeof minPierwszaDziewiec[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaDziewiec[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaDziewiec[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
         }
@@ -165,7 +165,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaZero / sizeof minPierwszaZero[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaZero[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaZero[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 1)
@@ -173,7 +173,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaJeden / sizeof minPierwszaJeden[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaJeden[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaJeden[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 2)
@@ -181,7 +181,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaDwa / sizeof minPierwszaDwa[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaDwa[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaDwa[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 3)
@@ -189,7 +189,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaTrzy / sizeof minPierwszaTrzy[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaTrzy[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaTrzy[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 4)
@@ -197,7 +197,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaCztery / sizeof minPierwszaCztery[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaCztery[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaCztery[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 5)
@@ -205,7 +205,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaPiec / sizeof minPierwszaPiec[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaPiec[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaPiec[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 6)
@@ -213,7 +213,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaSzejsc / sizeof minPierwszaSzejsc[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaSzejsc[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaSzejsc[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 7)
@@ -221,7 +221,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaSiedem / sizeof minPierwszaSiedem[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaSiedem[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaSiedem[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 8)
@@ -229,7 +229,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaOsiem / sizeof minPierwszaOsiem[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaOsiem[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaOsiem[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (pierwsza == 9)
@@ -237,7 +237,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaDziewiec / sizeof minPierwszaDziewiec[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaDziewiec[i]] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaDziewiec[i]] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             if (druga == 0)
@@ -245,7 +245,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaZero / sizeof minPierwszaZero[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaZero[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaZero[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 1)
@@ -253,7 +253,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaJeden / sizeof minPierwszaJeden[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaJeden[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaJeden[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 2)
@@ -261,7 +261,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaDwa / sizeof minPierwszaDwa[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaDwa[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaDwa[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 3)
@@ -269,7 +269,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaTrzy / sizeof minPierwszaTrzy[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaTrzy[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaTrzy[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 4)
@@ -277,7 +277,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaCztery / sizeof minPierwszaCztery[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaCztery[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaCztery[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 5)
@@ -285,7 +285,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaPiec / sizeof minPierwszaPiec[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaPiec[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaPiec[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 6)
@@ -293,7 +293,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaSzejsc / sizeof minPierwszaSzejsc[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaSzejsc[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaSzejsc[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 7)
@@ -301,7 +301,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaSiedem / sizeof minPierwszaSiedem[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaSiedem[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaSiedem[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 8)
@@ -309,7 +309,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaOsiem / sizeof minPierwszaOsiem[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaOsiem[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaOsiem[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
             else if (druga == 9)
@@ -317,7 +317,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
                 for (int i = 0; i < sizeof minPierwszaDziewiec / sizeof minPierwszaDziewiec[0]; i++)
                 {
                     // int s = ;
-                    matrix[minPierwszaDziewiec[i] + 48] = CHSV(clockColor, sat, clockBright);
+                    matrix[minPierwszaDziewiec[i] + 48] = CHSV(clockColor, sat, chageClockBright);
                 }
             }
         }
@@ -326,7 +326,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
         {
             for (int i = 113; i <= 119; i++)
             {
-                matrix[i] = CHSV(clockColor, sat, clockBright);
+                matrix[i] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 2)
@@ -334,7 +334,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof druga / sizeof druga[0]; i++)
             {
                 // int s = ;
-                matrix[druga[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[druga[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 3)
@@ -342,7 +342,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof trzecia / sizeof trzecia[0]; i++)
             {
                 // int s = ;
-                matrix[trzecia[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[trzecia[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 4)
@@ -350,7 +350,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof czwarta / sizeof czwarta[0]; i++)
             {
                 // int s = ;
-                matrix[czwarta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[czwarta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 5)
@@ -358,7 +358,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof piata / sizeof piata[0]; i++)
             {
                 // int s = ;
-                matrix[piata[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[piata[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 6)
@@ -366,7 +366,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof szusta / sizeof szusta[0]; i++)
             {
                 // int s = ;
-                matrix[szusta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[szusta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 7)
@@ -374,7 +374,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof siudma / sizeof siudma[0]; i++)
             {
                 // int s = ;
-                matrix[siudma[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[siudma[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 8)
@@ -382,7 +382,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof osma / sizeof osma[0]; i++)
             {
                 // int s = ;
-                matrix[osma[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[osma[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 9)
@@ -390,7 +390,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dziewiata / sizeof dziewiata[0]; i++)
             {
                 // int s = ;
-                matrix[dziewiata[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dziewiata[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 10)
@@ -398,7 +398,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dziesiata / sizeof dziesiata[0]; i++)
             {
                 // int s = ;
-                matrix[dziesiata[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dziesiata[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 11)
@@ -406,7 +406,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof jedenasta / sizeof jedenasta[0]; i++)
             {
                 // int s = ;
-                matrix[jedenasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[jedenasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 12)
@@ -414,7 +414,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dwunasta / sizeof dwunasta[0]; i++)
             {
                 // int s = ;
-                matrix[dwunasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dwunasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 13)
@@ -422,7 +422,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof trzynasta / sizeof trzynasta[0]; i++)
             {
                 // int s = ;
-                matrix[trzynasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[trzynasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 14)
@@ -430,7 +430,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof czternasta / sizeof czternasta[0]; i++)
             {
                 // int s = ;
-                matrix[czternasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[czternasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 15)
@@ -438,7 +438,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof pietnasta / sizeof pietnasta[0]; i++)
             {
                 // int s = ;
-                matrix[pietnasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[pietnasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 16)
@@ -446,7 +446,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof szesnasta / sizeof szesnasta[0]; i++)
             {
                 // int s = ;
-                matrix[szesnasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[szesnasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 17)
@@ -454,7 +454,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof siedemnasta / sizeof siedemnasta[0]; i++)
             {
                 // int s = ;
-                matrix[siedemnasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[siedemnasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 18)
@@ -462,7 +462,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof osiemnasta / sizeof osiemnasta[0]; i++)
             {
                 // int s = ;
-                matrix[osiemnasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[osiemnasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 19)
@@ -470,7 +470,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dziewietnasta / sizeof dziewietnasta[0]; i++)
             {
                 // int s = ;
-                matrix[dziewietnasta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dziewietnasta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 20)
@@ -478,7 +478,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dwudziesta / sizeof dwudziesta[0]; i++)
             {
                 // int s = ;
-                matrix[dwudziesta[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dwudziesta[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 21)
@@ -486,7 +486,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dwudziestapierwsza / sizeof dwudziestapierwsza[0]; i++)
             {
                 // int s = ;
-                matrix[dwudziestapierwsza[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dwudziestapierwsza[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 22)
@@ -494,7 +494,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dwudziestadruga / sizeof dwudziestadruga[0]; i++)
             {
                 // int s = ;
-                matrix[dwudziestadruga[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dwudziestadruga[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 23)
@@ -502,7 +502,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof dwudziestatrzecia / sizeof dwudziestatrzecia[0]; i++)
             {
                 // int s = ;
-                matrix[dwudziestatrzecia[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[dwudziestatrzecia[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         else if (hour == 0)
@@ -510,7 +510,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
             for (int i = 0; i < sizeof polnoc / sizeof polnoc[0]; i++)
             {
                 // int s = ;
-                matrix[polnoc[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[polnoc[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
     }
@@ -518,7 +518,7 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
     {
 
         int LedBrightness[]{49, 50, 51, 52, 53, 54, 55, 56, 71, 72, 88, 89, 90, 91, 92, 93, 94, 97, 110, 114, 115, 100, 107, 117, 118, 104, 103};
-        int ClockBrightness[]{77, 65, 62, 50, 51, 52, 53, 54, 56, 71, 73, 88, 89, 90, 91, 92, 93, 94, 97, 110, 114, 115, 100, 107, 117, 118, 104, 103};
+        int chageClockBrightness[]{77, 65, 62, 50, 51, 52, 53, 54, 56, 71, 73, 88, 89, 90, 91, 92, 93, 94, 97, 110, 114, 115, 100, 107, 117, 118, 104, 103};
         int colorName[]{77, 65, 62, 50, 51, 52, 53, 54, 56, 71, 73};
         int speedName[]{77, 65, 62, 50, 51, 59, 68, 74, 73, 71, 56, 54};
         showPercent(percentage);
@@ -526,28 +526,28 @@ void clock(int hour, int min, boolean menu, int menuname, int percent)
         {
             for (int i = 0; i < sizeof LedBrightness / sizeof LedBrightness[0]; i++)
             {
-                matrix[LedBrightness[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[LedBrightness[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         if (menuname == 2)
         {
             for (int i = 0; i < sizeof colorName / sizeof colorName[0]; i++)
             {
-                matrix[colorName[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[colorName[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         if (menuname == 3)
         {
             for (int i = 0; i < sizeof speedName / sizeof speedName[0]; i++)
             {
-                matrix[speedName[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[speedName[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
         if (menuname == 4)
         {
-            for (int i = 0; i < sizeof ClockBrightness / sizeof ClockBrightness[0]; i++)
+            for (int i = 0; i < sizeof chageClockBrightness / sizeof chageClockBrightness[0]; i++)
             {
-                matrix[ClockBrightness[i]] = CHSV(clockColor, sat, clockBright);
+                matrix[chageClockBrightness[i]] = CHSV(clockColor, sat, chageClockBright);
             }
         }
     }
@@ -566,65 +566,64 @@ void showPercent(int value)
     {
         for (int i = 0; i < sizeof procenty1 / sizeof procenty1[0]; i++)
         {
-            matrix[procenty1[i]] = CHSV(255, sat, clockBright);
+            matrix[procenty1[i]] = CHSV(255, sat, chageClockBright);
         }
     }
     if (value == 1)
     {
         for (int i = 0; i < sizeof procenty1 / sizeof procenty1[0]; i++)
         {
-            matrix[procenty1[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty1[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 2)
     {
         for (int i = 0; i < sizeof procenty2 / sizeof procenty2[0]; i++)
         {
-            matrix[procenty2[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty2[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 3)
     {
         for (int i = 0; i < sizeof procenty3 / sizeof procenty3[0]; i++)
         {
-            matrix[procenty3[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty3[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 4)
     {
         for (int i = 0; i < sizeof procenty4 / sizeof procenty4[0]; i++)
         {
-            matrix[procenty4[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty4[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 5)
     {
         for (int i = 0; i < sizeof procenty5 / sizeof procenty5[0]; i++)
         {
-            matrix[procenty5[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty5[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 6)
     {
         for (int i = 0; i < sizeof procenty6 / sizeof procenty6[0]; i++)
         {
-            matrix[procenty6[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty6[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 7)
     {
         for (int i = 0; i < sizeof procenty7 / sizeof procenty7[0]; i++)
         {
-            matrix[procenty7[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty7[i]] = CHSV(125, sat, chageClockBright);
         }
     }
     if (value == 8)
     {
         for (int i = 0; i < sizeof procenty8 / sizeof procenty8[0]; i++)
         {
-            matrix[procenty8[i]] = CHSV(125, sat, clockBright);
+            matrix[procenty8[i]] = CHSV(125, sat, chageClockBright);
         }
     }
 }
-
 #endif

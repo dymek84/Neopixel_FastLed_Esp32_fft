@@ -19,3 +19,5 @@
 #include "objects.h"
 #include "colorsAndPallette.h"
 #include "helperFuction.h"
+
+#include "effects/Enoise.h"

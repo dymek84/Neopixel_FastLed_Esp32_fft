@@ -14,8 +14,8 @@ uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may nee
 
 #define NUM_BANDS 32                               // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 200                                  // Used as a crude noise filter, values below this are ignore
-#define MATRIX_WIDTH 32                            // width of each matrix xres
-#define MATRIX_HEIGHT 8                            // height of each matrix yres
+#define MATRIX_WIDTH 32                            // width of each matrix [xres]-[NUM_COLS]
+#define MATRIX_HEIGHT 8                            // height of each matrix [yres]-[NUM_ROWS]
 #define BAR_WIDTH (MATRIX_WIDTH / (NUM_BANDS - 1)) // If width >= 8 light 1 LED width per bar, >= 16 light 2 LEDs width bar etc
 #define TOP (MATRIX_HEIGHT - 0)                    // Don't allow the bars to go offscreen
 #define SERPENTINE false                           // Set to false if your LEDS are connected end to end, true if serpentine

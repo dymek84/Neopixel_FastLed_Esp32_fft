@@ -26,7 +26,7 @@ void updatePattern(int pat)
     switch (pat)
     {
     case 0:
-        // displayVURainbow();
+        Enoise();
         break;
     case 1:
         //  displayVURainbow();

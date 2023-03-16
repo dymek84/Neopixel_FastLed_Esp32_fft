@@ -17,5 +17,9 @@
 #include "main.ino"
 #include "buttons.ino"
 #include "clock.ino"
+#include "config.h"
+#include "define.h"
+#include "objects.h"
+#include "colorpalettes.h"
 
 #endif

@@ -19,32 +19,9 @@ int counter = 12;          // number of patter to be selected
 int gCurrentPatternNumber = 2;
 //== END ================MENU===================== END ==
 
-Adafruit_NeoMatrix matrix2 = Adafruit_NeoMatrix(32, 8, LED_PIN, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG, NEO_GRB + NEO_KHZ800);
+const int BRIGHTNESS_SETTINGS[3] = {5, 5, 5}; // 3 Integer array for 3 brightness settings (based on pressing+holding BTN_PIN)
 int x2 = matrix2.width();
 int pass = 0;
-
-CRGB blue(0, 0, 255);
-CRGB deep_blue_gatoraide(0, 32, 255);
-CRGB blue_gatoraide(0, 127, 255);
-CRGB cyan(0, 255, 255);
-CRGB aqua(0, 255, 127);
-CRGB electric_mint(0, 255, 32);
-CRGB green(0, 255, 0);
-CRGB electric_lime(32, 255, 0);
-CRGB green_yellow(127, 255, 0);
-CRGB yellow(255, 255, 0);
-CRGB orange(255, 127, 0);
-CRGB electric_pumpkin(255, 32, 0);
-CRGB red(255, 0, 0);
-CRGB deep_pink(255, 0, 32);
-CRGB pink(255, 0, 127);
-CRGB magenta(255, 0, 255);
-CRGB purple(127, 0, 255);
-CRGB deep_purple(32, 0, 255);
-CRGB white(255, 255, 255);
-CRGB orange2(230, 80, 0);
-CRGB black(0, 0, 0);
-CRGB arrayofcolors[]{blue, deep_blue_gatoraide, blue_gatoraide, cyan, aqua, electric_mint, orange2, deep_purple, purple, magenta, pink, deep_pink, red, electric_pumpkin, orange, yellow, green_yellow, electric_lime, green};
 
 //=======================LED STRIPS=============================
 int firstCornerPixelNumber = 0;
@@ -52,13 +29,10 @@ int secondCornerPixelNumber = 255;
 int thirdCornerPixelNumber = 512;
 int fourthCornerPixelNumber = 767;
 
-#define LED_STRIP_PIXELS_AMOUNT 555
 int AllLEDSAmount = LED_STRIP_PIXELS_AMOUNT;
 int halfofPixels = LED_STRIP_PIXELS_AMOUNT / 2;
 uint8_t gHue = 0;
-CRGB strip1[LED_STRIP_PIXELS_AMOUNT]; // Create LED Object
 
-#define strip1_PIN 17 // Blue[1]
 uint16_t pixelCurrent = 0;
 //=======================LED STRIPS=============================
 
@@ -67,10 +41,7 @@ uint16_t pixelCurrent = 0;
 //======================= RTC =============================
 
 //=======================BOUNCING BALLS=============================
-#define GRAVITY -9.81                     // Downward (negative) acceleration of gravity in m/s^2
-#define h0 2                              // Starting height, in meters, of the ball (strip length)
-#define NUM_BALLS 4                       // Number of bouncing balls you want (recommend < 7, but 20 is fun in its own way)
-#define SPEED .20                         // Amount to increment RGB color by each cycle
+
 float h[NUM_BALLS];                       // An array of heights
 float vImpact0 = sqrt(-2 * GRAVITY * h0); // Impact velocity of the ball when it hits the ground if "dropped" from the top of the strip
 float vImpact[NUM_BALLS];                 // As time goes on the impact velocity will change, so make an array to store those values
@@ -95,12 +66,10 @@ char *buttonNames[11] = {
     "Clock Brighness Minus",
     "Clock Brighness Plus",
 };
-#define NUM_LEDS 180
+
 //======================= BUTTONS OPTIONS =============================
 uint8_t electric_pumpkinaaaaaa;
 String currentPatternName = "None";
 
 long delayss = 0;
 long delayEEPROM = 0;
-
-#endif

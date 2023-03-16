@@ -17,16 +17,58 @@
 
 void nextPattern()
 {
-    gCurrentPatternNumber == 7 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
+    // gCurrentPatternNumber == 7 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
     FastLED.clear();
 }
 
-void updatePattern(int pat)
+void updatePatternMatrix(int pat)
 { // call the pattern currently being created
     switch (pat)
     {
     case 0:
-        Enoise();
+        Enoise(MATRIXLEDS);
+        break;
+    case 1:
+        //  displayVURainbow();
+        break;
+    case 2:
+        //  displayVU();
+        break;
+    case 3:
+        //  bpm();
+        break;
+    case 4:
+        // displayVUWhite();
+        break;
+    case 5:
+        //   rainbow();
+        break;
+    case 6:
+        //    test();
+        break;
+    case 7:
+        //    test2();
+        break;
+    case 8:
+
+        break;
+    case 9:
+
+        break;
+    case 10:
+
+        break;
+    case 11:
+
+        break;
+    }
+}
+void updatePatternStripe(int pat)
+{ // call the pattern currently being created
+    switch (pat)
+    {
+    case 0:
+        Enoise(STRIPELEDS);
         break;
     case 1:
         //  displayVURainbow();
@@ -158,12 +200,12 @@ void bpm()
 void setup()
 {
     Serial.begin(115200);
-
+    Serial.println("start");
     FastLED.addLeds<CHIPSET, LED_PIN_MATRIX, COLOR_ORDER>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
     FastLED.addLeds<CHIPSET, LED_PIN_STRIPE, COLOR_ORDER>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalLEDStrip);
 
     FastLED.setBrightness(255);
-    Serial.println("start");
+
     //   Wire.begin();
     pinMode(AUDIO_IN_PIN, INPUT);
     Serial.println("setup done");
@@ -173,17 +215,24 @@ void loop()
 {
 
     EVERY_N_MILLISECONDS(500) { colorTimer++; }
-
+    EVERY_N_SECONDS(5)
+    {
+        gCurrentPaletteNumber = addmod8(gCurrentPaletteNumber, 1, gGradientPaletteCount);
+        gTargetPalette = gGradientPalettes[gCurrentPaletteNumber];
+    }
+    EVERY_N_MILLISECONDS(40)
+    {
+        nblendPaletteTowardPalette(gCurrentPalette, gTargetPalette, 16);
+    }
     EVERY_N_SECONDS(20)
     {
         nextPattern();
 
         Serial.print(currentPatternName);
         Serial.print(" - number: ");
-        Serial.print(gCurrentPatternNumber);
-        Serial.print(" - TOTAL: ");
-        Serial.println("16");
+        Serial.println(gCurrentPatternNumber);
 
     } // change patterns periodically
-    updatePattern(gCurrentPatternNumber);
+    updatePatternMatrix(gCurrentPatternNumber);
+    updatePatternStripe(gCurrentPatternNumber);
 }

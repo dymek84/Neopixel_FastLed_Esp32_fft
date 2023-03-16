@@ -26,7 +26,7 @@ uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may nee
 
 /*                     matrix - stripe                     */
 
-#define LED_PIN_STRIPE 15 // Data pin to stripe
+#define LED_PIN_STRIPE 16 // Data pin to stripe
 #define NUM_LEDS_MATRIX (MATRIX_WIDTH * MATRIX_HEIGHT)
 #define NUM_LEDS_STRIPE 1200
 #define LED_PIN_MATRIX 23 // Data pin to matrix
@@ -60,7 +60,7 @@ int counter = 12;          // number of patter to be selected
 
 long patternInterval = 20000;
 long previousMillis = 0;
-int gCurrentPatternNumber = 2;
+int gCurrentPatternNumber = 0;
 //== END ================MENU===================== END ==
 
 const int BRIGHTNESS_SETTINGS[3] = {5, 5, 5}; // 3 Integer array for 3 brightness settings (based on pressing+holding BTN_PIN)
@@ -139,3 +139,9 @@ uint8_t colorTimer = 0;
 int Intensity[32] = {}; // initialize Frequency Intensity to zero
 int Displacement = 1;
 uint8_t userColor = 0;
+uint8_t gCurrentPaletteNumber = 0;
+
+typedef enum
+{    MATRIXLEDS = 1,
+    STRIPELEDS = 0
+} ledTypeConnected;

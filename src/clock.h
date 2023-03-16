@@ -1,6 +1,5 @@
 
-#ifndef _CLOCK_INO__
-#define _CLOCK_INO__
+#pragma once
 
 #include "Imports.h"
 
@@ -626,4 +625,3 @@ void showPercent(int value)
         }
     }
 }
-#endif

@@ -136,6 +136,6 @@ uint8_t strobeStatus = 0;
 uint16_t strobeRate = 50;
 
 uint8_t colorTimer = 0;
-int Intensity[6] = {}; // initialize Frequency Intensity to zero
+int Intensity[32] = {}; // initialize Frequency Intensity to zero
 int Displacement = 1;
 uint8_t userColor = 0;

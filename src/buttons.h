@@ -1,7 +1,4 @@
-
-
-#ifndef _BUTTONS_INO__
-#define _BUTTONS_INO__
+#pragma once
 
 #include "Imports.h"
 
@@ -243,4 +240,3 @@ void buttons()
         delayss = millis();
     }
 }
-#endif

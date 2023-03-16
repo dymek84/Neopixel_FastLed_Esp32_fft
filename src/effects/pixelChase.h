@@ -1,4 +1,8 @@
 
+#pragma once
+
+#include "Imports.h"
+
 // A bunch of variables
 int playerIndex = -1;
 int playerIndexTrail = -1;
@@ -31,7 +35,7 @@ void pixelChase()
     if (countdown > millis())
     {
 
-        showAllStrips();
+        FastLED.show();
         return;
     }
     Serial.println(" 4 ");
@@ -39,38 +43,38 @@ void pixelChase()
     DisplayPlayer();
     Serial.println(" 5 ");
     // This sends the updated pixel color to the hardware.
-    showAllStrips();
+    FastLED.show();
     Serial.println(" 6 ");
 }
 
 // Clear the level, setting all pixels to black
 void ClearLevel()
 {
-    for (int i = 0; i < allPixelsAmount; i++)
-        SetMyLED(i, pixels.Color(0, 0, 0)); // Moderately bright green color.
+    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
+        stripe[i] = CRGB(0, 0, 0); // Moderately bright green color.
 
-    showAllStrips();
+    FastLED.show();
 }
 
 // Show the best score in yellow and if the last score was less than the best, show that on top in red
 void BestScore()
 {
     // Best score in yellow
-    for (int i = 0; i < allPixelsAmount; i++)
+    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
     {
         if (i < bestScore)
-            SetMyLED(i, pixels.Color(255, 155, 0)); // Moderately bright green color.
+            stripe[i] = CRGB(255, 155, 0); // Moderately bright green color.
         else
-            SetMyLED(i, pixels.Color(0, 0, 0));
+            stripe[i] = CRGB(0, 0, 0);
     }
 
     // last score is less than best is in red
     if (lastScore < bestScore)
     {
         for (int i = 0; i < lastScore; i++)
-            SetMyLED(i, pixels.Color(255, 0, 0)); // Moderately bright green color.
+            stripe[i] = CRGB(255, 0, 0); // Moderately bright green color.
     }
-    showAllStrips();
+    FastLED.show();
 }
 
 // Game over animation
@@ -80,17 +84,17 @@ void GameOver()
     int a = enemyIndex;
     int b = enemyIndex;
 
-    for (int i = 0; i < allPixelsAmount / 2; i++)
+    for (int i = 0; i < NUM_LEDS_STRIPE / 2; i++)
     {
-        SetMyLED(a, pixels.Color(255, 0, 0)); // Moderately bright green color.
-        SetMyLED(b, pixels.Color(255, 0, 0)); // Moderately bright green color.
+        stripe[a] = CRGB(255, 0, 0); // Moderately bright green color.
+        stripe[b] = CRGB(255, 0, 0); // Moderately bright green color.
 
-        a = (a + 1) % allPixelsAmount;
+        a = (a + 1) % NUM_LEDS_STRIPE;
         b--;
         if (b == -1)
-            b = allPixelsAmount;
+            b = NUM_LEDS_STRIPE;
 
-        showAllStrips();
+        FastLED.show();
         delay(20);
     }
 
@@ -100,17 +104,17 @@ void GameOver()
     a = enemyIndex;
     b = enemyIndex;
 
-    for (int i = 0; i < allPixelsAmount / 2; i++)
+    for (int i = 0; i < NUM_LEDS_STRIPE / 2; i++)
     {
-        SetMyLED(a, pixels.Color(0, 0, 0)); // Black
-        SetMyLED(b, pixels.Color(0, 0, 0)); // Black
+        stripe[a] = CRGB(0, 0, 0); // Black
+        stripe[b] = CRGB(0, 0, 0); // Black
 
-        a = (a + 1) % allPixelsAmount;
+        a = (a + 1) % NUM_LEDS_STRIPE;
         b--;
         if (b == -1)
-            b = allPixelsAmount;
+            b = NUM_LEDS_STRIPE;
 
-        showAllStrips();
+        FastLED.show();
         delay(20);
     }
 
@@ -129,30 +133,30 @@ void SetLevel()
         // I fthe player not playing, always start the enemy at the half strip position
         if (playerIndex < 0)
         {
-            enemyIndex = allPixelsAmount / 2;
+            enemyIndex = NUM_LEDS_STRIPE / 2;
         }
         // The player is in the game, so make sure not to place the enemy on or too close to the player
         else
         {
-            enemyIndex = random(0, allPixelsAmount);
+            enemyIndex = random(0, NUM_LEDS_STRIPE);
 
-            while (abs(enemyIndex - playerIndex) < (allPixelsAmount / 4))
-                enemyIndex = random(0, allPixelsAmount);
+            while (abs(enemyIndex - playerIndex) < (NUM_LEDS_STRIPE / 4))
+                enemyIndex = random(0, NUM_LEDS_STRIPE);
         }
     }
     // If the coin position is -1 (has been reset)
     // Find a new position for the coin
     if (coinIndex < 0)
     {
-        coinIndex = random(0, allPixelsAmount);
+        coinIndex = random(0, NUM_LEDS_STRIPE);
 
         // pick a coin position somewhere between the player and enemy
         while (abs(coinIndex - playerIndex) < 7 || (abs(coinIndex - enemyIndex) < 7))
-            coinIndex = random(0, allPixelsAmount);
+            coinIndex = random(0, NUM_LEDS_STRIPE);
     }
 
-    SetMyLED(enemyIndex, pixels.Color(255, 0, 0));
-    SetMyLED(coinIndex, pixels.Color(255, 255, 0));
+    stripe[enemyIndex] = CRGB(255, 0, 0);
+    stripe[coinIndex] = CRGB(255, 255, 0);
 }
 
 // This is where all the magic happens
@@ -166,11 +170,11 @@ void DisplayPlayer()
 
         // The player has a visual trail, so these next 2 if statements shows or clears the trail
         if (playerIndexTrail >= 0)
-            SetMyLED(playerIndexTrail, pixels.Color(0, 0, 0));
+            stripe[playerIndexTrail] = CRGB(0, 0, 0);
 
         if (playerIndex >= 0)
         {
-            SetMyLED(playerIndex, pixels.Color(0, 100, 0));
+            stripe[playerIndex] = CRGB(0, 100, 0);
             playerIndexTrail = playerIndex;
         }
 
@@ -179,11 +183,11 @@ void DisplayPlayer()
 
         // Wrap the player at the strip edges
         if (playerIndex < 0)
-            playerIndex = allPixelsAmount - 1;
-        else if (playerIndex == allPixelsAmount)
+            playerIndex = NUM_LEDS_STRIPE - 1;
+        else if (playerIndex == NUM_LEDS_STRIPE)
             playerIndex = 0;
 
-        SetMyLED(playerIndex, pixels.Color(0, 255, 0));
+        stripe[playerIndex] = CRGB(0, 255, 0);
 
         // Did the player hit the coin?
         // If so, increase the score, reset coin and enemy positions and clear the level
@@ -196,7 +200,7 @@ void DisplayPlayer()
             score++;
             currentPlayerSpeed = constrain(currentPlayerSpeed - 10, 50, 150);
             ClearLevel();
-            SetMyLED(playerIndex, pixels.Color(0, 255, 0));
+            stripe[playerIndex] = CRGB(0, 255, 0);
         }
         // Did the player hit the enemy?
         // Set the last/best score and call game over

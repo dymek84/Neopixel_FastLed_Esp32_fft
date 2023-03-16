@@ -1,16 +1,20 @@
+
+
+#pragma once
+
+#include "Imports.h"
+
 void rainbow()
 {
     unsigned long currentMillis = millis(); // Start of sample window
     if (currentMillis - previousMillis > patternInterval)
     {
-        for (uint16_t i = 0; i < allPixelsAmount; i++)
+        for (uint16_t i = 0; i < NUM_LEDS_STRIPE; i++)
         {
-            SetMyLED(i, Wheel((i + pixelCycle) & 255)); //  Update delay time
+            stripe[i] = CRGB((i + gHue) & 255); //  Update delay time
         }
-        showAllStrips(); //  Update strip to match
-        pixelCycle++;    //  Advance current cycle
-        if (pixelCycle >= 256)
-            pixelCycle = 0;             //  Loop the cycle back to the begining
+        FastLED.show(); //  Update strip to match
+                        //  Loop the cycle back to the begining
         previousMillis = currentMillis; // time for next change to the display
     }
 }

@@ -1,17 +1,22 @@
 
+#pragma once
+
+#include "Imports.h"
+int pixelQueue = 0; // Pattern Pixel Queue
+int pixelCycle = 0; // Pattern Pixel Cycle
 long delayTC = 0;
 void theaterChaseRainbow()
 {
     if (millis() - delayTC > patternInterval)
     {
-        for (int i = 0; i < allPixelsAmount; i += 3)
+        for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
         {
-            SetMyLED(i + pixelQueue, Wheel((i + pixelCycle) % 255)); //  Update delay time
+            stripe[i + pixelQueue] = CHSV((i + pixelCycle) % 255, 255, 255); //  Update delay time
         }
-        showAllStrips();
-        for (int i = 0; i < allPixelsAmount; i += 3)
+        FastLED.show();
+        for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
         {
-            SetMyLED(i + pixelQueue, 0, 0, 0); //  Update delay time
+            stripe[i + pixelQueue] = (0, 0, 0); //  Update delay time
         }
         pixelQueue++; //  Advance current queue
         pixelCycle++; //  Advance current cycle

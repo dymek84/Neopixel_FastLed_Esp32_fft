@@ -1,9 +1,15 @@
+
+
+#pragma once
+
+#include "Imports.h"
+
 uint32_t currentBg = random(256);
 uint32_t nextBg = currentBg;
 int colorripple;
 int center = 0;
 int step = -1;
-int mapFade = map(COLORS, 0, 255, 1, 9);
+int mapFade = map(userColor, 0, 255, 1, 9);
 float fadeRate = mapFade * 0.1;
 int maxSteps = halfofPixels * fadeRate;
 
@@ -18,7 +24,7 @@ int diff2;
 
 void ripple()
 {
-    mapFade = map(COLORS, 0, 255, 90, 100);
+    mapFade = map(userColor, 0, 255, 90, 100);
     fadeRate = mapFade * 0.01;
 
     if (millis() - previousMillis > patternInterval)
@@ -37,7 +43,7 @@ void ripple()
         }
         for (uint16_t l = 0; l < halfofPixels; l++)
         {
-            SetRightStripe(l, Wheel(currentBg, 0.1));
+            SetRightStripe(l, currentBg);
         }
 
         if (step == -1)
@@ -49,7 +55,7 @@ void ripple()
 
         if (step == 0)
         {
-            SetRightStripe(center, Wheel(colorripple, 1));
+            SetRightStripe(center, colorripple);
             step++;
         }
         else
@@ -58,12 +64,12 @@ void ripple()
             {
                 //  Serial.println(pow(fadeRate, step));
 
-                SetRightStripe(wrap(center + step), Wheel(colorripple, pow(fadeRate, step)));
-                SetRightStripe(wrap(center - step), Wheel(colorripple, pow(fadeRate, step)));
+                SetRightStripe(wrap(center + step), colorripple);
+                SetRightStripe(wrap(center - step), colorripple);
                 if (step > 3)
                 {
-                    SetRightStripe(wrap(center + step - 3), Wheel(colorripple, pow(fadeRate, step - 2)));
-                    SetRightStripe(wrap(center - step + 3), Wheel(colorripple, pow(fadeRate, step - 2)));
+                    SetRightStripe(wrap(center + step - 3), colorripple);
+                    SetRightStripe(wrap(center - step + 3), colorripple);
                 }
                 step++;
             }
@@ -86,7 +92,7 @@ void ripple()
         }
         for (uint16_t l = 0; l < halfofPixels; l++)
         {
-            SetLeftStripe(l, Wheel(currentBg2, 0.1));
+            SetLeftStripe(l, currentBg2);
         }
 
         if (step2 == -1)
@@ -98,7 +104,7 @@ void ripple()
 
         if (step2 == 0)
         {
-            SetLeftStripe(center2, Wheel(colorripple2, 1));
+            SetLeftStripe(center2, colorripple2);
             step2++;
         }
         else
@@ -107,12 +113,12 @@ void ripple()
             {
                 //  Serial.println(pow(fadeRate, step));
 
-                SetLeftStripe(wrap(center2 + step2), Wheel(colorripple2, pow(fadeRate, step2)));
-                SetLeftStripe(wrap(center2 - step2), Wheel(colorripple2, pow(fadeRate, step2)));
+                SetLeftStripe(wrap(center2 + step2), colorripple2);
+                SetLeftStripe(wrap(center2 - step2), colorripple2);
                 if (step > 3)
                 {
-                    SetLeftStripe(wrap(center2 + step2 - 3), Wheel(colorripple2, pow(fadeRate, step2 - 2)));
-                    SetLeftStripe(wrap(center2 - step2 + 3), Wheel(colorripple2, pow(fadeRate, step2 - 2)));
+                    SetLeftStripe(wrap(center2 + step2 - 3), colorripple2);
+                    SetLeftStripe(wrap(center2 - step2 + 3), colorripple2);
                 }
                 step2++;
             }
@@ -121,7 +127,7 @@ void ripple()
                 step2 = -1;
             }
         }
-        showAllStrips();
+        FastLED.show();
         previousMillis = millis();
     }
 }

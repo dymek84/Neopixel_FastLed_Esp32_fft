@@ -14,46 +14,6 @@
 |  O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O O  |
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
-int Intensity[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Tenemos 16 bandas
-void setup()
-{
-    Serial.begin(115200);
-
-    FastLED.addLeds<CHIPSET, LED_PIN_MATRIX, COLOR_ORDER>(matrix, NUM_LED_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
-    FastLED.addLeds<CHIPSET, LED_PIN_STRIPE, COLOR_ORDER>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalLEDStrip);
-
-    FastLED.setBrightness(255);
-    Serial.println("start");
-    //   Wire.begin();
-    pinMode(AUDIO_IN_PIN, INPUT);
-
-    matrix2.begin();
-    matrix2.setTextWrap(false);
-    matrix2.setBrightness(100);
-    matrix2.setTextColor(electric_pumpkinaaaaaa);
-    // scrollText();
-
-    Serial.println("setup done");
-}
-
-void loop()
-{
-
-    EVERY_N_MILLISECONDS(500) { colorTimer++; }
-
-    EVERY_N_SECONDS(20)
-    {
-        nextPattern();
-
-        Serial.print(currentPatternName);
-        Serial.print(" - number: ");
-        Serial.print(gCurrentPatternNumber);
-        Serial.print(" - TOTAL: ");
-        Serial.println("16");
-
-    } // change patterns periodically
-    updatePattern(gCurrentPatternNumber);
-}
 
 void nextPattern()
 {
@@ -104,28 +64,6 @@ void updatePattern(int pat)
     }
 }
 
-void scrollText()
-{
-    uint16_t color = 255;
-    for (int i = 0; i < 80; i++)
-    {
-
-        matrix2.fillScreen(0); // Turn off all the LEDs
-        matrix2.setCursor(x2, 0);
-        matrix2.print(F("Welcome Emiel"));
-        if (--x2 < -80)
-        {
-            x2 = matrix2.width();
-            if (++pass >= 8)
-                pass = 0;
-            matrix2.setTextColor(color);
-        }
-        matrix2.show();
-        delay(20);
-    }
-    delay(1000);
-}
-
 void displayVUWhite()
 {
     currentPatternName = "VuWhite";
@@ -149,7 +87,7 @@ void displayVURainbow()
     }
     FastLED.show();
 }
-void displayUpdate(int bright)
+void displayUpdate()
 {
     int color = 0;
     for (int i = 0; i < MATRIX_WIDTH; i++)
@@ -215,4 +153,37 @@ void bpm()
         stripe[i] = ColorFromPalette(palette, gHue + (i * 2), beat - gHue + (i * 10));
     }
     FastLED.show();
+}
+
+void setup()
+{
+    Serial.begin(115200);
+
+    FastLED.addLeds<CHIPSET, LED_PIN_MATRIX, COLOR_ORDER>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
+    FastLED.addLeds<CHIPSET, LED_PIN_STRIPE, COLOR_ORDER>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalLEDStrip);
+
+    FastLED.setBrightness(255);
+    Serial.println("start");
+    //   Wire.begin();
+    pinMode(AUDIO_IN_PIN, INPUT);
+    Serial.println("setup done");
+}
+
+void loop()
+{
+
+    EVERY_N_MILLISECONDS(500) { colorTimer++; }
+
+    EVERY_N_SECONDS(20)
+    {
+        nextPattern();
+
+        Serial.print(currentPatternName);
+        Serial.print(" - number: ");
+        Serial.print(gCurrentPatternNumber);
+        Serial.print(" - TOTAL: ");
+        Serial.println("16");
+
+    } // change patterns periodically
+    updatePattern(gCurrentPatternNumber);
 }

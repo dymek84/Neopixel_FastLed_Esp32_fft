@@ -1,3 +1,9 @@
+
+
+#pragma once
+
+#include "Imports.h"
+
 /*uint32_t currentBg = random(256);
 uint32_t nextBg = currentBg;
 int colorripple;
@@ -33,7 +39,7 @@ void ripple()
         }
         for (uint16_t l = 0; l < NUM_LEDS; l++)
         {
-            SetRightStripe(l, Wheel(currentBg, 0.1));
+            SetRightStripe(l] = CRGB(currentBg, 0.1));
         }
 
         if (step == -1)
@@ -45,7 +51,7 @@ void ripple()
 
         if (step == 0)
         {
-            SetRightStripe(center, Wheel(colorripple, 1));
+            SetRightStripe(center] = CRGB(colorripple, 1));
             step++;
         }
         else
@@ -54,12 +60,12 @@ void ripple()
             {
                 //  Serial.println(pow(fadeRate, step));
 
-                SetRightStripe(wrap(center + step), Wheel(colorripple, pow(fadeRate, step)));
-                SetRightStripe(wrap(center - step), Wheel(colorripple, pow(fadeRate, step)));
+                SetRightStripe(wrap(center + step)] = CRGB(colorripple, pow(fadeRate, step)));
+                SetRightStripe(wrap(center - step)] = CRGB(colorripple, pow(fadeRate, step)));
                 if (step > 3)
                 {
-                    SetRightStripe(wrap(center + step - 3), Wheel(colorripple, pow(fadeRate, step - 2)));
-                    SetRightStripe(wrap(center - step + 3), Wheel(colorripple, pow(fadeRate, step - 2)));
+                    SetRightStripe(wrap(center + step - 3)] = CRGB(colorripple, pow(fadeRate, step - 2)));
+                    SetRightStripe(wrap(center - step + 3)] = CRGB(colorripple, pow(fadeRate, step - 2)));
                 }
                 step++;
             }
@@ -82,7 +88,7 @@ void ripple()
         }
         for (uint16_t l = 0; l < NUM_LEDS; l++)
         {
-            SetLeftStripe(l, Wheel(currentBg2, 0.1));
+            SetLeftStripe(l] = CRGB(currentBg2, 0.1));
         }
 
         if (step2 == -1)
@@ -94,7 +100,7 @@ void ripple()
 
         if (step2 == 0)
         {
-            SetLeftStripe(center2, Wheel(colorripple2, 1));
+            SetLeftStripe(center2] = CRGB(colorripple2, 1));
             step2++;
         }
         else
@@ -103,12 +109,12 @@ void ripple()
             {
                 //  Serial.println(pow(fadeRate, step));
 
-                SetLeftStripe(wrap(center2 + step2), Wheel(colorripple2, pow(fadeRate2, step2)));
-                SetLeftStripe(wrap(center2 - step2), Wheel(colorripple2, pow(fadeRate2, step2)));
+                SetLeftStripe(wrap(center2 + step2)] = CRGB(colorripple2, pow(fadeRate2, step2)));
+                SetLeftStripe(wrap(center2 - step2)] = CRGB(colorripple2, pow(fadeRate2, step2)));
                 if (step > 3)
                 {
-                    SetLeftStripe(wrap(center2 + step2 - 3), Wheel(colorripple2, pow(fadeRate2, step2 - 2)));
-                    SetLeftStripe(wrap(center2 - step2 + 3), Wheel(colorripple2, pow(fadeRate2, step2 - 2)));
+                    SetLeftStripe(wrap(center2 + step2 - 3)] = CRGB(colorripple2, pow(fadeRate2, step2 - 2)));
+                    SetLeftStripe(wrap(center2 - step2 + 3)] = CRGB(colorripple2, pow(fadeRate2, step2 - 2)));
                 }
                 step2++;
             }
@@ -117,7 +123,7 @@ void ripple()
                 step2 = -1;
             }
         }
-        showAllStrips();
+        FastLED.show();
         previousMillis = millis();
     }
 }

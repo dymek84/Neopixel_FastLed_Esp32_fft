@@ -1,24 +1,31 @@
 
+#pragma once
 
-static boolean blink = false;
+#include "Imports.h"
+/*
+static bool blink = false;
 int aaaaaa = 0;
 int asdf = 0;
 int fase = 1;
 int myRandom;
 long timepass = 0;
-int randmsColors[12];
-boolean shuffle = true;
+CRGB randmsColors[12];
+bool shuffle = true;
 int slowDown = 20;
-
+bool button1Pressed, button2Pressed;
 void randomGame()
 {
+    for (uint8_t i = 0; i < 12; i++)
+    {
+        randmsColors[i] = i * 21.33;
+    }
 
     if (button1Pressed)
     {
         fase = 1;
         shuffle = true;
         button1Pressed = false;
-        AllOff();
+        FastLED.clear();
     }
     if (button2Pressed)
     {
@@ -51,28 +58,11 @@ void selectStripeFase()
         shuffleColors();
         shuffle = false;
     }
-    showAllStrips();
+    FastLED.show();
     // AllOff();
-    for (int i = 0; i < longstrip / 2; i++)
+    for (int i = 0; i < NUM_LEDS_STRIPE / 2; i++)
     {
-        pixels.setPixelColor(i + longstrip / 4 + 1, colors[randmsColors[1]]);
-        strip11.setPixelColor(i + longstrip / 4 + 1, colors[randmsColors[2]]);
-    }
-    for (int i = 0; i < shortstrip / 2; i++)
-    {
-        strip1.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[3]]);
-        strip2.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[4]]);
-        strip3.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[5]]);
-        strip4.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[6]]);
-        strip7.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[7]]);
-        strip8.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[8]]);
-        strip9.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[9]]);
-        strip10.setPixelColor(i + shortstrip / 4 + 1, colors[randmsColors[10]]);
-    }
-    for (int i = 0; i < longerstrip / 2; i++)
-    {
-        strip5.setPixelColor(i + longerstrip / 4 + 1, colors[randmsColors[11]]);
-        strip6.setPixelColor(i + longerstrip / 4 + 1, colors[randmsColors[0]]);
+        stripe[i + NUM_LEDS_STRIPE] =  randmsColors[1]);
     }
 }
 void randomFase()
@@ -134,7 +124,7 @@ void winnerFase()
             else
             {
                 AllOff();
-                showAllStrips();
+                FastLED.show();
             }
             blink = !blink;
             timepass = millis();
@@ -151,7 +141,7 @@ void setStripe(int stripeNumber)
     // AllOff();
     if (stripeNumber == 1)
     {
-        for (int i = 0; i < longstrip; i++)
+        for (int i = 0; i < NUM_LEDS_STRIPE; i++)
         {
             pixels.setPixelColor(i, colors[randmsColors[0]]);
         }
@@ -283,7 +273,7 @@ void setStripe(int stripeNumber)
     }
     if (stripeNumber == 12)
     {
-        for (int i = 0; i < longstrip; i++)
+        for (int i = 0; i < NUM_LEDS_STRIPE; i++)
         {
             strip11.setPixelColor(i, colors[randmsColors[11]]);
         }
@@ -293,7 +283,7 @@ void setStripe(int stripeNumber)
         strip11.clear();
         strip11.show();
     }
-    showAllStrips();
+    FastLED.show();
 }
 void shuffleColors()
 {
@@ -316,3 +306,5 @@ void shuffleColors()
         randmsColors[i] = newRand[i];
     }
 }
+
+*/

@@ -73,3 +73,23 @@ String currentPatternName = "None";
 
 long delayss = 0;
 long delayEEPROM = 0;
+
+unsigned int sampling_period_us;
+byte peak[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BANDS
+int oldBarHeights[MATRIX_WIDTH];
+int bandValues[MATRIX_WIDTH];
+double vReal[SAMPLES];
+double vImag[SAMPLES];
+unsigned long newTime;
+
+// Button stuff
+int buttonPushCounter = 0;
+bool autoChangePatterns = false;
+
+int barMode = 0;
+
+uint8_t mode = 0;
+uint8_t strobeStatus = 0;
+uint16_t strobeRate = 50;
+
+uint8_t colorTimer = 0;

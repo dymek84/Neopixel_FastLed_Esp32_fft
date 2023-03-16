@@ -1,7 +1,6 @@
 
+#pragma once
 
-#ifndef _IMPORTS_INO__
-#define _IMPORTS_INO__
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
@@ -14,12 +13,9 @@
 // #include "effects/pixelChase.cpp"
 // #include "effects/rainbow.h"
 
-#include "main.ino"
-#include "buttons.ino"
-#include "clock.ino"
+// #include "buttons.ino"
+// #include "clock.ino"
 #include "config.h"
 #include "define.h"
 #include "objects.h"
-#include "colorpalettes.h"
-
-#endif
+#include "colorsAndPallette.h"

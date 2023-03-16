@@ -12,7 +12,6 @@ uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may nee
 #define COLOR_ORDER GRB     // If colours look wrong, play with this
 #define CHIPSET WS2812B     // LED strip type
 
-const int BRIGHTNESS_SETTINGS[3] = {5, 5, 5};      // 3 Integer array for 3 brightness settings (based on pressing+holding BTN_PIN)
 #define NUM_BANDS 32                               // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 200                                  // Used as a crude noise filter, values below this are ignore
 #define MATRIX_WIDTH 32                            // width of each matrix xres

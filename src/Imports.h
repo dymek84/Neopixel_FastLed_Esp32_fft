@@ -2,7 +2,6 @@
 
 #ifndef _IMPORTS_INO__
 #define _IMPORTS_INO__
-#include "Defin_Config_Objects.h"
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>

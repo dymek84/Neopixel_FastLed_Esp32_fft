@@ -64,7 +64,6 @@ int gCurrentPatternNumber = 2;
 //== END ================MENU===================== END ==
 
 const int BRIGHTNESS_SETTINGS[3] = {5, 5, 5}; // 3 Integer array for 3 brightness settings (based on pressing+holding BTN_PIN)
-int x2 = AdafruitMatrix.width();
 int pass = 0;
 
 //=======================LED STRIPS=============================
@@ -97,7 +96,7 @@ float COR[NUM_BALLS];                     // Coefficient of Restitution (bounce 
 
 //======================= BUTTONS OPTIONS =============================
 int buttonsValues[11][2] = {{86, 95}, {126, 134}, {194, 205}, {162, 173}, {332, 342}, {507, 512}, {678, 684}, {842, 856}, {927, 934}, {998, 1006}, {1018, 1023}};
-char *buttonNames[11] = {
+String buttonNames[11] = {
     "Select",
     "Pattern Minus",
     "Pattern Plus",

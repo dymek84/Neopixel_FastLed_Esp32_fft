@@ -27,4 +27,4 @@
 #include "effects/ripple.h"
 #include "effects/pacifica.h"
 #include "effects/salut.h"
-#include "effects/laser.h"
+#include "effects/plasma.h"

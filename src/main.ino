@@ -263,7 +263,15 @@ void updatePatternStripe(int pat)
         pacifica_loop();
         break;
     case 6:
-        //    test();
+        EVERY_N_MILLISECONDS(20)
+        {
+            fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64);
+            FOR_j(1, 5)
+            {
+                salut(j);
+            }
+            FastLED.show();
+        }
         break;
     case 7:
         //    test2();
@@ -440,5 +448,5 @@ void loop()
 
     } // change patterns periodically
     updatePatternMatrix(0);
-    updatePatternStripe(5);
+    updatePatternStripe(6);
 }

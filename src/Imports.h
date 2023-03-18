@@ -19,5 +19,12 @@
 #include "objects.h"
 #include "colorsAndPallette.h"
 #include "helperFuction.h"
+#include "audioProcess.h"
+#include "AudioPatternsMatrix.h"
+#include "AudioPatternsStripe.h"
 
 #include "effects/Enoise.h"
+#include "effects/ripple.h"
+#include "effects/pacifica.h"
+#include "effects/salut.h"
+#include "effects/laser.h"

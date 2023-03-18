@@ -18,7 +18,7 @@ void Enoise(ledTypeConnected whichLeds)
     {
       uint16_t pixelHue = inoise16((uint32_t)x * 5000, (uint32_t)y * 5000 + ms * 10, ms * 20);
       uint8_t pixelHue8 = inoise8(x * 15, y * 15 + ms / 8, ms / 70);
-      matrix[XY(x, y)] = ColorFromPalette(gCurrentPalette, pixelHue8 + ms / 20, 255, LINEARBLEND);
+      matrix[XY(x, y)] = ColorFromPalette(currentPalette, pixelHue8 + ms / 20, 255, LINEARBLEND);
     }
   }
 

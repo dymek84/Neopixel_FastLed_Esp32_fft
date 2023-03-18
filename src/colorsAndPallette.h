@@ -2,29 +2,6 @@
 
 #include "Imports.h"
 
-CRGB blue(0, 0, 255);
-CRGB deep_blue_gatoraide(0, 32, 255);
-CRGB blue_gatoraide(0, 127, 255);
-CRGB cyan(0, 255, 255);
-CRGB aqua(0, 255, 127);
-CRGB electric_mint(0, 255, 32);
-CRGB green(0, 255, 0);
-CRGB electric_lime(32, 255, 0);
-CRGB green_yellow(127, 255, 0);
-CRGB yellow(255, 255, 0);
-CRGB orange(255, 127, 0);
-CRGB electric_pumpkin(255, 32, 0);
-CRGB red(255, 0, 0);
-CRGB deep_pink(255, 0, 32);
-CRGB pink(255, 0, 127);
-CRGB magenta(255, 0, 255);
-CRGB purple(127, 0, 255);
-CRGB deep_purple(32, 0, 255);
-CRGB white(255, 255, 255);
-CRGB orange2(230, 80, 0);
-CRGB black(0, 0, 0);
-CRGB arrayofcolors[]{blue, deep_blue_gatoraide, blue_gatoraide, cyan, aqua, electric_mint, orange2, deep_purple, purple, magenta, pink, deep_pink, red, electric_pumpkin, orange, yellow, green_yellow, electric_lime, green};
-
 DEFINE_GRADIENT_PALETTE(purple_gp){0, 0, 212, 255,         // blue
                                    255, 179, 0, 255};      // purple
 DEFINE_GRADIENT_PALETTE(outrun_gp){0, 141, 0, 100,         // purple
@@ -40,10 +17,6 @@ DEFINE_GRADIENT_PALETTE(redyellow_gp){0, 200, 200, 200,    // white
                                       128, 231, 0, 0,      // red
                                       192, 255, 218, 0,    // yellow
                                       255, 200, 200, 200}; // white
-CRGBPalette16 purplePal = purple_gp;
-CRGBPalette16 outrunPal = outrun_gp;
-CRGBPalette16 greenbluePal = greenblue_gp;
-CRGBPalette16 heatPal = redyellow_gp;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// PALETTES
@@ -185,25 +158,6 @@ DEFINE_GRADIENT_PALETTE(cmy_gp){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// PALETTES END
 
-CRGBPalette16 palette1 = YlOrBr_03_gp;
-CRGBPalette16 palette2 = RdPu_03_gp;
-CRGBPalette16 palette3 = BuGn_03_gp;
-CRGBPalette16 palette4 = GMT_panoply_gp;
-CRGBPalette16 palette5 = pm3d07_gp;
-CRGBPalette16 palette6 = Life_is_beautiful_gp;
-CRGBPalette16 palette7 = min_gp;
-CRGBPalette16 palette8 = seismic_gp;
-CRGBPalette16 palette9 = Romanian_flag_gp;
-CRGBPalette16 palette10 = cmy_gp;
-
-CRGBPalette16 paletteList[] = {palette1, palette2, palette3, palette4,
-                               palette5, palette6, palette7, palette8,
-                               palette9, palette10};
-
-int paletteIndex = 0;
-CRGBPalette16 currentPalette = paletteList[paletteIndex];
-CRGBPalette16 targetPalette = paletteList[paletteIndex];
-
 // Gradient Color Palette definitions for 33 different cpt-city color palettes.
 //    956 bytes of PROGMEM for all of the palettes together,
 //   +618 bytes of PROGMEM for gradient palette code (AVR).
@@ -248,7 +202,11 @@ DEFINE_GRADIENT_PALETTE(BlacK_Magenta_Red_gp){0, 0, 0, 0, 63, 42, 0, 45, 127, 25
 DEFINE_GRADIENT_PALETTE(BlacK_Red_Magenta_Yellow_gp){0, 0, 0, 0, 42, 42, 0, 0, 84, 255, 0, 0, 127, 255, 0, 45, 170, 255, 0, 255, 212, 255, 55, 45, 255, 255, 255, 0};
 DEFINE_GRADIENT_PALETTE(Blue_Cyan_Yellow_gp){0, 0, 0, 255, 63, 0, 55, 255, 127, 0, 255, 255, 191, 42, 255, 45, 255, 255, 255, 0};
 
-const TProgmemRGBGradientPalettePtr gGradientPalettes[] = {
+CRGBPalette16 paletteList[] = {
+    purple_gp,
+    outrun_gp,
+    greenblue_gp,
+    redyellow_gp,
     Sunset_Real_gp,
     es_rivendell_15_gp,
     es_ocean_breeze_036_gp,
@@ -281,10 +239,19 @@ const TProgmemRGBGradientPalettePtr gGradientPalettes[] = {
     BlacK_Blue_Magenta_White_gp,
     BlacK_Magenta_Red_gp,
     BlacK_Red_Magenta_Yellow_gp,
-    Blue_Cyan_Yellow_gp};
+    Blue_Cyan_Yellow_gp,
+    YlOrBr_03_gp,
+    RdPu_03_gp,
+    BuGn_03_gp,
+    GMT_panoply_gp,
+    pm3d07_gp,
+    Life_is_beautiful_gp,
+    min_gp,
+    seismic_gp,
+    Romanian_flag_gp,
+    cmy_gp,
+};
 
-// Count of how many cpt-city gradients are defined:
-const uint8_t gGradientPaletteCount =
-    sizeof(gGradientPalettes) / sizeof(TProgmemRGBGradientPalettePtr);
-CRGBPalette16 gCurrentPalette(CRGB::Black);
-CRGBPalette16 gTargetPalette(gGradientPalettes[0]);
+int paletteIndex = 0;
+CRGBPalette16 currentPalette = paletteList[paletteIndex];
+CRGBPalette16 targetPalette = paletteList[paletteIndex];

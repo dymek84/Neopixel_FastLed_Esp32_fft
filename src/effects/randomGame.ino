@@ -25,7 +25,7 @@ void randomGame()
         fase = 1;
         shuffle = true;
         button1Pressed = false;
-        FastLED.clear();
+        //FastLED.clear();
     }
     if (button2Pressed)
     {

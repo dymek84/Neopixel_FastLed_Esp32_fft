@@ -4,146 +4,95 @@
 
 #include "Imports.h"
 
-uint32_t currentBg = random(256);
-uint32_t nextBg = currentBg;
-int colorripple;
-int center = 0;
-int step = -1;
-int mapFade = map(userColor, 0, 255, 1, 9);
-float fadeRate = mapFade * 0.1;
-int maxSteps = halfofPixels * fadeRate;
+uint8_t max_bright = 128; // Overall brightness definition. It can be changed on the fly.
+// Initialize our LED array. We'll be using less in operation.
 
-int diff;
-uint32_t currentBg2 = random(256);
-uint32_t nextBg2 = currentBg2;
-int colorripple2;
-int center2 = 0;
-int step2 = -1;
+struct ripple
+{ // Reko Meriö's structures
 
-int diff2;
+    // Local definitions
 
-void ripple()
-{
-    mapFade = map(userColor, 0, 255, 90, 100);
-    fadeRate = mapFade * 0.01;
+    // Persistent local variables
 
-    if (millis() - previousMillis > patternInterval)
+    // Temporary local variables
+    uint8_t brightness; // 0 to 255
+    int8_t color;       // 0 to 255
+    int16_t pos;        // -1 to NUM_LEDS  (up to 127 LED's)
+    int8_t velocity;    // 1 or -1
+    uint8_t life;       // 0 to 20
+    uint8_t maxLife;    // 10. If it's too long, it just goes on and on. . .
+    uint8_t fade;       // 192
+    bool exist;         // 0 to 1
+
+    void Move()
     {
-        if (currentBg == nextBg)
-        {
-            nextBg = random(256);
-        }
-        else if (nextBg > currentBg)
-        {
-            currentBg++;
-        }
-        else
-        {
-            currentBg--;
-        }
-        for (uint16_t l = 0; l < halfofPixels; l++)
-        {
-            SetRightStripe(l, currentBg);
+
+        pos += velocity;
+        life++;
+
+        if (pos > NUM_LEDS_STRIPE - 1)
+        { // Bounce back from far end.
+            velocity *= -1;
+            pos = NUM_LEDS_STRIPE - 1;
         }
 
-        if (step == -1)
-        {
-            center = random(halfofPixels);
-            colorripple = random(256);
-            step = 0;
+        if (pos < 0)
+        { // Bounce back from 0.
+            velocity *= -1;
+            pos = 0;
         }
 
-        if (step == 0)
-        {
-            SetRightStripe(center, colorripple);
-            step++;
-        }
-        else
-        {
-            if (step < maxSteps)
-            {
-                //  Serial.println(pow(fadeRate, step));
+        brightness = scale8(brightness, fade); // Adjust brightness accordingly to strip length
 
-                SetRightStripe(wrap(center + step), colorripple);
-                SetRightStripe(wrap(center - step), colorripple);
-                if (step > 3)
-                {
-                    SetRightStripe(wrap(center + step - 3), colorripple);
-                    SetRightStripe(wrap(center - step + 3), colorripple);
-                }
-                step++;
-            }
-            else
-            {
-                step = -1;
-            }
-        }
-        if (currentBg2 == nextBg2)
-        {
-            nextBg2 = random(256);
-        }
-        else if (nextBg2 > currentBg2)
-        {
-            currentBg2++;
-        }
-        else
-        {
-            currentBg2--;
-        }
-        for (uint16_t l = 0; l < halfofPixels; l++)
-        {
-            SetLeftStripe(l, currentBg2);
-        }
+        if (life > maxLife)
+            exist = false; // Kill it once it's expired.
 
-        if (step2 == -1)
-        {
-            center2 = random(halfofPixels);
-            colorripple2 = random(256);
-            step2 = 0;
-        }
+    } // Move()
 
-        if (step2 == 0)
-        {
-            SetLeftStripe(center2, colorripple2);
-            step2++;
-        }
-        else
-        {
-            if (step2 < maxSteps)
-            {
-                //  Serial.println(pow(fadeRate, step));
+    void Init(uint8_t Fade, uint8_t MaxLife)
+    { // Typically 216, 20
 
-                SetLeftStripe(wrap(center2 + step2), colorripple2);
-                SetLeftStripe(wrap(center2 - step2), colorripple2);
-                if (step > 3)
-                {
-                    SetLeftStripe(wrap(center2 + step2 - 3), colorripple2);
-                    SetLeftStripe(wrap(center2 - step2 + 3), colorripple2);
-                }
-                step2++;
-            }
-            else
-            {
-                step2 = -1;
-            }
+        pos = random16(NUM_LEDS_STRIPE / 20, NUM_LEDS_STRIPE - NUM_LEDS_STRIPE / 20); // Avoid spawning too close to edge.
+        velocity = 1;                                                                 // -1 or 1
+        life = 0;                                                                     // 0 to Maxlife
+        maxLife = MaxLife;                                                            // 10 called
+        exist = true;                                                                 // 0, 1
+        brightness = 255;                                                             // 0 to 255
+        color = millis();                                                             // hue;
+        fade = Fade;                                                                  // 192 called
+
+    } // Init()
+
+}; // struct ripple
+
+typedef struct ripple Ripple;
+
+Ripple ripples[maxRipples];
+void rippless()
+{
+    currentPatternName = "ripple";
+    for (int i = 0; i < maxRipples; i += 2)
+    { // Check to see if ripple has expired, and if so, create a new one.
+        if (random8() > 224 && !ripples[i].exist)
+        {                                  // Randomly create a new ripple if this one has expired.
+            ripples[i].Init(232, 20);      // Initialize the ripple array with Fade and MaxLife values.
+            ripples[i + 1] = ripples[i];   // Everything except velocity is the same for the ripple's other half. Position starts out the same for both halves.
+            ripples[i + 1].velocity *= -1; // We want the other half of the ripple to go opposite direction.
         }
-        FastLED.show();
-        previousMillis = millis();
     }
-}
-int wrap(int step)
-{
-    if (step < 0)
-        return halfofPixels + step;
-    if (step > halfofPixels - 1)
-        return step - halfofPixels;
-    return step;
-}
-int wrap2(int step)
-{
-    if (step2 < 0)
-        return halfofPixels + step2;
-    if (step2 > halfofPixels - 1)
-        return step2 - halfofPixels;
-    return step2;
-}
+    for (uint16_t l = 0; l < NUM_LEDS_STRIPE; l++)
+    {
+        stripe[l] = ColorFromPalette(currentPalette, colorTimer + l, 255, LINEARBLEND);
+    }
+    for (int i = 0; i < maxRipples; i++)
+    { // Move the ripple if it exists
+        if (ripples[i].exist)
+        {
+            stripe[ripples[i].pos] = ColorFromPalette(currentPalette, ripples[i].color, ripples[i].brightness, LINEARBLEND);
+            ripples[i].Move();
+        }
+    }
+
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 160);
+
+} // rippless()

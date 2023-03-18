@@ -1,17 +1,19 @@
 #pragma once
-
+#define FASTLED_INTERNAL
+#define FASTLED_ALL_PINS_HARDWARE_SPI
 #include "Imports.h"
-/********************** FFT ***************************/
-#define SAMPLES 512         // Must be a power of 2 (512)
-#define MULTIPLY_BY 1       // in case we want to amlify output
-#define SAMPLING_FREQ 36000 // Hz, must be 40000 or less due to ADC conversion time. Determines
-                            // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
-uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may need to alter this
-                            // value. Can be used as a 'sensitivity' control.
-#define AUDIO_IN_PIN 35     // Signal in on this pin
-#define COLOR_ORDER GRB     // If colours look wrong, play with this
-#define CHIPSET WS2812B     // LED strip type
 
+/********************** FFT ***************************/
+#define SAMPLES 512                                // Must be a power of 2 (512)
+#define MULTIPLY_BY 1                              // in case we want to amlify output
+#define SAMPLING_FREQ 36000                        // Hz, must be 40000 or less due to ADC conversion time. Determines
+                                                   // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
+uint16_t AMPLITUDE = 3000;                         // Depending on your audio source level, you may need to alter this
+                                                   // value. Can be used as a 'sensitivity' control.
+#define AUDIO_IN_PIN 35                            // Signal in on this pin
+#define AUDIO_IN_PIN_2 34                          // Signal in on this pin
+#define COLOR_ORDER GRB                            // If colours look wrong, play with this
+#define CHIPSET WS2812B                            // LED strip type
 #define NUM_BANDS 32                               // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 200                                  // Used as a crude noise filter, values below this are ignore
 #define MATRIX_WIDTH 32                            // width of each matrix [xres]-[NUM_COLS]
@@ -21,7 +23,10 @@ uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may nee
 #define SERPENTINE false                           // Set to false if your LEDS are connected end to end, true if serpentine
 
 /*************************** MACROS ***************************/
-
+#define FOR_i(from, to) for (int i = (from); i < (to); i++)
+#define FOR_j(from, to) for (int j = (from); j < (to); j++)
+#define FOR_i_down(from, to) for (int i = (from); i > (to); i--)
+#define FOR_j_down(from, to) for (int j = (from); j > (to); j--)
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 /*                     matrix - stripe                     */
@@ -42,8 +47,10 @@ uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may nee
 #define h0 2          // Starting height, in meters, of the ball (strip length)
 #define NUM_BALLS 4   // Number of bouncing balls you want (recommend < 7, but 20 is fun in its own way)
 #define SPEED .20     // Amount to increment RGB color by each cycle
+/********************** RIPPLE ***************************/
+#define maxRipples 100 // Min is 2 and value has to be divisible by two because each ripple has a left and right component. This cuts down on bouncing code.
 
-//=======================MENU=============================
+/********************** MENU ***************************/
 unsigned long startTime = 0;
 unsigned long timeOut = 500;
 boolean showMenu = false; // goes true if button is pressed
@@ -60,7 +67,7 @@ int counter = 12;          // number of patter to be selected
 
 long patternInterval = 20000;
 long previousMillis = 0;
-int gCurrentPatternNumber = 0;
+int gCurrentPatternNumber = 1;
 //== END ================MENU===================== END ==
 
 const int BRIGHTNESS_SETTINGS[3] = {5, 5, 5}; // 3 Integer array for 3 brightness settings (based on pressing+holding BTN_PIN)
@@ -113,7 +120,10 @@ String buttonNames[11] = {
 //======================= BUTTONS OPTIONS =============================
 uint8_t electric_pumpkinaaaaaa;
 String currentPatternName = "None";
-
+uint8_t cyclePalettes = 0;
+uint8_t paletteDuration = 10;
+uint8_t currentPaletteIndex = 0;
+unsigned long paletteTimeout = 0;
 long delayss = 0;
 long delayEEPROM = 0;
 
@@ -142,6 +152,10 @@ uint8_t userColor = 0;
 uint8_t gCurrentPaletteNumber = 0;
 
 typedef enum
-{    MATRIXLEDS = 1,
+{
+    MATRIXLEDS = 1,
     STRIPELEDS = 0
 } ledTypeConnected;
+
+const int sampleWindow = 50; // Sample window width in mS (50 mS = 20Hz)
+unsigned int sample;

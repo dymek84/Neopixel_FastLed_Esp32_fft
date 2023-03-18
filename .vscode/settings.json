@@ -1,6 +1,8 @@
 {
     "idf.portWin": "COM12",
     "files.associations": {
-        "cmath": "cpp"
+        "cmath": "cpp",
+        "array": "cpp",
+        "*.tcc": "cpp"
     }
 }

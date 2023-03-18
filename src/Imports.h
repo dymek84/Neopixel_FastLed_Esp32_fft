@@ -9,9 +9,9 @@
 #include <Adafruit_NeoMatrix.h>
 #include <arduinoFFT.h>
 #include <FastLED_NeoMatrix.h>
-// #include "effects/colorWipe.cpp"
-// #include "effects/pixelChase.cpp"
-// #include "effects/rainbow.h"
+// #include "colorWipe.cpp"
+// #include "pixelChase.cpp"
+// #include "rainbow.h"
 
 // #include "buttons.ino"
 // #include "clock.ino"
@@ -23,8 +23,8 @@
 #include "AudioPatternsMatrix.h"
 #include "AudioPatternsStripe.h"
 
-#include "effects/Enoise.h"
-#include "effects/ripple.h"
-#include "effects/pacifica.h"
-#include "effects/salut.h"
-#include "effects/plasma.h"
+#include "Enoise.h"
+#include "ripple.h"
+#include "pacifica.h"
+#include "salut.h"
+#include "plasma.h"

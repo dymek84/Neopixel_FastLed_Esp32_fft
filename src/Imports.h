@@ -20,11 +20,21 @@
 #include "colorsAndPallette.h"
 #include "helperFuction.h"
 #include "audioProcess.h"
-#include "AudioPatternsMatrix.h"
-#include "AudioPatternsStripe.h"
+#include "MatrixPatterns/AudioPatternsMatrix.h"
+#include "StripePatterns/AudioPatternsStripe.h"
 
-#include "Enoise.h"
-#include "ripple.h"
-#include "pacifica.h"
-#include "salut.h"
-#include "plasma.h"
+#include "MatrixPatterns/Enoise.h"
+#include "StripePatterns/ripple.h"
+#include "StripePatterns/pacifica.h"
+#include "StripePatterns/salut.h"
+#include "StripePatterns/plasma.h"
+
+// WebThings
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include "SPIFFS.h"
+#include <ESPAsyncWebServer.h>
+#include <AsyncElegantOTA.h> // *OTA
+#include <ArduinoJson.h>
+// PREFERENCES
+Preferences preferences; // We will store our variables here that we don't want to loose

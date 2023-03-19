@@ -3,8 +3,10 @@
 #include "Imports.h"
 
 arduinoFFT FFT = arduinoFFT(); // Create FFT object
-CRGB matrix[NUM_LEDS_MATRIX];  // Create LED Object
-CRGB stripe[NUM_LEDS_STRIPE];  // Create LED Object
+
+CRGB matrix[NUM_LEDS_MATRIX]; // Create LED Object
+CRGB stripe[NUM_LEDS_STRIPE]; // Create LED Object
+
 Adafruit_NeoMatrix AdafruitMatrix = Adafruit_NeoMatrix(32,
                                                        8,
                                                        LED_PIN_MATRIX,
@@ -15,3 +17,8 @@ Adafruit_NeoMatrix AdafruitMatrix = Adafruit_NeoMatrix(32,
 // Tiled Matrixes, Zig-Zag and so forth
 FastLED_NeoMatrix *FastLedMatrix = new FastLED_NeoMatrix(
     matrix, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_BOTTOM + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
+
+IPAddress ip(1, 2, 3, 4);
+IPAddress subnet(255, 255, 255, 0);
+
+AsyncWebServer server(80);

@@ -4,14 +4,13 @@
 #include "Imports.h"
 
 /********************** FFT ***************************/
-#define SAMPLES 512                                // Must be a power of 2 (512)
-#define MULTIPLY_BY 1                              // in case we want to amlify output
-#define SAMPLING_FREQ 36000                        // Hz, must be 40000 or less due to ADC conversion time. Determines
-                                                   // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
-uint16_t AMPLITUDE = 3000;                         // Depending on your audio source level, you may need to alter this
-                                                   // value. Can be used as a 'sensitivity' control.
-#define AUDIO_IN_PIN 35                            // Signal in on this pin
-#define AUDIO_IN_PIN_2 34                          // Signal in on this pin
+#define SAMPLES 512         // Must be a power of 2 (512)
+#define MULTIPLY_BY 1       // in case we want to amlify output
+#define SAMPLING_FREQ 36000 // Hz, must be 40000 or less due to ADC conversion time. Determines
+                            // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
+uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may need to alter this
+                            // value. Can be used as a 'sensitivity' control.
+
 #define COLOR_ORDER GRB                            // If colours look wrong, play with this
 #define CHIPSET WS2812B                            // LED strip type
 #define NUM_BANDS 32                               // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
@@ -23,23 +22,32 @@ uint16_t AMPLITUDE = 3000;                         // Depending on your audio so
 #define SERPENTINE false                           // Set to false if your LEDS are connected end to end, true if serpentine
 
 /*************************** MACROS ***************************/
-#define FOR_i(from, to) for (int i = (from); i < (to); i++)
-#define FOR_j(from, to) for (int j = (from); j < (to); j++)
-#define FOR_i_down(from, to) for (int i = (from); i > (to); i--)
-#define FOR_j_down(from, to) for (int j = (from); j > (to); j--)
+// Use qsuba for smooth pixel colouring and qsubd for non-smooth pixel colouring
+#define qsubd(x, b) ((x > b) ? b : 0)                            // Digital unsigned subtraction macro. if result <0, then => 0. Otherwise, take on fixed value.
+#define qsuba(x, b) ((x > b) ? x - b : 0)                        // Analog Unsigned subtraction macro. if result <0, then => 0
+#define FOR_i(from, to) for (int i = (from); i < (to); i++)      // loop for "i" to ascending
+#define FOR_j(from, to) for (int j = (from); j < (to); j++)      // loop for "j" to ascending
+#define FOR_i_down(from, to) for (int i = (from); i > (to); i--) // loop for "i" to descending
+#define FOR_j_down(from, to) for (int j = (from); j > (to); j--) // loop for "j" to descending
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 /*                     matrix - stripe                     */
 
-#define LED_PIN_STRIPE 16 // Data pin to stripe
 #define NUM_LEDS_MATRIX (MATRIX_WIDTH * MATRIX_HEIGHT)
 #define NUM_LEDS_STRIPE 1200
-#define LED_PIN_MATRIX 23 // Data pin to matrix
-#define BRIGHTNESS 125    // LED information
+#define BRIGHTNESS 125 // LED information
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define LED_VOLTS 5         // Usually 5 or 12
 #define MAX_MILLIAMPS 35000 // Careful with the amount of power here if running off USB port
+
+/********************** OUTPUT/INPUT PINS ***************************/
+// #define buttons 34
+// #define photoresistor 39
+#define LED_PIN_MATRIX 23 // Data pin to matrix
+#define LED_PIN_STRIPE 16 // Data pin to stripe
+#define AUDIO_IN_PIN 35   // Signal in on this pin
+#define MIC_IN_PIN 38     // Signal in on this pin
 
 /********************** BOUNCING BALLS ***************************/
 
@@ -50,6 +58,43 @@ uint16_t AMPLITUDE = 3000;                         // Depending on your audio so
 /********************** RIPPLE ***************************/
 #define maxRipples 100 // Min is 2 and value has to be divisible by two because each ripple has a left and right component. This cuts down on bouncing code.
 
+/********************** EEPROM ***************************/
+#define BUF_SIZE 400   // 400 out of 512 used
+#define PASS_BSIZE 9   // 8 digit password
+#define PASS_EXIST 405 // password $ address
+#define PASS_ADDR 410  // password value stored
+#define P_CHAR '`'
+#define BRT_ADDR 425 // Brightness value stored
+
+#define TDUR_ADDR 426 // Settings byte data EEPROM 23 bytes
+#define MSPEED_ADDR 427
+#define MONLY_ADDR 428
+#define TIMER_ADDR 429
+#define TIMEG_ADDR 430
+#define TIMEB_ADDR 431
+#define TEMPR_ADDR 432
+#define TEMPG_ADDR 433
+#define TEMPB_ADDR 434
+#define DOWR_ADDR 435
+#define DOWG_ADDR 436
+#define DOWB_ADDR 437
+#define DATER_ADDR 438
+#define DATEG_ADDR 439
+#define DATEB_ADDR 440
+#define MSGR_ADDR 441
+#define MSGG_ADDR 442
+#define MSGB_ADDR 443
+#define tiRGB_ADDR 444
+#define tpRGB_ADDR 445
+#define dowRGB_ADDR 446
+#define datRGB_ADDR 447
+#define msgRGB_ADDR 448
+
+char curMessage[BUF_SIZE] = "Vostro";
+char newMessage[BUF_SIZE] = "Vostro";
+char newTime[17] = "01.01.2022 12:00";
+bool newMessageAvailable = true;
+bool newTimeAvailable = false;
 /********************** MENU ***************************/
 unsigned long startTime = 0;
 unsigned long timeOut = 500;

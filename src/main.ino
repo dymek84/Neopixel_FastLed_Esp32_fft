@@ -449,4 +449,30 @@ void loop()
     } // change patterns periodically
     updatePatternMatrix(0);
     updatePatternStripe(6);
+
+    //  SPIFFS
+    if (!SPIFFS.begin(true))
+    {
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
+    }
+
+    //  WIFI 2
+    Serial.print("\nWIFI >> Connecting to ");
+    Serial.println(ssid);
+
+    updateDefaultAPPassword(); // get Wifi password from EEPROM
+
+    WiFi.mode(WIFI_AP);
+    WiFi.softAPConfig(ip, ip, subnet);
+    WiFi.softAP(ssid, password);
+    handleServer();
+    //  DISPLAY WELCOME MESSAGE
+    fxSinlon(); //* Display special startup effect
+    while (ScrollingMsg.UpdateText() != 1)
+    {
+        FastLED.show();
+        delay(30);
+    }
+    ScrollingMsg.SetText((unsigned char *)szMesg, sizeof(szMesg) - 1); // reset to start of string
 }

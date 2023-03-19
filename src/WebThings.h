@@ -2,6 +2,8 @@
 
 #include "Imports.h"
 
+// PREFERENCES
+Preferences preferences; // We will store our variables here that we don't want to loose
 // WIFI
 const char *ssidAP = "ESP32-LedMatrixClock"; // IN CASE WE CANNOT CONNECT TO THE WIFI THE ESP32 WILL PRESENT ITSELF AS AN ACCESSPOINTER USING THIS NAME
 const char *passwordAP = "1234abcd";         // AND YOU CAN ACCESS THAT ACCESSPOINT USING THIS SIMPLE PASSWORD
@@ -63,8 +65,10 @@ String
     apikey;
 int
     overAllBrightness,
+    digitColor,
     backgroundBrightness,
     digitBrightness,
+    backgroundColor,
     scrollspeed;
 /*
    Find and replace method, to inject variables into a HTML page
@@ -147,10 +151,10 @@ void RunAPmode(void *parameter)
     IPAddress IP = WiFi.softAPIP();                                // GET THE ACCESSPOINT IP
     Serial.println("The IP of the settings page is: 192.168.4.1"); // SHOW IP IN SERIAL MONITOR
     // Serial.println(WiFi.localIP());
-    preferences.begin("wificreds", false);                        // Make sure we have something to store our preferences in
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // The Home page so to say.
-        request->send_P(200, "text/html", INDEXAP_HTML, processor);
-    });
+    preferences.begin("wificreds", false); // Make sure we have something to store our preferences in
+                                           // Web Server Root URL
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/index.html", "text/html", processor); });
 
     server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) { // WHEN SOMEONE SUBMITS SOMETHING.... Like the credentials :)
         String inputMessage;
@@ -194,58 +198,10 @@ void RunAPmode(void *parameter)
 
 void displayIP()
 {
-    String ip = WiFi.localIP().toString();
-    int textScroller = -34;
-    int counter = 0;
-    String scrolltextip = "ip: " + ip;
-    int textlentgh = scrolltextip.length();
-
-    while (counter < (textlentgh * 10 * 1))
-    {
-        EVERY_N_MILLISECONDS(50)
-        {
-
-            if (textScroller >= textlentgh * 7)
-            {
-                textScroller = -34;
-            }
-            timeMatrix = showText(scrolltextip, CRGB::Red, textScroller);
-            bgMatrix = getBackgroundMap(timeMatrix);
-            bgMatrix = oneColorBackground(bgMatrix, CRGB::Black);
-            textScroller++;
-            counter++;
-        }
-        mergeMapsToLeds(bgMatrix, timeMatrix, 128, 128, false, false); // Merge both matrices. before we display.
-        FastLED.show();
-    }
 }
 
 void displayIPAP()
 {
-    String ip = WiFi.localIP().toString();
-    int textScroller = -34;
-    int counter = 0;
-    String scrolltextip = "accesspoint ip: 192.168.4.1";
-    int textlentgh = scrolltextip.length();
-
-    while (counter < (textlentgh * 8 * 2))
-    {
-        EVERY_N_MILLISECONDS(80)
-        {
-
-            if (textScroller >= textlentgh * 7)
-            {
-                textScroller = -34;
-            }
-            timeMatrix = showText(scrolltextip, CRGB::Red, textScroller);
-            bgMatrix = getBackgroundMap(timeMatrix);
-            bgMatrix = oneColorBackground(bgMatrix, CRGB::Black);
-            textScroller++;
-            counter++;
-        }
-        mergeMapsToLeds(bgMatrix, timeMatrix, 128, 128, false, false); // Merge both matrices. before we display.
-        FastLED.show();
-    }
 }
 
 /*
@@ -389,21 +345,6 @@ void RunWebserver(void *parameter)
                       city = inputMessage;
                   }
                   else if (
-                      request->hasParam("LDR"))
-                  {
-                      int MeasuredValue = 0;
-                      if (useLDR)
-                      {
-                          MeasuredValue = analogRead(sensorPin);
-                          Serial.println(MeasuredValue);
-                      }
-                      else
-                      {
-                          MeasuredValue = 0;
-                      }
-                      inputMessage = MeasuredValue;
-                  }
-                  else if (
                       request->hasParam("ldrpin"))
                   {
                       inputMessage = request->getParam("ldrpin")->value();
@@ -417,13 +358,7 @@ void RunWebserver(void *parameter)
                       preferences.putString("ledpin", inputMessage);
                       // ledpin = inputMessage.toInt();
                   }
-                  else if (
-                      request->hasParam("animatechange"))
-                  {
-                      inputMessage = request->getParam("animatechange")->value();
-                      preferences.putString("animatechange", inputMessage);
-                      animatechange = inputMessage;
-                  }
+
                   else
                   {
                       inputMessage = "No message sent";
@@ -549,158 +484,6 @@ void webSetup()
             displayIPAP();
         }
     }
-    configTzTime(defaultTimezone, ntpServer); // sets TZ and starts NTP sync
-    // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-    if (updateLocalTime())
-    {
-        Serial.println("We have network time");
-
-        Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-        displayIP(); // Display the last digits of the IP on the matrix.
-    }
-    else
-    {
-
-        Serial.println("No Network time was obtained, therefore we will reboot to try again");
-        ESP.restart();
-    }
-}
-String handleAP(uint8_t *data, size_t len)
-{
-    String returnstring;
-
-    data[len] = '\0';
-    String json = (char *)data;
-
-    DynamicJsonDocument doc(JSON_OBJECT_SIZE(3) + 130);
-    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
-
-    if (error)
-    { // Test if parsing succeeds.
-        Serial.print(F("deserializeJson() failed: "));
-        Serial.println(error.f_str());
-        return "deserializeJson error";
-    }
-
-    const char *oldpassword = doc["oldpassword"];
-    const char *newpassword = doc["newpassword"];
-    const char *renewpassword = doc["renewpassword"];
-
-    if (String(oldpassword) == String(password) && String(newpassword) == String(renewpassword))
-    {
-        returnstring = "password:" + String(password) + " newpassword:" + String(newpassword) + " renewpassword:" + String(renewpassword);
-        Serial.print("password handle: ");
-        Serial.println(json);
-        eepromWriteChar(BUF_SIZE, '\0');     // wall so message doesnt display password at max buffer pos
-        eepromWriteChar(PASS_EXIST, P_CHAR); // user password now exists
-        eepromWriteString(PASS_ADDR, String(newpassword));
-        Serial.println("new password saved");
-        Serial.println(eepromReadChar(PASS_ADDR));
-        WiFi.softAPdisconnect();
-        delay(8000);
-        ESP.restart();
-    }
-    else
-    {
-        returnstring = "error, passwords don't match";
-        Serial.print("password handle error: ");
-        Serial.println(json);
-        Serial.println("\nerror, passwords don't match\n");
-        delay(1000);
-    }
-
-    return returnstring;
-}
-
-String handleMessageUpdate(uint8_t *data, size_t len)
-{
-    data[len] = '\0';
-    String json = (char *)data;
-
-    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
-    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
-
-    if (error)
-    { // Test if parsing succeeds.
-        Serial.print(F("deserializeJson() failed: "));
-        Serial.println(error.f_str());
-        return "deserializeJson error";
-    }
-
-    BRIGHT = int(doc["brightness"]);
-    strcpy(newMessage, doc["message"]);
-
-    Serial.print("message and brightness handle: ");
-    Serial.println(json);
-
-    newMessageAvailable = true;
-
-    // return json;
-    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
-}
-
-void updateDefaultAPPassword()
-{
-    Serial.println("updateDefaultAPPassword");
-    if (eepromReadChar(PASS_EXIST) == P_CHAR)
-    {
-        delay(200);
-        Serial.print("user pwd found: \"");
-    }
-    else
-    {
-        delay(200);
-        Serial.println("\nuser pwd is not found\nrestoring default pwd to ");
-
-        eepromWriteChar(BUF_SIZE, '\0');          // wall so message doesnt display password at max buffer pos
-        eepromWriteChar(PASS_EXIST, P_CHAR);      // user password now exists
-        eepromWriteString(PASS_ADDR, "password"); // default password is "password"
-    }
-
-    String eeString = eepromReadString(PASS_ADDR, PASS_BSIZE);
-    eeString.toCharArray(password, eeString.length() + 1);
-
-    Serial.print(eeString);
-    Serial.print("\" from EEPROM.\n\"");
-    Serial.print(password);
-    Serial.println("\" is used as the WIFI pwd");
-    delay(1000);
-}
-
-void handleServer()
-{
-
-    //  WIFI 2
-    Serial.print("\nWIFI >> Connecting to ");
-    Serial.println(ssid);
-
-    updateDefaultAPPassword(); // get Wifi password from EEPROM
-
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(ip, ip, subnet);
-    WiFi.softAP(ssid, password);
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-    server.on(
-        "/message", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
-        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
-        {
-            String myResponse = handleMessageUpdate(data, len);
-            request->send(200, "text/plain", myResponse);
-        });
-
-    server.onNotFound([](AsyncWebServerRequest *request)
-                      { request->send(SPIFFS, "/notfound.html", "text/html"); });
-
-    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(SPIFFS, "/favicon.png", "image/png"); });
-
-    IPAddress myIP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(myIP);
-
-    AsyncElegantOTA.begin(&server); //* OTA - Start ElegantOTA
-    server.begin();
-    Serial.println("SERVER STARTED");
 }
 
 /*----------------------------------------------------------------------------------------

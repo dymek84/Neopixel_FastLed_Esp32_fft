@@ -3,6 +3,7 @@
     "files.associations": {
         "cmath": "cpp",
         "array": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "string": "cpp"
     }
 }

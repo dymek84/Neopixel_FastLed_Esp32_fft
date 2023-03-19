@@ -22,3 +22,7 @@ IPAddress ip(1, 2, 3, 4);
 IPAddress subnet(255, 255, 255, 0);
 
 AsyncWebServer server(80);
+
+// MULTI CPU TASKS
+TaskHandle_t Wifimode; // CONTAINER USED FOR TASKS
+TaskHandle_t APmode;   // CONTAINER USED FOR TASKS (aka threads, but slightly different)

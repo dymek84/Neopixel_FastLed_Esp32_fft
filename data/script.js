@@ -64,6 +64,7 @@ var updateDropdown = function updateDropdown() {
         label.innerText = this.options[this.selectedIndex].text
     }
 }
+
 addEventListener('input', e => {
     let _t = e.target;
 

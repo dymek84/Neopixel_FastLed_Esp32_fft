@@ -457,15 +457,6 @@ void loop()
         return;
     }
 
-    //  WIFI 2
-    Serial.print("\nWIFI >> Connecting to ");
-    Serial.println(ssid);
-
-    updateDefaultAPPassword(); // get Wifi password from EEPROM
-
-    WiFi.mode(WIFI_AP);
-    WiFi.softAPConfig(ip, ip, subnet);
-    WiFi.softAP(ssid, password);
     handleServer();
     //  DISPLAY WELCOME MESSAGE
     fxSinlon(); //* Display special startup effect

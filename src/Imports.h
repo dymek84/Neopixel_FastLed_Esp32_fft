@@ -37,4 +37,4 @@
 #include <AsyncElegantOTA.h> // *OTA
 #include <ArduinoJson.h>
 // PREFERENCES
-Preferences preferences; // We will store our variables here that we don't want to loose
+#include <Preferences.h> // Store the prefences in permanent memory in a much easier way than SPIFFS

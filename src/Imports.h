@@ -43,8 +43,6 @@
 
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
-#include "StripePatterns/salut.h"
-#include "StripePatterns/plasma.h"
 
 // #include "WebThings.h"
 

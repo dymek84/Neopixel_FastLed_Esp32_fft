@@ -17,7 +17,7 @@
 
 void nextPattern()
 {
-    gCurrentPatternNumber == 7 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
+    gCurrentPatternNumber == 3 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
     // FastLED.clear();
     Serial.println("nextPattern();");
 }
@@ -369,20 +369,7 @@ void analyzeAudioSerial()
         }
     }
 }
-void rainbow() // rainbowWithGlitter()//confetti
-{
-    currentPatternName = "Rainbow";
 
-    static uint16_t j = 0;
-    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
-    {
-        stripe[i] = CHSV((i + j), 255, 255);
-    }
-    FastLED.show();
-    j++;
-    if (j >= 256)
-        j = 0;
-}
 
 const uint8_t paletteCount = ARRAY_SIZE(paletteList);
 void nextPalette()
@@ -391,9 +378,7 @@ void nextPalette()
     targetPalette = paletteList[currentPaletteIndex];
 }
 
-// MULTI CPU TASKS
-TaskHandle_t Wifimode; // CONTAINER USED FOR TASKS
-TaskHandle_t APmode;   // CONTAINER USED FOR TASKS (aka threads, but slightly different)
+
 
 void setup()
 {

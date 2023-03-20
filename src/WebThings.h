@@ -58,19 +58,19 @@ int
 */
 String processor(const String &var)
 {
-    if (var == "effect")
+    if (var == "patternLED")
     {
         return whichFX;
     }
-    else if (var == "digitOnOff")
+    else if (var == "paletteLED")
     {
         return digitAnimation;
     }
-    else if (var == "digitHTMLcol")
+    else if (var == "patternMatrix")
     {
         return digitHTMLcol;
     }
-    else if (var == "BGHTMLcol")
+    else if (var == "paletteMatrix")
     {
         return BGHTMLcol;
     }
@@ -78,7 +78,7 @@ String processor(const String &var)
     {
         return String(overAllBrightness);
     }
-    else if (var == "backgroundBrightness")
+    else if (var == "scrolltext")
     {
         return String(backgroundBrightness);
     }
@@ -91,17 +91,13 @@ String processor(const String &var)
     {
         return String(scrolltext);
     }
-    else if (var == "scrollspeed")
+    else if (var == "SSID")
     {
         return String(scrollspeed);
     }
-    else if (var == "city")
+    else if (var == "password")
     {
         return String(city);
-    }
-    else if (var == "apikey")
-    {
-        return String(apikey);
     }
     return String();
 }

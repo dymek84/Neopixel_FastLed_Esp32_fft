@@ -75,54 +75,34 @@
             <button class="tablinks" onclick="openCity(event, 'Options')">Options</button>
             <button class="tablinks" onclick="openCity(event, 'Settings')">Settings</button>
         </div>
-        <!-- Tab content -->
 
-        <div id="StripeEffects" class="tabcontent">
+        <!-- Stripe / leds -->
+        <div id="StripeEffects" class="tabcontent led">
             <h3>LED Stripe Effects</h3>
 
-            <input type="button" class="btn btn-custom" onclick="test()" />
+
 
             <form action="/get" target="hidden-form">
-                <div> <button class="btn btn-custom" type="submit" value="prev"
-                        name="patternLED">prev</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <button class="btn btn-custom" type="submit" value="next" name="patternLED">next</button>
-
-                </div>
-            </form>
-            <form action="#" method="GET">
                 <div class="wrapper">
                     Current effect: - %stripeeffect% <br /><br /> </div>
+                <div> <button class="btn btn-custom" type="submit" value="prev"
+                        name="patternLED">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <button class="btn btn-custom" type="submit" value="next" name="patternLED">Next</button>
 
-
-
-                <div><button class="btn btn-custom" name="effectLED" value="prev" onclick="this.form.submit()">
-                        Previous
-                    </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        class="btn btn-custom" name="effectLED" value="next" onclick="this.form.submit()">Next</button>
                 </div>
-
-
-                <br />
             </form>
             <h3>LED Stripe Color Palette</h3>
             <form action="/get" target="hidden-form">
                 <div class="wrapper">
                     Current palette: - %stripepalette% <br /><br /> </div>
-
-
-
-                <div><button class="btn btn-custom" name="patternLED"
+                <div><button class="btn btn-custom" name="patternLED" type="submit"
                         value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        class="btn btn-custom" name="patternLED" value="next">Next</button></div>
-
-
-                <br />
+                        class="btn btn-custom" name="patternLED" type="submit" value="next">Next</button></div> <br />
             </form>
-
-
-
         </div>
-        <div id="MatrixEffects" class="tabcontent">
+
+        <!-- Matrix / clock -->
+        <div id="MatrixEffects" class="tabcontent clock">
             <h3>Clock Effects</h3>
             <form action="/get" target="hidden-form">
                 <div class="wrapper">
@@ -130,12 +110,12 @@
 
 
 
-                <div><button class="btn btn-custom" name="effectLED"
+                <div><button type="submit" class="btn btn-custom" name="effectLED"
                         value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        class="btn btn-custom" name="effectLED" value="next">Next</button></div>
+                        type="submit" class="btn btn-custom" name="effectLED" value="next">Next</button></div>
 
 
-                <br />
+
             </form>
             <h3>Clock Color Palette</h3>
             <form action="/get" target="hidden-form">
@@ -144,9 +124,9 @@
 
 
 
-                <div><button class="btn btn-custom" name="patternLED"
+                <div><button type="submit" class="btn btn-custom" name="patternLED"
                         value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        class="btn btn-custom" name="patternLED" value="next">Next</button></div>
+                        type="submit" class="btn btn-custom" name="patternLED" value="next">Next</button></div>
 
 
                 <br />

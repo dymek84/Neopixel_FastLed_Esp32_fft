@@ -4,6 +4,8 @@
         "cmath": "cpp",
         "array": "cpp",
         "*.tcc": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "system_error": "cpp",
+        "regex": "cpp"
     }
 }

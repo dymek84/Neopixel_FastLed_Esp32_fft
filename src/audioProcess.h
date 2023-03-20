@@ -40,11 +40,11 @@ void analyzeAudio()
     }
     for (int i = 0; i < SAMPLES; i++)
     {
-        newTime = micros();
+        newTimeForAudio = micros();
         vReal[i] = analogRead(AUDIO_IN_PIN);
 
         vImag[i] = 0;
-        while ((micros() - newTime) < sampling_period_us)
+        while ((micros() - newTimeForAudio) < sampling_period_us)
         {
         }
     }

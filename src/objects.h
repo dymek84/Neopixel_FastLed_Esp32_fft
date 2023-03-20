@@ -18,11 +18,7 @@ Adafruit_NeoMatrix AdafruitMatrix = Adafruit_NeoMatrix(32,
 FastLED_NeoMatrix *FastLedMatrix = new FastLED_NeoMatrix(
     matrix, MATRIX_WIDTH, MATRIX_HEIGHT, NEO_MATRIX_BOTTOM + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG);
 
-IPAddress ip(1, 2, 3, 4);
-IPAddress subnet(255, 255, 255, 0);
+// PREFERENCES
+Preferences preferences; // We will store our variables here that we don't want to loose
 
 AsyncWebServer server(80);
-
-// MULTI CPU TASKS
-TaskHandle_t Wifimode; // CONTAINER USED FOR TASKS
-TaskHandle_t APmode;   // CONTAINER USED FOR TASKS (aka threads, but slightly different)

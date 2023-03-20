@@ -9,6 +9,24 @@
 #include <Adafruit_NeoMatrix.h>
 #include <arduinoFFT.h>
 #include <FastLED_NeoMatrix.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+// WebThings
+
+#include <WiFi.h>
+#include <AsyncTCP.h>
+#include "ESPAsyncWebServer.h"
+#include "SPIFFS.h"
+
+#include <ArduinoJson.h>
+// #include <ESPmDNS.h>
+// #include <HTTPClient.h>      // Needed to get some information from the internetz.. .like weather data
+// #include <AsyncElegantOTA.h> // A library to allow Over The Air Updates :)
+//  PREFERENCES
+#include <Preferences.h> // Store the prefences in permanent memory in a much easier way than SPIFFS
+#include "main.h"
 // #include "colorWipe.cpp"
 // #include "pixelChase.cpp"
 // #include "rainbow.h"
@@ -23,18 +41,11 @@
 #include "MatrixPatterns/AudioPatternsMatrix.h"
 #include "StripePatterns/AudioPatternsStripe.h"
 
-#include "MatrixPatterns/Enoise.h"
-#include "StripePatterns/ripple.h"
-#include "StripePatterns/pacifica.h"
+#include "MatrixPatterns/MatrixPatterns.h"
+#include "StripePatterns/StripePatterns.h"
 #include "StripePatterns/salut.h"
 #include "StripePatterns/plasma.h"
 
-// WebThings
-#include <WiFi.h>
-#include <AsyncTCP.h>
-#include "SPIFFS.h"
-#include <ESPAsyncWebServer.h>
-#include <AsyncElegantOTA.h> // *OTA
-#include <ArduinoJson.h>
-// PREFERENCES
-#include <Preferences.h> // Store the prefences in permanent memory in a much easier way than SPIFFS
+// #include "WebThings.h"
+
+#include "testweb.h"

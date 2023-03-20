@@ -178,7 +178,7 @@ int oldBarHeights[MATRIX_WIDTH];
 int bandValues[MATRIX_WIDTH];
 double vReal[SAMPLES];
 double vImag[SAMPLES];
-unsigned long newTime;
+unsigned long newTimeForAudio;
 
 // Button stuff
 int buttonPushCounter = 0;

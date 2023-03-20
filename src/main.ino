@@ -17,8 +17,9 @@
 
 void nextPattern()
 {
-    // gCurrentPatternNumber == 7 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
+    gCurrentPatternNumber == 7 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
     // FastLED.clear();
+    Serial.println("nextPattern();");
 }
 uint8_t BeatsPerMinute = 62;
 void bpm(ledTypeConnected whichLeds)
@@ -389,17 +390,51 @@ void nextPalette()
     currentPaletteIndex = (currentPaletteIndex + 1) % paletteCount;
     targetPalette = paletteList[currentPaletteIndex];
 }
+
+// MULTI CPU TASKS
+TaskHandle_t Wifimode; // CONTAINER USED FOR TASKS
+TaskHandle_t APmode;   // CONTAINER USED FOR TASKS (aka threads, but slightly different)
+
 void setup()
 {
+    boolean connectedToNetwork = false; // We want to know if we have a network before proceeding
     Serial.begin(115200);
     Serial.println("start");
     FastLED.addLeds<CHIPSET, LED_PIN_MATRIX, COLOR_ORDER>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
     FastLED.addLeds<CHIPSET, LED_PIN_STRIPE, COLOR_ORDER>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalLEDStrip);
 
     FastLED.setBrightness(255);
+    preferences.begin("wificreds", false); // The WIFI credentials are stored here
+    delay(1000);
 
-    //   Wire.begin();
+    preferences.getString("ssid");
+    if (connectToNetwork(preferences.getString("ssid"), preferences.getString("password")))
+    {
+
+        RunWebserver();
+
+        FastLED.delay(1000); // to allow to start the 2nd processor.
+        connectedToNetwork = true;
+    }
+    else
+    {
+        Serial.println("No WIFI, let's offer an accesspoint");
+
+        RunAPmode();
+
+        FastLED.delay(1000); // to allow to start the 2nd processor.
+        connectedToNetwork = false;
+    }
+    while (!connectedToNetwork)
+    { // When we are not connected to a router (wifi point) we should not proceed. But only show the accesspoint website
+        EVERY_N_SECONDS(30)
+        {
+            // Serial.println("ESP Matrix Clock is in AccessPoint mode. Please enter your SSID and Key in the Accesspoint website (connect to the AP-wifi first)");
+            //   displayIPAP();
+        }
+    }
     pinMode(AUDIO_IN_PIN, INPUT);
+    preferences.end();
     Serial.println("setup done");
 }
 // frequency needs to be lower than LED_FREQ_LIM
@@ -447,23 +482,6 @@ void loop()
         Serial.println(gCurrentPatternNumber);
 
     } // change patterns periodically
-    updatePatternMatrix(0);
+    updatePatternMatrix(gCurrentPatternNumber);
     updatePatternStripe(6);
-
-    //  SPIFFS
-    if (!SPIFFS.begin(true))
-    {
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        return;
-    }
-
-    handleServer();
-    //  DISPLAY WELCOME MESSAGE
-    fxSinlon(); //* Display special startup effect
-    while (ScrollingMsg.UpdateText() != 1)
-    {
-        FastLED.show();
-        delay(30);
-    }
-    ScrollingMsg.SetText((unsigned char *)szMesg, sizeof(szMesg) - 1); // reset to start of string
 }

@@ -3,19 +3,38 @@
 
 #include "Imports.h"
 
-long delayCW = 0;
-void colorWipe(uint32_t colorW)
+typedef uint8_t (*SimplePattern)();
+typedef SimplePattern SimplePatternList[];
+typedef struct
 {
-    if (millis() - delayCW > patternInterval)
-    {
-        //  Update delay time
-        stripe[pixelCurrent] = CHSV(colorW, 255, 255); //  Set pixel's color (in RAM)
-        FastLED.show();                                //  Update strip to match
-        pixelCurrent++;                                //  Advance current pixel
-        if (pixelCurrent >= NUM_LEDS_STRIPE)           //  Loop the pattern from the first LED
-            pixelCurrent = 0;
-        delayCW = millis();
-    }
+    SimplePattern drawFrame;
+    String name;
+} PatternAndName;
+typedef PatternAndName PatternAndNameList[];
+
+// List of patterns to cycle through.  Each is defined as a separate function below.
+
+const PatternAndNameList patterns = {
+    {colorWipe, "colorWipe"},
+    {pacifica_loop, "Pacifica"},
+    {rainbow, "Rainbow"},
+    {rippless, "Ripple"},
+    {salut, "Salut"},
+    {theaterChase, "Theater Chase"},
+    {rainbow, "Rainbow"},
+    {theaterChaseRainbow, "Theater Chase Rainbow"},
+};
+
+uint8_t colorWipe()
+{
+
+    //  Update delay time
+    stripe[pixelCurrent] = CHSV(gHue, 255, 255); //  Set pixel's color (in RAM)
+    FastLED.show();                              //  Update strip to match
+    pixelCurrent++;                              //  Advance current pixel
+    if (pixelCurrent >= NUM_LEDS_STRIPE)         //  Loop the pattern from the first LED
+        pixelCurrent = 0;
+    return patternInterval;
 }
 
 CRGBPalette16 pacifica_palette_1 =
@@ -75,7 +94,7 @@ void pacifica_deepen_colors()
         stripe[i] |= CRGB(2, 5, 7);
     }
 }
-void pacifica_loop()
+uint8_t pacifica_loop()
 {
     // Increment the four "color index start" counters, one for each wave layer.
     // Each is incremented at a different speed, and the speeds vary over time.
@@ -108,21 +127,18 @@ void pacifica_loop()
 
     // Deepen the blues and greens a bit
     pacifica_deepen_colors();
+    return patternInterval;
 }
 
-void rainbow()
+uint8_t rainbow()
 {
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
+
+    for (uint16_t i = 0; i < NUM_LEDS_STRIPE; i++)
     {
-        for (uint16_t i = 0; i < NUM_LEDS_STRIPE; i++)
-        {
-            stripe[i] = CRGB((i + gHue) & 255); //  Update delay time
-        }
-        FastLED.show();                 //  Update strip to match
-                                        //  Loop the cycle back to the begining
-        previousMillis = currentMillis; // time for next change to the display
+        stripe[i] = CRGB((i + gHue) & 255); //  Update delay time
     }
+    FastLED.show();         //  Update strip to match
+    return patternInterval; //  Loop the cycle back to the begining
 }
 
 uint8_t max_bright = 128; // Overall brightness definition. It can be changed on the fly.
@@ -189,7 +205,7 @@ struct ripple
 typedef struct ripple Ripple;
 
 Ripple ripples[maxRipples];
-void rippless()
+uint8_t rippless()
 {
     currentPatternName = "ripple";
     for (int i = 0; i < maxRipples; i += 2)
@@ -215,7 +231,7 @@ void rippless()
     }
 
     fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 160);
-
+    return patternInterval;
 } // rippless()
 
 int s_start_pos[5];
@@ -224,8 +240,9 @@ int s_color[5];
 int s_brightness[5];
 int s_tick[5] = {0, 0, 0, 0, 0};
 int s_scale[5];
-void salut(int s_count)
+uint8_t salut()
 {
+    int s_count = random16(1, 5);
     static uint32_t prevTime;
     // стартовая позиция
     if (s_time[s_count] < s_tick[s_count])
@@ -252,66 +269,62 @@ void salut(int s_count)
             stripe[s_start_pos[s_count] - s_tick[s_count] - i] = CHSV(s_color[s_count], 255, s_brightness[s_count]);
         }
     }
+    return 20;
 }
 
-void theaterChase(uint32_t colorT)
-{                                           // modified from Adafruit example to make it a state machine
-    unsigned long currentMillis = millis(); // Start of sample window
-    if (currentMillis - previousMillis > patternInterval)
+uint8_t theaterChase()
+{ // modified from Adafruit example to make it a state machine
+
+    static int j = 0, q = 0;
+    static boolean on = true;
+    if (on)
     {
-        static int j = 0, q = 0;
-        static boolean on = true;
-        if (on)
+        for (int i = 0; i < NUM_LEDS_STRIPE; i = i + 3)
         {
-            for (int i = 0; i < NUM_LEDS_STRIPE; i = i + 3)
-            {
-                stripe[i + q] = CHSV(colorT, 255, 255); // turn every third pixel on
-                                                        /// stripe[i + q] = CHSV((i + j) % 255, 1));
-            }
+            stripe[i + q] = CHSV(gHue, 255, 255); // turn every third pixel on
+                                                  /// stripe[i + q] = CHSV((i + j) % 255, 1));
         }
-        else
-        {
-            for (int i = 0; i < NUM_LEDS_STRIPE; i = i + 3)
-            {
-                stripe[i + q] = CHSV(0, 0, 0); // turn every third pixel off
-            }
-        }
-        on = !on;       // toggel pixelse on or off for next time
-        FastLED.show(); //  strip.show(); // display
-        q++;            // update the q variable
-        if (q >= 3)
-        { // if it overflows reset it and update the J variable
-            q = 0;
-            j++;
-            if (j >= 256)
-                j = 0;
-        }
-        previousMillis = currentMillis; // Remember the time
     }
+    else
+    {
+        for (int i = 0; i < NUM_LEDS_STRIPE; i = i + 3)
+        {
+            stripe[i + q] = CHSV(0, 0, 0); // turn every third pixel off
+        }
+    }
+    on = !on;       // toggel pixelse on or off for next time
+    FastLED.show(); //  strip.show(); // display
+    q++;            // update the q variable
+    if (q >= 3)
+    { // if it overflows reset it and update the J variable
+        q = 0;
+        j++;
+        if (j >= 256)
+            j = 0;
+    }
+
+    return patternInterval;
 }
 
 int pixelQueue = 0; // Pattern Pixel Queue
 int pixelCycle = 0; // Pattern Pixel Cycle
-long delayTC = 0;
-void theaterChaseRainbow()
+uint8_t theaterChaseRainbow()
 {
-    if (millis() - delayTC > patternInterval)
+
+    for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
     {
-        for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
-        {
-            stripe[i + pixelQueue] = CHSV((i + pixelCycle) % 255, 255, 255); //  Update delay time
-        }
-        FastLED.show();
-        for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
-        {
-            stripe[i + pixelQueue] = (0, 0, 0); //  Update delay time
-        }
-        pixelQueue++; //  Advance current queue
-        pixelCycle++; //  Advance current cycle
-        if (pixelQueue >= 3)
-            pixelQueue = 0; //  Loop
-        if (pixelCycle >= 256)
-            pixelCycle = 0; //  Loop
-        delayTC = millis();
+        stripe[i + pixelQueue] = CHSV((i + pixelCycle) % 255, 255, 255); //  Update delay time
     }
+    FastLED.show();
+    for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
+    {
+        stripe[i + pixelQueue] = (0, 0, 0); //  Update delay time
+    }
+    pixelQueue++; //  Advance current queue
+    pixelCycle++; //  Advance current cycle
+    if (pixelQueue >= 3)
+        pixelQueue = 0; //  Loop
+    if (pixelCycle >= 256)
+        pixelCycle = 0; //  Loop
+    return patternInterval;
 }

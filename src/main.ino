@@ -264,15 +264,11 @@ void updatePatternStripe(int pat)
         pacifica_loop();
         break;
     case 6:
-        EVERY_N_MILLISECONDS(20)
-        {
-            fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64);
-            FOR_j(1, 5)
-            {
-                salut(j);
-            }
-            FastLED.show();
-        }
+
+        fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64);
+        salut();
+        FastLED.show();
+
         break;
     case 7:
         //    test2();
@@ -370,15 +366,12 @@ void analyzeAudioSerial()
     }
 }
 
-
 const uint8_t paletteCount = ARRAY_SIZE(paletteList);
 void nextPalette()
 {
     currentPaletteIndex = (currentPaletteIndex + 1) % paletteCount;
     targetPalette = paletteList[currentPaletteIndex];
 }
-
-
 
 void setup()
 {
@@ -420,6 +413,7 @@ void setup()
     }
     pinMode(AUDIO_IN_PIN, INPUT);
     preferences.end();
+    initWebSocket();
     Serial.println("setup done");
 }
 // frequency needs to be lower than LED_FREQ_LIM
@@ -448,7 +442,7 @@ float freq, mag;    // peak frequency and magnitude
 float lastBeat = 0; // time of last beat in millis()
 void loop()
 {
-
+    ws.cleanupClients();
     EVERY_N_MILLISECONDS(500) { colorTimer++; }
     EVERY_N_SECONDS(5)
     {
@@ -468,5 +462,12 @@ void loop()
 
     } // change patterns periodically
     updatePatternMatrix(gCurrentPatternNumber);
-    updatePatternStripe(6);
+    // updatePatternStripe(6);
+    uint8_t delay = patterns[patternIndex].drawFrame();
+
+    // send the 'leds' array out to the actual LED strip
+    FastLED.show();
+
+    // insert a delay to keep the framerate modest
+    FastLED.delay(delay);
 }

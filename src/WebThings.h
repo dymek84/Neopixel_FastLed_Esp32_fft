@@ -2,9 +2,109 @@
 
 #include "Imports.h"
 
-// PREFERENCES
-Preferences preferences; // We will store our variables here that we don't want to loose
+String elementValue1 = "effectus";
+String elementValue2 = "0";
+String message = "";
 
+void notifyClients()
+{
+
+    const uint8_t size = JSON_OBJECT_SIZE(1);
+    StaticJsonDocument<size> json;
+    json["currentEffect"] = String(elementValue1);
+    json["sliderValue2"] = String(elementValue2);
+
+    char buffer[99];
+    size_t len = serializeJson(json, buffer);
+    ws.textAll(buffer, len);
+}
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
+{
+    AwsFrameInfo *info = (AwsFrameInfo *)arg;
+    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+    {
+
+        const uint8_t size = JSON_OBJECT_SIZE(1);
+        StaticJsonDocument<size> json;
+        DeserializationError err = deserializeJson(json, data);
+        if (err)
+        {
+            Serial.print(F("deserializeJson() failed with code "));
+            Serial.println(err.c_str());
+            return;
+        }
+
+        const char *action = json["action"];
+        if (strcmp(action, "toggle") == 0)
+        {
+
+            notifyClients();
+        }
+    }
+}
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+{
+    switch (type)
+    {
+    case WS_EVT_CONNECT:
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        break;
+    case WS_EVT_DISCONNECT:
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        break;
+    case WS_EVT_DATA:
+        handleWebSocketMessage(arg, data, len);
+        break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+        break;
+    }
+}
+void initWebSocket()
+{
+    ws.onEvent(onEvent);
+    server.addHandler(&ws);
+}
+const char INDEXAP_HTML[] PROGMEM = R"rawliteral(
+
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+    <meta name="viewport" content="width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0">
+    <title> ESP32 Led Matrix Clock, update your, WIFI SETTINGS</title>
+    <style>
+        body {
+            background-color: #808080;
+            font-family: Arial, Helvetica, Sans-Serif;
+            Color: #000000;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h3> Enter your WiFi credentials</ h3>
+        <form action="/get" target="hidden-form">
+            <p><label> SSID : &nbsp;</label>
+                <input maxlength="30" name="SSIDname"><br>
+                <input type="submit" value="Save">
+        </form>
+        <form action="/get" target="hidden-form">
+            <label>Key: </label><input maxlength="30" name="SSIDpwd"><br>
+            <input type="submit" value="Save">
+            </p>
+        </form>
+        <form action="/get" target="hidden-form">
+            Press this button to reboot with the new Password and SSID name<br />
+            <input type="submit" value="Reboot">
+            <br />
+        </form>
+        <p></p>
+        <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+</html>
+  )rawliteral";
 boolean connectToNetwork(String s, String p)
 {
     const char *ssid = s.c_str();
@@ -38,21 +138,6 @@ void notFound(AsyncWebServerRequest *request)
     request->send(404, "text/plain", "Not found");
 } // runAPmode()
 
-String
-    whichFX,
-    digitAnimation,
-    digitHTMLcol,
-    BGHTMLcol,
-    scrolltext,
-    city,
-    apikey;
-int
-    overAllBrightness,
-    digitColor,
-    backgroundBrightness,
-    digitBrightness,
-    backgroundColor,
-    scrollspeed;
 /*
    Find and replace method, to inject variables into a HTML page
 */
@@ -60,19 +145,19 @@ String processor(const String &var)
 {
     if (var == "patternLED")
     {
-        return whichFX;
+        return patternLED;
     }
     else if (var == "paletteLED")
     {
-        return digitAnimation;
+        return paletteLED;
     }
     else if (var == "patternMatrix")
     {
-        return digitHTMLcol;
+        return patternMatrix;
     }
     else if (var == "paletteMatrix")
     {
-        return BGHTMLcol;
+        return paletteMatrix;
     }
     else if (var == "overAllBrightness")
     {
@@ -80,26 +165,121 @@ String processor(const String &var)
     }
     else if (var == "scrolltext")
     {
-        return String(backgroundBrightness);
-    }
-    else if (var == "digitBrightness")
-    {
-        return String(digitBrightness);
-    }
-
-    else if (var == "scrolltext")
-    {
         return String(scrolltext);
     }
     else if (var == "SSID")
     {
-        return String(scrollspeed);
+        return String(SSID);
     }
     else if (var == "password")
     {
-        return String(city);
+        return String(password);
     }
     return String();
+}
+void RunAPmode()
+{
+    WiFi.disconnect(true); // End All connections.
+    AsyncWebServer server(80);
+    WiFi.softAP(ssidAP, passwordAP);                               // Start ACCESSPOINT MODE with basic credentials
+    IPAddress IP = WiFi.softAPIP();                                // GET THE ACCESSPOINT IP
+    Serial.println("The IP of the settings page is: 192.168.4.1"); // SHOW IP IN SERIAL MONITOR
+    // Serial.println(WiFi.localIP());
+    preferences.begin("wificreds", false);                        // Make sure we have something to store our preferences in
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // The Home page so to say.
+        request->send_P(200, "text/html", INDEXAP_HTML, processor);
+    });
+
+    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) { // WHEN SOMEONE SUBMITS SOMETHING.... Like the credentials :)
+        String inputMessage;
+        const char *PARAM_WIFI = "SSIDname";
+        const char *PARAM_PWD = "SSIDpwd";
+        preferences.begin("wificreds", false);
+
+        if (request->hasParam(PARAM_WIFI))
+        {
+            inputMessage = request->getParam(PARAM_WIFI)->value();
+            preferences.putString("ssid", inputMessage);
+        }
+        else if (request->hasParam(PARAM_PWD))
+        {
+            inputMessage = request->getParam(PARAM_PWD)->value();
+            preferences.putString("password", inputMessage);
+        }
+        else
+        {
+            inputMessage = "Restarting and using new credentials";
+            ESP.restart();
+        }
+        Serial.println(inputMessage); // This prints the submitted variable on the serial monitor.. as a check
+        request->send(200, "text/text", inputMessage);
+    });
+    server.onNotFound(notFound);
+    server.begin();
+    Serial.print("AP mode runs on core: ");
+    Serial.println(xPortGetCoreID());
+
+    for (;;)
+    {
+        preferences.begin("wificreds", false);
+        delay(5000);
+        Serial.print(".");
+        //  Serial.println(preferences.getString("ssid"));
+        //  Serial.println(preferences.getString("password"));
+        preferences.end();
+    }
+}
+
+void displayIP()
+{
+    String ip = WiFi.localIP().toString();
+    int textScroller = -34;
+    int counter = 0;
+    String scrolltextip = "ip: " + ip;
+    int textlentgh = scrolltextip.length();
+
+    while (counter < (textlentgh * 10 * 1))
+    {
+        EVERY_N_MILLISECONDS(50)
+        {
+
+            if (textScroller >= textlentgh * 7)
+            {
+                textScroller = -34;
+            }
+
+            textScroller++;
+            counter++;
+        }
+
+        FastLED.show();
+    }
+}
+
+void displayIPAP()
+{
+    String ip = WiFi.localIP().toString();
+    int textScroller = -34;
+    int counter = 0;
+    String scrolltextip = "accesspoint ip: 192.168.4.1";
+    int textlentgh = scrolltextip.length();
+
+    while (counter < (textlentgh * 8 * 2))
+    {
+        EVERY_N_MILLISECONDS(80)
+        {
+
+            if (textScroller >= textlentgh * 7)
+            {
+                textScroller = -34;
+            }
+
+            textScroller++;
+            counter++;
+        }
+
+        FastLED.show();
+    }
 }
 
 /*
@@ -108,12 +288,21 @@ String processor(const String &var)
 */
 void RunWebserver()
 {
-    AsyncWebServer server(80);                 // Start the webserver
-    Serial.print("The IP of Men cave leds: "); // SHOW IP IN SERIAL MONITOR
+    // AsyncWebServer server(80);            // Start the webserver
+    Serial.print("The IP of ledclock: "); // SHOW IP IN SERIAL MONITOR
     Serial.println(WiFi.localIP());
-
+    // Serial.print("The wifi server runs on core: ");
     // Serial.println(xPortGetCoreID()); // Webserver should run on second core (0)
-
+    //  SPIFFS
+    if (!SPIFFS.begin(true))
+    {
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
+    }
+    else
+    {
+        // listDir(SPIFFS, "/", 2);
+    }
     // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/index.html", String(), false, processor); });
@@ -147,116 +336,35 @@ void RunWebserver()
                           Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
                       }
                   }
-                  /*
-                     The website will send the parameters that the user selects
-                     This part catches the paramters and stores them in preferences.
-                     This can later be picked-up by the rest of the code.
-                     These user parameters also will to be put in the GLOBALS.
-                  */
-                  if (request->hasParam("effect"))
-                  {
-                      inputMessage = request->getParam("effect")->value();
-                      preferences.putString("effect", inputMessage);
-                      // writeFile(SPIFFS, "/inputString.txt", inputMessage.c_str());
-                      whichFX = inputMessage;
-                  }
-                  else if (request->hasParam("digitOnOff"))
-                  {
-                      inputMessage = request->getParam("digitOnOff")->value();
-                      preferences.putString("digitOnOff", inputMessage);
-                      digitAnimation = inputMessage;
-                  }
-                  else if (request->hasParam("inputDigitCol"))
-                  {
-                      inputMessage = request->getParam("inputDigitCol")->value();
-                      // preferences.putString("inputDigitCol", inputMessage);
-                      digitColor = strtol(inputMessage.substring(1).c_str(), NULL, 16);
-                      // Serial.print("submitted color digit long: ");
-                      // Serial.println(digitColor);
-                      preferences.putLong("inputDigitCol", digitColor);
-                      preferences.putString("digitHTMLcol", inputMessage);
-                      digitHTMLcol = inputMessage;
-                  }
-                  else if (request->hasParam("inputBGCol"))
-                  {
-                      inputMessage = request->getParam("inputBGCol")->value();
-                      backgroundColor = strtol(inputMessage.substring(1).c_str(), NULL, 16);
-                      preferences.putLong("inputBGCol", backgroundColor);
-                      preferences.putString("BGHTMLcol", inputMessage);
-                      BGHTMLcol = inputMessage;
-                  }
 
-                  else if (
-                      request->hasParam("overAllBrightness"))
+                  if (request->hasParam("patternLED"))
+                  {
+                      inputMessage = request->getParam("patternLED")->value();
+                      // preferences.putString("patternLED", inputMessage);
+                      //  writeFile(SPIFFS, "/inputString.txt", inputMessage.c_str());
+                      Serial.println("received patternLED");
+                      Serial.println(inputMessage);
+                      nextPattern();
+                      request->send(200, "text/text", "success");
+                  }
+                  else if (request->hasParam("overAllBrightness"))
                   {
                       inputMessage = request->getParam("overAllBrightness")->value();
                       overAllBrightness = inputMessage.toInt();
                       preferences.putUInt("oaBrightness", overAllBrightness);
                   }
-                  else if (
-                      request->hasParam("backgroundBrightness"))
-                  {
-                      inputMessage = request->getParam("backgroundBrightness")->value();
-                      backgroundBrightness = inputMessage.toInt();
-                      preferences.putUInt("bgBrightness", backgroundBrightness);
-                  }
-                  else if (
-                      request->hasParam("digitBrightness"))
-                  {
-                      inputMessage = request->getParam("digitBrightness")->value();
-                      preferences.putUInt("fgBrightness", inputMessage.toInt());
-                      digitBrightness = inputMessage.toInt();
-                  }
-
-                  else if (
-                      request->hasParam("scrolltext"))
+                  else if (request->hasParam("scrolltext"))
                   {
                       inputMessage = request->getParam("scrolltext")->value();
                       preferences.putString("scrolltext", inputMessage);
                       scrolltext = inputMessage;
                   }
-                  else if (
-                      request->hasParam("scrollspeed"))
+                  else if (request->hasParam("scrollspeed"))
                   {
                       inputMessage = request->getParam("scrollspeed")->value();
                       preferences.putString("scrollspeed", inputMessage);
                       scrollspeed = inputMessage.toInt();
                   }
-                  else if (
-                      request->hasParam("restart"))
-                  {
-                      inputMessage = "Restarting and useing new credentials";
-                      ESP.restart();
-                  }
-                  else if (
-                      request->hasParam("apikey"))
-                  {
-                      inputMessage = request->getParam("apikey")->value();
-                      preferences.putString("apikey", inputMessage);
-                      apikey = inputMessage;
-                  }
-                  else if (
-                      request->hasParam("city"))
-                  {
-                      inputMessage = request->getParam("city")->value();
-                      preferences.putString("city", inputMessage);
-                      city = inputMessage;
-                  }
-                  else if (
-                      request->hasParam("ldrpin"))
-                  {
-                      inputMessage = request->getParam("ldrpin")->value();
-                      preferences.putString("ldrpin", inputMessage);
-                      // ldrpin = inputMessage.toInt();
-                  }
-                  else if (
-                      request->hasParam("ledpin"))
-                  {
-                      inputMessage = request->getParam("ledpin")->value();
-                      preferences.putString("ledpin", inputMessage);
-                      // ledpin = inputMessage.toInt();
-                  }
-
                   else
                   {
                       inputMessage = "No message sent";
@@ -265,11 +373,10 @@ void RunWebserver()
                   request->send(200, "text/text", inputMessage);
                   preferences.end(); // don't leave the door open :) always close when you leave.
               });
+    notifyClients();
     server.onNotFound(notFound);
-
     server.begin();
 }
-
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
     Serial.printf("Listing directory: %s\r\n", dirname);
@@ -344,81 +451,4 @@ void webSetup()
         FastLED.delay(1000); // to allow to start the 2nd processor.
         connectedToNetwork = true;
     }
-}
-
-/*----------------------------------------------------------------------------------------
-  Platforms: ESP32 and ESP8266
-  Language: C/C++/Arduino
-  File: EEPROMHandler.h
-  Parent: 2022_ESPMessageBoard_Neamatrix.cpp
-  ----------------------------------------------------------------------------------------
-  Description:
-  ESP32 EEPROM
-  Simple read and write string to EEPROM
-----------------------------------------------------------------------------------------*/
-
-#include <EEPROM.h>
-
-void eepromWriteString(int address, String data)
-{
-    int _size = data.length();
-    int i;
-    for (i = 0; i < _size; i++)
-    {
-        EEPROM.writeChar(address + i, data[i]);
-    }
-    EEPROM.writeChar(address + _size, '\0'); // Add termination null character for String Data
-    EEPROM.commit();                         // save to EEPROM flash
-    delay(100);
-}
-
-String eepromReadString(int address, int16_t buffer_size)
-{
-    char data[buffer_size];
-    int len = 0;
-    unsigned char k;
-    k = EEPROM.readChar(address);
-    while (k != '\0' && len < buffer_size)
-    { // Read until null character
-        k = EEPROM.readChar(address + len);
-        data[len] = k;
-        len++;
-    }
-    data[len] = '\0';
-    return String(data);
-}
-void eepromWriteChar(int address, char data)
-{
-    EEPROM.writeChar(address, data);
-    EEPROM.commit(); // save to EEPROM flash
-    delay(100);
-}
-
-char eepromReadChar(int address)
-{
-    return EEPROM.readChar(address);
-}
-
-void eepromWriteInt(int address, int data)
-{
-    EEPROM.writeInt(address, data);
-    EEPROM.commit(); // save to EEPROM flash
-    delay(100);
-}
-
-int eepromReadInt(int address)
-{
-    return EEPROM.readInt(address);
-}
-
-void eepromWriteByte(int address, byte data)
-{
-    EEPROM.write(address, data);
-    EEPROM.commit(); // save to EEPROM flash
-    delay(100);
-}
-
-byte eepromReadByte(int address)
-{
-    return EEPROM.read(address);
 }

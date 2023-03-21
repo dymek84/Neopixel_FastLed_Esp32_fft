@@ -3,11 +3,11 @@ String
     digitAnimation,
     digitHTMLcol,
     BGHTMLcol,
-    scrolltext,
+
     city,
     apikey;
 int
-    overAllBrightness,
+
     digitColor,
     backgroundBrightness,
     digitBrightness,
@@ -130,8 +130,8 @@ String processor(const String &var)
   return String();
 }
 // WIFI
-const char *ssidAP = "ESP32-LedMatrixClock"; // IN CASE WE CANNOT CONNECT TO THE WIFI THE ESP32 WILL PRESENT ITSELF AS AN ACCESSPOINTER USING THIS NAME
-const char *passwordAP = "1234abcd";         // AND YOU CAN ACCESS THAT ACCESSPOINT USING THIS SIMPLE PASSWORD
+const char *ssidAP = "LedController-webserver"; // IN CASE WE CANNOT CONNECT TO THE WIFI THE ESP32 WILL PRESENT ITSELF AS AN ACCESSPOINTER USING THIS NAME
+const char *passwordAP = "12345678";            // AND YOU CAN ACCESS THAT ACCESSPOINT USING THIS SIMPLE PASSWORD
 /* Function to run in ACCESSPOINT MODE */
 // RunAPmode code
 const char INDEXAP_HTML[] PROGMEM = R"rawliteral(

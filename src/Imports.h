@@ -19,12 +19,12 @@
 #include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 #include "SPIFFS.h"
-
+// #include <Arduino_JSON.h>
 #include <ArduinoJson.h>
-// #include <ESPmDNS.h>
-// #include <HTTPClient.h>      // Needed to get some information from the internetz.. .like weather data
-// #include <AsyncElegantOTA.h> // A library to allow Over The Air Updates :)
-//  PREFERENCES
+//  #include <ESPmDNS.h>
+//  #include <HTTPClient.h>      // Needed to get some information from the internetz.. .like weather data
+//  #include <AsyncElegantOTA.h> // A library to allow Over The Air Updates :)
+//   PREFERENCES
 #include <Preferences.h> // Store the prefences in permanent memory in a much easier way than SPIFFS
 #include "main.h"
 // #include "colorWipe.cpp"
@@ -38,12 +38,13 @@
 #include "colorsAndPallette.h"
 #include "helperFuction.h"
 #include "audioProcess.h"
+#include "displayClock.h"
 #include "MatrixPatterns/AudioPatternsMatrix.h"
 #include "StripePatterns/AudioPatternsStripe.h"
 
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
 
-// #include "WebThings.h"
+#include "WebThings.h"
 
-#include "testweb.h"
+// #include "testweb.h"

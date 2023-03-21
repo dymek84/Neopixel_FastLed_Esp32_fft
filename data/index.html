@@ -1,212 +1,211 @@
 <!DOCTYPE HTML>
-<html>
-
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
-    <title>Men cave LEDs controller</title>
-    <link rel="stylesheet" href="style.css" type="text/css">
-    <script type="text/javascript" async="" src="script.js"></script>
-    <script src="script.js"></script>
-
-</head>
-<div name="hidden-form" id="snackbar">
-</div>
-
-<body class="centered-wrapper">
-    <div class="centered-content tabs">
-        <ul class="circles">
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="42px" width="30px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="63px" width="45px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="127px" width="100px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="42px" width="30px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="63px" width="45px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="127px" width="100px"></img></div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img></div>
-                <div>
-            </li>
-        </ul>
-        <div class="tab">
-            <button class="tablinks" onclick="openCity(event, 'StripeEffects')" id="defaultOpen">LED Effects</button>
-            <button class="tablinks" onclick="openCity(event, 'MatrixEffects')">Clock Effects</button>
-            <button class="tablinks" onclick="openCity(event, 'Options')">Options</button>
-            <button class="tablinks" onclick="openCity(event, 'Settings')">Settings</button>
-        </div>
-
-        <!-- Stripe / leds -->
-        <div id="StripeEffects" class="tabcontent led">
-            <h3>LED Stripe Effects</h3>
-
-
-
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Current effect: - %stripeeffect% <br /><br /> </div>
-                <div> <button class="btn btn-custom" type="submit" value="prev"
-                        name="patternLED">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <button class="btn btn-custom" type="submit" value="next" name="patternLED">Next</button>
-
-                </div>
-            </form>
-            <h3>LED Stripe Color Palette</h3>
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Current palette: - %stripepalette% <br /><br /> </div>
-                <div><button class="btn btn-custom" name="patternLED" type="submit"
-                        value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        class="btn btn-custom" name="patternLED" type="submit" value="next">Next</button></div> <br />
-            </form>
-        </div>
-
-        <!-- Matrix / clock -->
-        <div id="MatrixEffects" class="tabcontent clock">
-            <h3>Clock Effects</h3>
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Current effect: - %matrixeffect% <br /><br /> </div>
-
-
-
-                <div><button type="submit" class="btn btn-custom" name="effectLED"
-                        value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        type="submit" class="btn btn-custom" name="effectLED" value="next">Next</button></div>
-
-
-
-            </form>
-            <h3>Clock Color Palette</h3>
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Current palette: - %matrixpalette% <br /><br /> </div>
-
-
-
-                <div><button type="submit" class="btn btn-custom" name="patternLED"
-                        value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        type="submit" class="btn btn-custom" name="patternLED" value="next">Next</button></div>
-
-
-                <br />
-            </form>
-
-        </div>
-        <div id="Options" class="tabcontent">
-
-
-            <form action="/get" target="hidden-form">
-                <h3>Brightness</h3>
-                <div class="wrapper">
-                    <div class="wrap" style="--val: %overAllBrightness%; --min: 1; --max: 100; --n: 4">
-                        <input name="overAllBrightness" type="range" min="1" max="100" value="%overAllBrightness%"
-                            class="slider" id="overAllBrightness" onchange="updateSliderPWM(this)" list="l" />
-                        <output for="overAllBrightness"></output>
-                        <datalist id="l">
-                            <option value="0" label="0"></option>
-                            <option value="25" label="25"></option>
-                            <option value="50" label="50"></option>
-                            <option value="75" label="75"></option>
-                            <option value="100" label="100"></option>
-                        </datalist>
-                    </div>
-                </div>
-            </form>
-            <h3> Text to display on matrix</h3>
-            <form action="/get" target="hidden-form">
-                Text to display on the clock: <br />
-                <input type="text" id="scrolltext" name="scrolltext" value="%scrolltext%" maxlength="20">
-                <input type="submit" value="Submit">
-            </form>
-
-
-
-        </div>
-
-        <div id="Settings" class="tabcontent">
-            <h3> Settings </h3>
-            <h3> User Settings </h3>
-
-            <form action="/get" target="hidden-form">
-                SSID: <br />
-                <input type="text" id="SSID" name="SSID" value="%SSID%">
-                <br>
-                Password: <br />
-                <input type="text" id="pass" name="pass" value="%password%">
-                <input type="submit" value="Submit">
-            </form> <br />
-
-
-            <br />
-            <h3> Clock setting </h3>
-            Change the data output pin on ESP32 to communicatie with the LEDmatrix (restart required):
-
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Some settings: <br />
-
-                </div>
-            </form>
-            <br />
-
-
-
-
-
-
-
-
-
-        </div>
+<html> <head> <meta charset="utf-8"> <meta http-equiv="X-UA-Compatible"
+            content="IE=edge"> <meta name="viewport"
+            content="width=device-width, initial-scale=1">
+        <script src="https://code.jquery.com/jquery-3.6.3.js"></script> <title>Men
+            cave LEDs controller</title>
+        <link rel="stylesheet" href="style.css" type="text/css"> <script
+            type="text/javascript" async="" src="script.js"></script>
+        <script src="script.js"></script> </head>
+    <div name="hidden-form" id="snackbar">
     </div>
 
-    <iframe style="display:none" name="hidden-form"></iframe>
-</body>
+    <body class="centered-wrapper">
+        <div class="centered-content tabs">
+            <ul class="circles">
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="84px" width="60px"></img></div>
+                <div></li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="42px" width="30px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="63px" width="45px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="127px" width="100px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="84px" width="60px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="84px" width="60px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="42px" width="30px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="63px" width="45px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="127px" width="100px"></img></div>
+                <div>
+                </li>
+                <li>
+                    <div> <img
+                            src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
+                            height="84px" width="60px"></img></div>
+                <div>
+                </li>
+            </ul>
+            <div class="tab">
+                <button class="tablinks" onclick="openCity(event,
+                    'StripeEffects')" id="defaultOpen">LED Effects</button>
+                <button class="tablinks" onclick="openCity(event,
+                    'MatrixEffects')">Clock Effects</button>
+                <button class="tablinks" onclick="openCity(event, 'Options')">Options</button>
+                <button class="tablinks" onclick="openCity(event, 'Settings')">Settings</button>
+            </div>
 
-<script>
+            <!-- Stripe / leds -->
+            <div id="StripeEffects" class="tabcontent led">
+                <h3>LED Stripe Effects</h3>
+
+
+
+                <form action="/get" target="hidden-form">
+                    <div class="wrapper">
+                        Current effect: - <div id="currentEffect">
+
+                        </div><br><br> </div>
+                    <div> <button class="btn btn-custom" type="submit"
+                            value="prev" id="sliderValue2"
+                            name="patternLED">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <button class="btn btn-custom" type="submit"
+                            value="next" name="patternLED">Next</button>
+                    </div>
+                </form>
+                <h3>LED Stripe Color Palette</h3>
+                <form action="/get" target="hidden-form">
+                    <div class="wrapper">
+                        Current palette: - %paletteLED% <br><br> </div>
+                    <div><button class="btn btn-custom" name="paletteLED"
+                            type="submit"
+                            value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                            class="btn btn-custom" name="paletteLED"
+                            type="submit" value="next">Next</button></div> <br
+                        />
+                </form>
+            </div>
+
+            <!-- Matrix / clock -->
+            <div id="MatrixEffects" class="tabcontent clock">
+                <h3>Clock Effects</h3>
+                <form action="/get" target="hidden-form">
+                    <div class="wrapper">
+                        Current effect: - %patternMatrix% <br><br> </div>
+                    <div><button type="submit" class="btn btn-custom"
+                            name="patternMatrix"
+                            value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                            type="submit" class="btn btn-custom"
+                            name="patternMatrix" value="next">Next</button></div>
+                </form>
+                <h3>Clock Color Palette</h3>
+                <form action="/get" target="hidden-form">
+                    <div class="wrapper">
+                        Current palette: - %paletteMatrix% <br><br> </div>
+                    <div><button type="submit" class="btn btn-custom"
+                            name="paletteMatrix"
+                            value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                            type="submit" class="btn btn-custom"
+                            name="paletteMatrix" value="next">Next</button></div>
+                    <br>
+                </form>
+
+            </div>
+            <div id="Options" class="tabcontent">
+
+
+                <form action="/get" target="hidden-form">
+                    <h3>Brightness</h3>
+                    <div class="wrapper">
+                        <div class="wrap" style="--val: %overAllBrightness%;
+                            --min: 1; --max: 100; --n: 4">
+                            <input name="overAllBrightness" type="range" min="1"
+                                max="100" value="%overAllBrightness%"
+                                class="slider" id="overAllBrightness"
+                                onchange="updateSliderPWM(this)" list="l" />
+                            <output for="overAllBrightness"></output>
+                            <datalist id="l">
+                                <option value="0" label="0"></option>
+                                <option value="25" label="25"></option>
+                                <option value="50" label="50"></option>
+                                <option value="75" label="75"></option>
+                                <option value="100" label="100"></option>
+                            </datalist>
+                        </div>
+                    </div>
+                </form>
+                <h3> Text to display on matrix</h3>
+                <form action="/get" target="hidden-form">
+                    Text to display on the clock: <br>
+                    <input type="text" id="scrolltext" name="scrolltext"
+                        value="%scrolltext%" maxlength="20">
+                    <input type="submit" value="Submit">
+                </form>
+
+
+
+            </div>
+
+            <div id="Settings" class="tabcontent">
+                <h3> Settings </h3>
+                <h3> User Settings </h3>
+
+                <form action="/get" target="hidden-form">
+                    SSID: <br>
+                    <input type="text" id="SSID" name="SSID" value="%SSID%">
+                    <br>
+                    Password: <br>
+                    <input type="text" id="pass" name="pass" value="%password%">
+                    <input type="submit" value="Submit">
+                </form> <br>
+
+
+                <br>
+                <h3> Clock setting </h3>
+                Change the data output pin on ESP32 to communicatie with the
+                LEDmatrix (restart required):
+
+                <form action="/get" target="hidden-form">
+                    <div class="wrapper">
+                        Some settings: <br>
+
+                    </div>
+                </form>
+                <br>
+            </div>
+        </div>
+        <iframe style="display:none" name="hidden-form"></iframe>
+    </body>
+
+    <script>
     // Get the element with id="defaultOpen" and click on it
     document.getElementById("defaultOpen").click();
 </script>
-
 </html>

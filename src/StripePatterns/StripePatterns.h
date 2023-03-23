@@ -3,28 +3,6 @@
 
 #include "Imports.h"
 
-typedef uint8_t (*SimplePattern)();
-typedef SimplePattern SimplePatternList[];
-typedef struct
-{
-    SimplePattern drawFrame;
-    String name;
-} PatternAndName;
-typedef PatternAndName PatternAndNameList[];
-
-// List of patterns to cycle through.  Each is defined as a separate function below.
-
-const PatternAndNameList patterns = {
-    {colorWipe, "colorWipe"},
-    {pacifica_loop, "Pacifica"},
-    {rainbow, "Rainbow"},
-    {rippless, "Ripple"},
-    {salut, "Salut"},
-    {theaterChase, "Theater Chase"},
-    {rainbow, "Rainbow"},
-    {theaterChaseRainbow, "Theater Chase Rainbow"},
-};
-
 uint8_t colorWipe()
 {
 
@@ -328,3 +306,27 @@ uint8_t theaterChaseRainbow()
         pixelCycle = 0; //  Loop
     return patternInterval;
 }
+
+typedef uint8_t (*SimplePatterna)();
+typedef SimplePatterna SimplePatternList[];
+typedef struct
+{
+    SimplePatterna drawFrame;
+    String name;
+} PatternAndName;
+typedef PatternAndName PatternAndNameList[];
+
+// List of patterns to cycle through.  Each is defined as a separate function below.
+
+const PatternAndNameList patterns = {
+    {colorWipe, "colorWipe"},
+    {pacifica_loop, "Pacifica"},
+    {rainbow, "Rainbow"},
+    {rippless, "Ripple"},
+    {salut, "Salut"},
+    {theaterChase, "Theater Chase"},
+    {rainbow, "Rainbow"},
+    {theaterChaseRainbow, "Theater Chase Rainbow"},
+};
+
+const uint8_t patternCount = ARRAY_SIZE(patterns);

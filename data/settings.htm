@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WiFi Settings</title>
+
+    <!-- request CSS from the ESP8266 web server -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/minicolors.min.css">
+
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dark-mode.css">
+    <link rel="icon" href="images/atom196.png">
+  </head>
+
+  <body>
+
+<body>
+
+  <nav class="navbar navbar-default navbar-static-top bg-light" id="top" role="banner">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1" aria-expanded="false">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="https://www.evilgeniuslabs.org" target="_blank"><img src="images/atom196.png" style="width: 22px; height: 22px;" /></a>
+        <a class="navbar-brand" href="https://www.evilgeniuslabs.org" target="_blank" style="font-size: 16px;">Evil Genius Labs</a>
+        <div class="navbar-brand" style="font-size: 16px;">&</div>
+		    <a class="navbar-brand" href="https://www.thingiverse.com/Surrbradl08/designs" target="_blank"><img src="images/surr.png" style="width: 22px; height: 22px;" /></a>
+        <a class="navbar-brand" href="https://www.thingiverse.com/Surrbradl08/designs" target="_blank" style="font-size: 16px;">Surrbradl08</a>
+      </div>
+      <div class="collapse navbar-collapse" id="navbar-collapse-1">
+        <ul class="nav navbar-nav">
+          <li><a href="/" title="Home">Home</a></li>
+          <li class="active bg-light"><a href="/settings.htm" class="bg-light" title="Settings">Settings <span class="sr-only bg-light">(current)</span></a></li>
+          <li>
+            <a>
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="darkSwitch" />
+                <label class="custom-control-label" for="darkSwitch">Dark Mode</label>
+              </div>
+              <script src="js/dark-mode-switch.min.js"></script>
+            </a>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+          <li>
+            <a href="https://github.com/NimmLor/esp8266-fastled-iot-webserver">
+              <img style="height: 16px;" src="images/github.ico" />
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div id="container" class="container">
+
+    <form class="form-horizontal" id="form" action="/settings" method="post">
+
+      <div class="form-group">
+        <label for="inputSSID" class="col-sm-2 control-label">SSID</label>
+        <div class="col-sm-10">
+          <input type="text" autocorrect="off" autocapitalize="none"
+            class="form-control" id="inputSSID" name="ssid" placeholder="SSID (Wi-Fi network name)">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inputPassword" class="col-sm-2 control-label">Password</label>
+        <div class="col-sm-10">
+          <input type="password" class="form-control" id="inputPassword" name="password" placeholder="Password">
+        </div>
+      </div>
+
+      <div id="mdnsSupportEntry" class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <hr style="margin-bottom: 20px;margin-top: 5px;" />
+        </div>
+        <label for="inputHostname" class="col-sm-2 control-label">Hostname</label>
+        <div class="col-sm-10">
+          <input type="text" autocorrect="off" autocapitalize="none"
+            class="form-control" id="input-deviceHostname" name="hostname" placeholder="Hostname">
+        </div>
+      </div>
+
+      <div id="mqttSupportEntry" class="hidden">
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <hr style="margin-bottom: 5px;margin-top: 5px;" />
+          </div>
+        </div>
+        <div id="form-group-mqtt" class="form-group" data-field-type="Boolen">
+          <label for="btn-group-mqtt" class="col-sm-2 control-label">MQTT Support</label>
+          <div class="col-sm-10">
+            <div class="btn-group" role="group" id="btn-group-mqtt">
+              <button type="button" class="btn btn-default" id="btnOnmqtt">On</button>
+              <button type="button" class="btn btn-default" id="btnOffmqtt">Off</button>
+            </div>
+            <input type="hidden" id="input-mqttEnabled" name="mqtt-enabled">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputMqttHostname" class="col-sm-2 control-label">MQTT Hostname</label>
+          <div class="col-sm-10">
+            <input type="text" autocorrect="off" autocapitalize="none"
+              class="form-control" id="input-mqttHostname" name="mqtt-hostname" placeholder="MQTT host name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputMqttPort" class="col-sm-2 control-label">MQTT Port</label>
+          <div class="col-sm-10">
+            <input type="text" autocorrect="off" autocapitalize="none"
+              class="form-control" id="input-mqttPort" name="mqtt-port" placeholder="MQTT host port">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputMqttUser" class="col-sm-2 control-label">MQTT Username</label>
+          <div class="col-sm-10">
+            <input type="text" autocorrect="off" autocapitalize="none"
+              class="form-control" id="input-mqttUsername" name="mqtt-user" placeholder="MQTT username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="mqttPassword" class="col-sm-2 control-label">MQTT Password</label>
+          <div class="col-sm-10">
+            <input type="password" class="form-control" id="mqttPassword"
+              name="mqtt-password" placeholder="MQTT password">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputMqttTopic" class="col-sm-2 control-label">MQTT Topic</label>
+          <div class="col-sm-10">
+            <input type="text" autocorrect="off" autocapitalize="none"
+              class="form-control" id="input-mqttTopic" name="mqtt-topic" placeholder="MQTT topic">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputMqttSetTopic" class="col-sm-2 control-label">MQTT Set Topic</label>
+          <div class="col-sm-10">
+            <input type="text" autocorrect="off" autocapitalize="none"
+              class="form-control" id="input-mqttSetTopic" name="mqtt-set-topic" placeholder="MQTT Set topic">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="inputMqttDeviceName" class="col-sm-2 control-label">MQTT Device Name</label>
+          <div class="col-sm-10">
+            <input type="text" autocorrect="off" autocapitalize="none"
+              class="form-control" id="input-mqttDevicename" name="mqtt-device-name" placeholder="MQTT device name">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <hr style="margin-bottom: 5px;margin-top: 5px;" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-default">Update</button>
+          <a role="button" data-toggle="modal" data-target="#reset_modal" data-action="add" class="pull-right btn btn-danger" style="margin-left: 10px;" title="Reset">RESET</a>
+          <a role="button" href='/reboot' class="pull-right btn btn-info" style="margin-left: 10px;" title="Reboot">Reboot</a>
+          <a id="alexaSupportEntry" role="button" href='/alexa' target="_blank" class="pull-right btn btn-success hidden" style="margin-left: 10px;" title="Alexa">Alexa Pairing</a>
+          <a id="otaSupportEntry" role="button" href="/ota" target="_blank" class="pull-right btn btn-success hidden" title="OTA">OTA Update</a>
+
+        </div>
+      </div>
+
+    </form>
+
+  </div>
+
+  <div class="modal fade" id="reset_modal" tabindex="-1" role="dialog" aria-labelledby="Reset_Modal" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="edit_room_lable">Reset settings</h4>
+          </div>
+          <div class="modal-body">
+              <div class="form-group form-group-lg row">
+                <div class="col-sm-offset-3 col-sm-6">
+                  <form action="/reset" method="post">
+                    <input type="submit" class="btn btn-warning btn-lg btn-block" value="Delete WIFI settings" >
+                    <input type="hidden" name="type" value="wifi">
+                  </form>
+                </div>
+              </div>
+              <div class="form-group form-group-lg row">
+                <div class="col-sm-offset-3 col-sm-6">
+                  <form action="/reset" method="post">
+                    <input type="submit" class="btn btn-danger btn-lg btn-block" value="Delete ALL settings" >
+                    <input type="hidden" name="type" value="all">
+                  </form>
+                </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <!-- request js from the ESP8266 web server -->
+  <script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/minicolors.min.js"></script>
+
+  <script src="js/app.js"></script>
+
+</body>
+
+</html>

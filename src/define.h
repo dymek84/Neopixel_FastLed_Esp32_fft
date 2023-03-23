@@ -165,7 +165,7 @@ String
     patternMatrix,
     paletteMatrix,
     scrolltext,
-    ssidAP,
+    ssidAP = "Esp-LedServerAccessPoint",
     passwordAP,
     password,
     SSID;
@@ -183,17 +183,9 @@ struct NamedPalette
         : Palette(p), Name(n) {}
 };
 
-typedef void (*SimplePatternList[])();
-using pattern_func = void (*)(bool newpatbool, CRGB *dest);
-typedef struct
-{
-    pattern_func Pattern;
-    const String Name;
-} NamedPattern;
-
 extern NamedPalette Palette_List[];
-extern NamedPattern Pattern_List[];
 extern const uint16_t NUMpalettes;
+uint8_t StripePatternIndex;
 /********************** PATTERNS / PALETTES ***************************/
 //
 //

@@ -366,13 +366,37 @@ void analyzeAudioSerial()
     }
 }
 
-const uint8_t paletteCount = ARRAY_SIZE(paletteList);
+// const uint8_t paletteCount = ARRAY_SIZE(paletteList);
 void nextPalette()
 {
     currentPaletteIndex = (currentPaletteIndex + 1) % paletteCount;
     targetPalette = paletteList[currentPaletteIndex];
 }
+boolean connectToNetwork(String s, String p)
+{
+    const char *ssid = s.c_str();
+    const char *password = p.c_str();
 
+    Serial.print("ACCESSING WIFI: ");
+    Serial.println(ssid);
+    WiFi.begin(ssid, password);
+
+    int timeout = 0;
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(2000);
+        Serial.println("Connecting to WiFi..");
+        if (timeout == 5)
+        {
+            return false;
+            break;
+        }
+        Serial.println(".");
+        timeout++;
+    }
+    Serial.println(WiFi.localIP());
+    return true;
+} // network()
 void setup()
 {
     boolean connectedToNetwork = false; // We want to know if we have a network before proceeding
@@ -388,9 +412,18 @@ void setup()
     preferences.getString("ssid");
     if (connectToNetwork(preferences.getString("ssid"), preferences.getString("password")))
     {
-
-        RunWebserver();
-
+        //  SPIFFS
+        if (!SPIFFS.begin(true))
+        {
+            Serial.println("An Error has occurred while mounting SPIFFS");
+            return;
+        }
+        else
+        {
+           // listDir(SPIFFS, "/", 2);
+        }
+        // RunWebserver();
+        setupSite();
         FastLED.delay(1000); // to allow to start the 2nd processor.
         connectedToNetwork = true;
     }
@@ -398,7 +431,7 @@ void setup()
     {
         Serial.println("No WIFI, let's offer an accesspoint");
 
-        RunAPmode();
+        //  RunAPmode();
 
         FastLED.delay(1000); // to allow to start the 2nd processor.
         connectedToNetwork = false;
@@ -413,7 +446,7 @@ void setup()
     }
     pinMode(AUDIO_IN_PIN, INPUT);
     preferences.end();
-    initWebSocket();
+    // initWebSocket();
     Serial.println("setup done");
 }
 // frequency needs to be lower than LED_FREQ_LIM
@@ -442,7 +475,8 @@ float freq, mag;    // peak frequency and magnitude
 float lastBeat = 0; // time of last beat in millis()
 void loop()
 {
-    ws.cleanupClients();
+    loopSite();
+    /// ws.cleanupClients();
     EVERY_N_MILLISECONDS(500) { colorTimer++; }
     EVERY_N_SECONDS(5)
     {
@@ -463,7 +497,7 @@ void loop()
     } // change patterns periodically
     updatePatternMatrix(gCurrentPatternNumber);
     // updatePatternStripe(6);
-    uint8_t delay = patterns[patternIndex].drawFrame();
+    uint8_t delay = patterns[StripePatternIndex].drawFrame();
 
     // send the 'leds' array out to the actual LED strip
     FastLED.show();

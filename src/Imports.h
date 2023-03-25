@@ -10,15 +10,12 @@
 #include <arduinoFFT.h>
 #include <FastLED_NeoMatrix.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
 // WebThings
 
 #include <WiFi.h>
-#include <AsyncTCP.h>
-// #include "ESPAsyncWebServer.h"
-#include "SPIFFS.h"
+// #include <AsyncTCP.h>
+#include "ESPAsyncWebServer.h"
+#include <SPIFFS.h>
 // #include <Arduino_JSON.h>
 #include <ArduinoJson.h>
 //  #include <ESPmDNS.h>
@@ -45,6 +42,6 @@
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
 
-// #include "WebThings.h"
+ #include "WebThings.h"
 
-#include "HTMLSite.h"
+//#include "HTMLSite.h"

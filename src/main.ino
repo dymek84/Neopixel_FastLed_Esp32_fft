@@ -17,9 +17,7 @@
 
 void nextPattern()
 {
-    gCurrentPatternNumber == 3 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
-    // FastLED.clear();
-    Serial.println("nextPattern();");
+    gCurrentPatternNumber == 1 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
 }
 uint8_t BeatsPerMinute = 62;
 void bpm(ledTypeConnected whichLeds)
@@ -208,10 +206,10 @@ void updatePatternMatrix(int pat)
         Enoise(MATRIXLEDS);
         break;
     case 1:
-        displayUpdate();
+        bpm(MATRIXLEDS);
         break;
     case 2:
-        bpm(MATRIXLEDS);
+        displayUpdate();
         break;
     case 3:
         break;
@@ -369,7 +367,8 @@ void analyzeAudioSerial()
 // const uint8_t paletteCount = ARRAY_SIZE(paletteList);
 void nextPalette()
 {
-    currentPaletteIndex = (currentPaletteIndex + 1) % paletteCount;
+
+    currentPaletteIndex = (currentPaletteIndex + 1) % NUMpalettes;
     targetPalette = paletteList[currentPaletteIndex];
 }
 boolean connectToNetwork(String s, String p)
@@ -420,10 +419,10 @@ void setup()
         }
         else
         {
-           // listDir(SPIFFS, "/", 2);
+            listDir(SPIFFS, "/", 2);
         }
         // RunWebserver();
-        setupSite();
+
         FastLED.delay(1000); // to allow to start the 2nd processor.
         connectedToNetwork = true;
     }
@@ -431,7 +430,7 @@ void setup()
     {
         Serial.println("No WIFI, let's offer an accesspoint");
 
-        //  RunAPmode();
+        RunAPmode();
 
         FastLED.delay(1000); // to allow to start the 2nd processor.
         connectedToNetwork = false;
@@ -446,37 +445,13 @@ void setup()
     }
     pinMode(AUDIO_IN_PIN, INPUT);
     preferences.end();
-    // initWebSocket();
+    setupWebServer();
     Serial.println("setup done");
 }
-// frequency needs to be lower than LED_FREQ_LIM
-#define LED_FREQ_LIM 150
 
-// magnitude needs to be greater than 1.15*avgMag
-#define LED_MAG_LIM 1.15
-
-// average magnitude is calculated by dividing with avgSampleCount, which is limited to AVG_COUNT_LIMIT
-#define AVG_COUNT_LIMIT 500
-
-// once avgSampleCount reaches AVG_COUNT_LIMIT, it gets reset back to AVG_COUNT_LOWER
-#define AVG_COUNT_LOWER 100
-
-#define BPM 180
-
-// Define this to use reciprocal multiplication for division and some more speedups that might decrease precision
-#define FFT_SPEED_OVER_PRECISION
-float magAvg = 0;
-int avgSampleCount = 1;
-
-int fade = 0; // fading of leds
-double beatTime = 60.0 / BPM * 1000;
-
-float freq, mag;    // peak frequency and magnitude
-float lastBeat = 0; // time of last beat in millis()
 void loop()
 {
-    loopSite();
-    /// ws.cleanupClients();
+
     EVERY_N_MILLISECONDS(500) { colorTimer++; }
     EVERY_N_SECONDS(5)
     {
@@ -486,6 +461,7 @@ void loop()
     {
         nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
     }
+    const uint16_t StripePatternsNumber = sizeof(patterns) / sizeof(patterns[0]);
     EVERY_N_SECONDS(20)
     {
         nextPattern();
@@ -493,15 +469,16 @@ void loop()
         Serial.print(currentPatternName);
         Serial.print(" - number: ");
         Serial.println(gCurrentPatternNumber);
+        StripePatternIndex = (StripePatternIndex + 1) % StripePatternsNumber;
+        Serial.print("Stripe Pattern: ");
+        Serial.println(patterns[StripePatternIndex].name);
 
     } // change patterns periodically
     updatePatternMatrix(gCurrentPatternNumber);
     // updatePatternStripe(6);
     uint8_t delay = patterns[StripePatternIndex].drawFrame();
-
     // send the 'leds' array out to the actual LED strip
     FastLED.show();
-
     // insert a delay to keep the framerate modest
     FastLED.delay(delay);
 }

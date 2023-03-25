@@ -1,70 +1,98 @@
 #pragma once
 
 #include "Imports.h"
+uint8_t patternNumber = 0;
 
-String elementValue1 = "effectus";
-String elementValue2 = "0";
-String message = "";
-
-void notifyClients()
+String processor(const String &var)
 {
-
-    const uint8_t size = JSON_OBJECT_SIZE(1);
-    StaticJsonDocument<size> json;
-    json["currentEffect"] = String(elementValue1);
-    json["sliderValue2"] = String(elementValue2);
-
-    char buffer[99];
-    size_t len = serializeJson(json, buffer);
-    ws.textAll(buffer, len);
-}
-
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
-{
-    AwsFrameInfo *info = (AwsFrameInfo *)arg;
-    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+    if (var == "patternLED")
     {
-
-        const uint8_t size = JSON_OBJECT_SIZE(1);
-        StaticJsonDocument<size> json;
-        DeserializationError err = deserializeJson(json, data);
-        if (err)
-        {
-            Serial.print(F("deserializeJson() failed with code "));
-            Serial.println(err.c_str());
-            return;
-        }
-
-        const char *action = json["action"];
-        if (strcmp(action, "toggle") == 0)
-        {
-
-            notifyClients();
-        }
+        return patternLED;
     }
-}
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
-{
-    switch (type)
+    else if (var == "paletteLED")
     {
-    case WS_EVT_CONNECT:
-        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-        break;
-    case WS_EVT_DISCONNECT:
-        Serial.printf("WebSocket client #%u disconnected\n", client->id());
-        break;
-    case WS_EVT_DATA:
-        handleWebSocketMessage(arg, data, len);
-        break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-        break;
+        return paletteLED;
     }
+    else if (var == "patternMatrix")
+    {
+        return patternMatrix;
+    }
+    else if (var == "paletteMatrix")
+    {
+        return paletteMatrix;
+    }
+    else if (var == "overAllBrightness")
+    {
+        return String(overAllBrightness);
+    }
+    else if (var == "scrolltext")
+    {
+        return String(scrolltext);
+    }
+    else if (var == "SSID")
+    {
+        return String(SSID);
+    }
+    else if (var == "password")
+    {
+        return String(password);
+    }
+    return String();
 }
-void initWebSocket()
+void onRootRequest(AsyncWebServerRequest *request)
 {
-    ws.onEvent(onEvent);
-    server.addHandler(&ws);
+    request->send(SPIFFS, "/index.html", "text/html", false, processor);
+}
+void notifyClients(String message = "Default", String type = "Default")
+{
+    ws.printfAll("{\"%s\":\"%s\"}", message, type);
+}
+
+/*
+   Sometimes a page just doesn't exists.. we need to tell them
+*/
+void notFound(AsyncWebServerRequest *request)
+{
+    request->send(404, "text/plain", "Not found");
+} // runAPmode()
+
+void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
+{
+    Serial.printf("Listing directory: %s\r\n", dirname);
+
+    File root = fs.open(dirname);
+    if (!root)
+    {
+        Serial.println("- failed to open directory");
+        return;
+    }
+    if (!root.isDirectory())
+    {
+        Serial.println(" - not a directory");
+        return;
+    }
+
+    File file = root.openNextFile();
+    while (file)
+    {
+        if (file.isDirectory())
+        {
+            Serial.print("  DIR : ");
+            Serial.println(file.name());
+            if (levels)
+            {
+                listDir(fs, file.path(), levels - 1);
+            }
+        }
+        else
+        {
+            Serial.print("  FILE: ");
+            Serial.print(file.name());
+            Serial.print("\tSIZE: ");
+            Serial.println(file.size());
+        }
+        file = root.openNextFile();
+    }
 }
 const char INDEXAP_HTML[] PROGMEM = R"rawliteral(
 
@@ -105,82 +133,11 @@ const char INDEXAP_HTML[] PROGMEM = R"rawliteral(
 </body>
 </html>
   )rawliteral";
-boolean connectToNetwork(String s, String p)
-{
-    const char *ssid = s.c_str();
-    const char *password = p.c_str();
 
-    Serial.print("ACCESSING WIFI: ");
-    Serial.println(ssid);
-    WiFi.begin(ssid, password);
-
-    int timeout = 0;
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(2000);
-        Serial.println("Connecting to WiFi..");
-        if (timeout == 5)
-        {
-            return false;
-            break;
-        }
-        Serial.println(".");
-        timeout++;
-    }
-    Serial.println(WiFi.localIP());
-    return true;
-} // network()
-/*
-   Sometimes a page just doesn't exists.. we need to tell them
-*/
-void notFound(AsyncWebServerRequest *request)
-{
-    request->send(404, "text/plain", "Not found");
-} // runAPmode()
-
-/*
-   Find and replace method, to inject variables into a HTML page
-*/
-String processor(const String &var)
-{
-    if (var == "patternLED")
-    {
-        return patternLED;
-    }
-    else if (var == "paletteLED")
-    {
-        return paletteLED;
-    }
-    else if (var == "patternMatrix")
-    {
-        return patternMatrix;
-    }
-    else if (var == "paletteMatrix")
-    {
-        return paletteMatrix;
-    }
-    else if (var == "overAllBrightness")
-    {
-        return String(overAllBrightness);
-    }
-    else if (var == "scrolltext")
-    {
-        return String(scrolltext);
-    }
-    else if (var == "SSID")
-    {
-        return String(SSID);
-    }
-    else if (var == "password")
-    {
-        return String(password);
-    }
-    return String();
-}
 void RunAPmode()
 {
     WiFi.disconnect(true); // End All connections.
-    AsyncWebServer server(80);
+    WiFi.mode(WIFI_AP);
     WiFi.softAP(ssidAP, passwordAP);                               // Start ACCESSPOINT MODE with basic credentials
     IPAddress IP = WiFi.softAPIP();                                // GET THE ACCESSPOINT IP
     Serial.println("The IP of the settings page is: 192.168.4.1"); // SHOW IP IN SERIAL MONITOR
@@ -230,86 +187,19 @@ void RunAPmode()
     }
 }
 
-void displayIP()
+// ----------------------------------------------------------------------------
+// Web server initialization
+// ----------------------------------------------------------------------------
+
+void initWebServer()
 {
-    String ip = WiFi.localIP().toString();
-    int textScroller = -34;
-    int counter = 0;
-    String scrolltextip = "ip: " + ip;
-    int textlentgh = scrolltextip.length();
+    server.on("/", onRootRequest);
+    server.serveStatic("/", SPIFFS, "/");
 
-    while (counter < (textlentgh * 10 * 1))
-    {
-        EVERY_N_MILLISECONDS(50)
-        {
-
-            if (textScroller >= textlentgh * 7)
-            {
-                textScroller = -34;
-            }
-
-            textScroller++;
-            counter++;
-        }
-
-        FastLED.show();
-    }
-}
-
-void displayIPAP()
-{
-    String ip = WiFi.localIP().toString();
-    int textScroller = -34;
-    int counter = 0;
-    String scrolltextip = "accesspoint ip: 192.168.4.1";
-    int textlentgh = scrolltextip.length();
-
-    while (counter < (textlentgh * 8 * 2))
-    {
-        EVERY_N_MILLISECONDS(80)
-        {
-
-            if (textScroller >= textlentgh * 7)
-            {
-                textScroller = -34;
-            }
-
-            textScroller++;
-            counter++;
-        }
-
-        FastLED.show();
-    }
-}
-
-/*
-   This function runs the main webpage and handles all webtrafic.
-   New settings will be stored in the globals AND in memory
-*/
-void RunWebserver()
-{
-    // AsyncWebServer server(80);            // Start the webserver
-    Serial.print("The IP of ledclock: "); // SHOW IP IN SERIAL MONITOR
-    Serial.println(WiFi.localIP());
-    // Serial.print("The wifi server runs on core: ");
-    // Serial.println(xPortGetCoreID()); // Webserver should run on second core (0)
-    //  SPIFFS
-    if (!SPIFFS.begin(true))
-    {
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        return;
-    }
-    else
-    {
-        // listDir(SPIFFS, "/", 2);
-    }
-    // server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(SPIFFS, "/index.html", String(), false, processor); });
-
+    server.on("/logo", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/logo.png", "image/png"); });
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/style.css", "text/css"); });
-
     server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
               { request->send(SPIFFS, "/script.js", "text/css"); });
     server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request)
@@ -373,82 +263,113 @@ void RunWebserver()
                   request->send(200, "text/text", inputMessage);
                   preferences.end(); // don't leave the door open :) always close when you leave.
               });
-    notifyClients();
+
     server.onNotFound(notFound);
     server.begin();
+    Serial.print("Web server runs on core: ");
+    Serial.println(xPortGetCoreID());
 }
-void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
+
+// ----------------------------------------------------------------------------
+// WebSocket initialization
+// ----------------------------------------------------------------------------
+
+void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
-    Serial.printf("Listing directory: %s\r\n", dirname);
+    AwsFrameInfo *info = (AwsFrameInfo *)arg;
+    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
+    {
 
-    File root = fs.open(dirname);
-    if (!root)
-    {
-        Serial.println("- failed to open directory");
-        return;
-    }
-    if (!root.isDirectory())
-    {
-        Serial.println(" - not a directory");
-        return;
-    }
+        const uint8_t size = JSON_OBJECT_SIZE(6);
+        StaticJsonDocument<size> json;
+        DeserializationError err = deserializeJson(json, data);
+        if (err)
+        {
+            Serial.print(F("deserializeJson() failed with code "));
+            Serial.println(err.c_str());
+            return;
+        }
 
-    File file = root.openNextFile();
-    while (file)
-    {
-        if (file.isDirectory())
+        const char *action = json["action"];
+        if (strcmp(action, "nextPattern") == 0)
         {
-            Serial.print("  DIR : ");
-            Serial.println(file.name());
-            if (levels)
-            {
-                listDir(fs, file.path(), levels - 1);
-            }
+            nextPattern();
+            notifyClients("patternNumber", String(patternNumber));
+            preferences.putString("patternNumber", String(patternNumber));
         }
-        else
+        if (strcmp(action, "stripPatternSpeedUp") == 0)
         {
-            Serial.print("  FILE: ");
-            Serial.print(file.name());
-            Serial.print("\tSIZE: ");
-            Serial.println(file.size());
+            patternInterval <= 1 ? patternInterval == 1 : patternInterval -= 10;
+            notifyClients("stripePatternSpeed", String(256 - patternInterval));
+            preferences.putString("patternInterval", String(patternInterval));
         }
-        file = root.openNextFile();
+        if (strcmp(action, "stripPatternSpeedDown") == 0)
+        {
+            patternInterval >= 256 ? patternInterval == 256 : patternInterval += 10;
+            notifyClients("stripePatternSpeed", String(256 - patternInterval));
+            preferences.putString("patternInterval", String(patternInterval));
+        }
+        if (strcmp(action, "toggle4") == 0)
+        {
+
+            notifyClients();
+        }
+
+        if (strcmp(action, "toggle5") == 0)
+        {
+
+            notifyClients();
+        }
+
+        if (strcmp(action, "toggle6") == 0)
+        {
+
+            notifyClients();
+        }
+        if (strcmp(action, "rank8") == 0)
+        {
+            Serial.print(F("rank8 action"));
+
+            notifyClients();
+        }
     }
 }
-void webSetup()
+
+void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
 {
-    /*
-       Let's setup a wifi connection
-       False: no wifi connection to router. If that is the case, we will setup an AP
-       True: yeah... we have a network connection. An now we can proceed!!
-       We will run our webserver stuff on a different core, so all the led stuff can stay on the other core..
-    */
-    boolean connectedToNetwork = false; // We want to know if we have a network before proceeding
-
-    preferences.begin("wificreds", false); // The WIFI credentials are stored here
-    delay(1000);
-
-    preferences.getString("ssid");
-
-    //  SPIFFS
-    if (!SPIFFS.begin(true))
+    switch (type)
     {
-        Serial.println("An Error has occurred while mounting SPIFFS");
-        return;
+    case WS_EVT_CONNECT:
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        break;
+    case WS_EVT_DISCONNECT:
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        break;
+    case WS_EVT_DATA:
+        handleWebSocketMessage(arg, data, len);
+        break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+        break;
     }
-    else
-    {
-        listDir(SPIFFS, "/", 2);
-    }
+    // notifyClients();
+}
 
-    // Connect to network
-    // This can be false... no WIFI access and we need a way to set this via ACCESSPOINT more.
-    if (connectToNetwork(preferences.getString("ssid"), preferences.getString("password")))
-    {
+void initWebSocket()
+{
+    ws.onEvent(onEvent);
+    server.addHandler(&ws);
+    Serial.println("WebSocket server started.");
+}
 
-        RunWebserver(); // Function to implement the task
+// ----------------------------------------------------------------------------
+// SPIFFS initialization
+// ----------------------------------------------------------------------------
+void setupWebServer()
+{
 
-        FastLED.delay(1000); // to allow to start the 2nd processor.
-        connectedToNetwork = true;
-    }
+    //  initSPIFFS();
+    // initWiFi();
+    initWebSocket();
+    initWebServer();
 }

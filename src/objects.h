@@ -21,5 +21,5 @@ FastLED_NeoMatrix *FastLedMatrix = new FastLED_NeoMatrix(
 // PREFERENCES
 Preferences preferences; // We will store our variables here that we don't want to loose
 
-//AsyncWebServer server(80);
-//AsyncWebSocket ws("/ws");
+AsyncWebServer server(HTTP_PORT);
+AsyncWebSocket ws("/ws");

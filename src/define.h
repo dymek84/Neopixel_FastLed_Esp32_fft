@@ -79,7 +79,7 @@ int chngePatternSpeed = 0; // patternInterval
 int selected = 12;         // number of pattern are now showing
 int counter = 12;          // number of patter to be selected
 
-long patternInterval = 20000;
+long patternInterval = 20;
 long previousMillis = 0;
 int gCurrentPatternNumber = 1;
 /**********************MENU===================== END ==
@@ -198,3 +198,5 @@ uint8_t StripePatternIndex;
 #define FOR_j_down(from, to) for (int j = (from); j > (to); j--) // loop for "j" to descending
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 /*************************** MACROS ***************************/
+
+#define HTTP_PORT 80

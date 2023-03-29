@@ -23,3 +23,12 @@ Preferences preferences; // We will store our variables here that we don't want 
 
 AsyncWebServer server(HTTP_PORT);
 AsyncWebSocket ws("/ws");
+
+typedef void (*SimplePatterna)();
+typedef SimplePatterna SimplePatternList[];
+typedef struct
+{
+    SimplePatterna drawFrame;
+    String name;
+} PatternAndName;
+typedef PatternAndName PatternAndNameList[];

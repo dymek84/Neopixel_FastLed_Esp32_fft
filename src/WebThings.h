@@ -234,7 +234,6 @@ void initWebServer()
                       //  writeFile(SPIFFS, "/inputString.txt", inputMessage.c_str());
                       Serial.println("received patternLED");
                       Serial.println(inputMessage);
-                      nextPattern();
                       request->send(200, "text/text", "success");
                   }
                   else if (request->hasParam("overAllBrightness"))
@@ -294,7 +293,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
         if (strcmp(action, "nextPattern") == 0)
         {
             nextPattern();
-            notifyClients("patternNumber", String(patternNumber));
+            notifyClients("patternName", String(patternsStripe[CurrentStripePatternNumber].name));
+            preferences.putString("patternNumber", String(patternNumber));
+        }
+        if (strcmp(action, "prevPattern") == 0)
+        {
+            prevPattern();
+            notifyClients("patternName", String(patternsStripe[CurrentStripePatternNumber].name));
             preferences.putString("patternNumber", String(patternNumber));
         }
         if (strcmp(action, "stripPatternSpeedUp") == 0)

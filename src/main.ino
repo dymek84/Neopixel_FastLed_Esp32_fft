@@ -15,33 +15,6 @@
 --------------------------------------------------------------------------------------------------------------------------------------------------------------
  */
 
-void nextPattern()
-{
-    gCurrentPatternNumber == 1 ? gCurrentPatternNumber = 0 : gCurrentPatternNumber++;
-}
-uint8_t BeatsPerMinute = 62;
-void bpm(ledTypeConnected whichLeds)
-{
-    currentPatternName = "bpm";
-    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
-
-    uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
-    if (whichLeds == MATRIXLEDS)
-    {
-        for (int i = 0; i < NUM_LEDS_MATRIX; i++)
-        {
-            matrix[i] = ColorFromPalette(currentPalette, gHue + (i * 2), beat - gHue + (i * 10));
-        }
-    }
-    else
-    {
-        for (int i = 0; i < NUM_LEDS_STRIPE; i++)
-        {
-            stripe[i] = ColorFromPalette(currentPalette, gHue + (i * 2), beat - gHue + (i * 10));
-        }
-    }
-    FastLED.show();
-}
 #define SAMPLES2 32 // Must be a power of 2
 double vReal2[SAMPLES2];
 double vImag2[SAMPLES2];
@@ -50,39 +23,6 @@ int result_vu1;
 int result_vu2;
 int result_vu3;
 
-void reorg_to_led()
-{
-    // Reorganize number of spectrum to number leds
-    for (int i = 0; i < NUM_LEDS_STRIPE / 2; i++)
-    {
-        int iteration = map(i, 0, NUM_LEDS_STRIPE / 2, 3, SAMPLES2 - 5);
-        vResult2[i] = vReal[iteration];
-    }
-}
-
-void sampling()
-{
-    // ++ Sampling
-    for (int i = 0; i < SAMPLES2; i++)
-    {
-        // delay(10);
-        int value = analogRead(AUDIO_IN_PIN) - 512; // Read from ADC and subtract DC offset caused value
-        vReal2[i] = value / 4;                      // Copy to bins after compressing
-        vImag2[i] = 0;
-    }
-    // -- Sampling
-}
-
-void FFT_comp()
-{
-    // ++ FFT
-    FFT.DCRemoval(vReal2, SAMPLES);
-    FFT.Windowing(vReal2, SAMPLES, FFT_WIN_TYP_RECTANGLE, FFT_FORWARD);
-    FFT.Compute(vReal2, vImag2, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal2, vImag2, SAMPLES);
-    // -- FFT
-}
-
 void VU_meter()
 {
 #define chanel 27
@@ -90,9 +30,9 @@ void VU_meter()
     {
         analyzeAudio();
     }
-    int input_vu1 = constrain(map(vReal[25], 0, 512, 0, NUM_LEDS_STRIPE / 2), 0, 255);
-    int input_vu2 = constrain(map(vReal[3], 0, 512, 0, NUM_LEDS_STRIPE / 2), 0, 255);
-    int input_vu3 = constrain(map(vReal[16], 0, 512, 0, NUM_LEDS_STRIPE / 2), 0, 255);
+    int input_vu1 = constrain(map(bandValues[25], 0, 3000, 0, NUM_LEDS_STRIPE / 2), 0, 255);
+    int input_vu2 = constrain(map(bandValues[3], 0, 3000, 0, NUM_LEDS_STRIPE / 2), 0, 255);
+    int input_vu3 = constrain(map(bandValues[16], 0, 3000, 0, NUM_LEDS_STRIPE / 2), 0, 255);
     Serial.println(input_vu1);
     Serial.println(input_vu2);
     Serial.println(input_vu3);
@@ -155,18 +95,18 @@ void VU_meter()
         }
     }
     FastLED.show();
-    //  fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 5);
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 150);
 }
 
 void displayUpdate()
 {
-    analyzeAudio();
+    // analyzeAudio();
     int color = 0;
     for (int i = 0; i < MATRIX_WIDTH; i++)
     {
         for (int j = 0; j < MATRIX_HEIGHT; j++)
         {
-            if (j <= Intensity[i])
+            if (j <= bandValues[i])
             { // Light everything within the intensity range
                 if (j % 2 == 0)
                 {
@@ -198,116 +138,14 @@ void displayUpdate()
     FastLED.show();
 }
 
-void updatePatternMatrix(int pat)
-{ // call the pattern currently being created
-    switch (pat)
-    {
-    case 0:
-        Enoise(MATRIXLEDS);
-        break;
-    case 1:
-        bpm(MATRIXLEDS);
-        break;
-    case 2:
-        displayUpdate();
-        break;
-    case 3:
-        break;
-    case 4:
-        // displayVUWhite();
-        break;
-    case 5:
-        //   rainbow();
-        break;
-    case 6:
-        //    test();
-        break;
-    case 7:
-        //    test2();
-        break;
-    case 8:
-
-        break;
-    case 9:
-
-        break;
-    case 10:
-
-        break;
-    case 11:
-
-        break;
-    }
-}
-void updatePatternStripe(int pat)
-{ // call the pattern currently being created
-    switch (pat)
-    {
-    case 0:
-        VUStripe();
-        break;
-    case 1:
-        rippless();
-        break;
-    case 2:
-        bpm(STRIPELEDS);
-        break;
-    case 3:
-        VU_meter();
-        break;
-    case 4:
-        water_fall_vu();
-        break;
-    case 5:
-        pacifica_loop();
-        break;
-    case 6:
-
-        fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64);
-        salut();
-        FastLED.show();
-
-        break;
-    case 7:
-        //    test2();
-        break;
-    case 8:
-
-        break;
-    case 9:
-
-        break;
-    case 10:
-
-        break;
-    case 11:
-
-        break;
-    }
-}
-
 void displayVUWhite()
 {
-    currentPatternName = "VuWhite";
-    // FastLED.clear();
 
-    for (int i = 0; i < Intensity[0]; i++)
+    for (int i = 0; i < bandValues[0]; i++)
     {
         stripe[i + NUM_LEDS_STRIPE / 2] = CRGB::White;
         stripe[NUM_LEDS_STRIPE / 2 - i] = CRGB::White;
     }
-}
-
-void displayVURainbow()
-{
-    currentPatternName = "VURainbow";
-    // FastLED.clear();
-    for (int i = 0; i < Intensity[0]; i++)
-    {
-        stripe[i + NUM_LEDS_STRIPE / 2] = CHSV(((i * 256 / 12) + 10 + colorTimer), 255, bright);
-        stripe[NUM_LEDS_STRIPE / 2 - i] = CHSV(((i * 256 / 12) + 10 + colorTimer), 255, bright);
-    }
-    FastLED.show();
 }
 
 void drawOnSerial(int scale)
@@ -327,40 +165,13 @@ void analyzeAudioSerial()
         for (byte band = 0; band < NUM_BANDS; band++)
         {
             Serial.print(band);
-            Serial.print(": ");
-            Serial.print("bandValues ");
+            Serial.print(" : ");
             Serial.print(bandValues[band]);
-            Serial.print(" -> ");
-            int barHeight = bandValues[band]; // / 400;
-            Serial.print(">>>>>>>>>>>>>>>> ");
-            Serial.print("barHeight = bandValues[band] / 400 - >");
-            Serial.print(barHeight);
-            Serial.print(" <<<<<<<<<<<<<<<<");
-            barHeight = map(barHeight, 0, 200, 1, 8);
-            Serial.print(barHeight);
-
-            if (barHeight > 255)
-                barHeight = 255;
-            Serial.print("(");
-            Serial.print(barHeight);
-            Serial.println(") ");
+            drawOnSerial(bandValues[band]);
         }
-        Serial.println("__________________________________________________________ ");
-        int avrg = 0;
-
-        for (byte band = 0; band < NUM_BANDS; band++)
-        {
-
-            int barHeight = bandValues[band]; // / 400;
-
-            barHeight = map(barHeight, 0, 1000, 1, 255);
-            if (barHeight > 256)
-                barHeight = 256;
-
-            drawOnSerial(barHeight);
-
-            avrg += barHeight;
-        }
+        Serial.println(" ");
+        Serial.println(" xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ");
+        Serial.println(" ");
     }
 }
 
@@ -443,42 +254,69 @@ void setup()
             //   displayIPAP();
         }
     }
-    pinMode(AUDIO_IN_PIN, INPUT);
+    pinMode(MIC_IN_PIN, INPUT);
     preferences.end();
     setupWebServer();
+    sampling_period_us = (1.0 / SAMPLING_FREQ) * pow(10.0, 6);
+    // Calculate cuttoff frequencies,meake a logarithmic scale base basePOt
+    double basePot = pow(SAMPLING_FREQ / 2.0, 1.0 / FREQUENCY_BANDS);
+    coutoffFrequencies[0] = basePot;
+    for (int i = 1; i < FREQUENCY_BANDS; i++)
+    {
+        coutoffFrequencies[i] = basePot * coutoffFrequencies[i - 1];
+    }
+
     Serial.println("setup done");
 }
 
 void loop()
 {
+    // Serial.println(analogRead(MIC_IN_PIN));
+    EVERY_N_MILLISECONDS(500)
+    {
+        colorTimer++;
+        //  Serial.println(patternsStripe[CurrentStripePatternNumber].name);
 
-    EVERY_N_MILLISECONDS(500) { colorTimer++; }
+        // analyzeAudioSerial();
+    }
     EVERY_N_SECONDS(5)
     {
         nextPalette();
     }
     EVERY_N_MILLISECONDS(40)
     {
+
         nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
     }
-    const uint16_t StripePatternsNumber = sizeof(patterns) / sizeof(patterns[0]);
+
     EVERY_N_SECONDS(20)
     {
-        nextPattern();
 
-        Serial.print(currentPatternName);
-        Serial.print(" - number: ");
-        Serial.println(gCurrentPatternNumber);
-        StripePatternIndex = (StripePatternIndex + 1) % StripePatternsNumber;
-        Serial.print("Stripe Pattern: ");
-        Serial.println(patterns[StripePatternIndex].name);
+        //  CurrentStripePatternNumber = (CurrentStripePatternNumber + 1) % StripePatternsAmount;
+        //  Serial.print("Stripe Pattern: ");
+        //  Serial.println(patternsStripe[CurrentStripePatternNumber].name);
 
     } // change patterns periodically
-    updatePatternMatrix(gCurrentPatternNumber);
-    // updatePatternStripe(6);
-    uint8_t delay = patterns[StripePatternIndex].drawFrame();
-    // send the 'leds' array out to the actual LED strip
+
+    EVERY_N_MILLIS(delayStripe)
+    {
+        patternsStripe[CurrentStripePatternNumber].drawFrame();
+
+        //   patternsStripe[12].drawFrame();
+    }
+    // analyzeAudio();
+    // VU_meter();
+    // getSamples();
+    // analyzeAudioSerial();
+    // stripeVuBandsSolidColor();
+
     FastLED.show();
-    // insert a delay to keep the framerate modest
-    FastLED.delay(delay);
+}
+void nextPattern()
+{
+    CurrentStripePatternNumber >= StripePatternsAmount ? CurrentStripePatternNumber = StripePatternsAmount : CurrentStripePatternNumber++;
+}
+void prevPattern()
+{
+    CurrentStripePatternNumber <= 0 ? CurrentStripePatternNumber = 0 : CurrentStripePatternNumber--;
 }

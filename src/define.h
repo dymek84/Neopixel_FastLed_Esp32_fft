@@ -4,33 +4,35 @@
 #include "Imports.h"
 
 /********************** FFT ***************************/
-#define SAMPLES 512         // Must be a power of 2 (512)
-#define MULTIPLY_BY 1       // in case we want to amlify output
-#define SAMPLING_FREQ 36000 // Hz, must be 40000 or less due to ADC conversion time. Determines
-                            // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
-uint16_t AMPLITUDE = 3000;  // Depending on your audio source level, you may need to alter this
-                            // value. Can be used as a 'sensitivity' control.
-
+#define SAMPLES 512                                // Must be a power of 2 (512)
+#define MULTIPLY_BY 1                              // in case we want to amlify output
+#define SAMPLING_FREQ 20000                        // Hz, must be 40000 or less due to ADC conversion time. Determines
+                                                   // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
+uint16_t AMPLITUDE = 2000;                         // Depending on your audio source level, you may need to alter this
+                                                   // value. Can be used as a 'sensitivity' control.
+#define FREQUENCY_BANDS 14                         // band number
 #define COLOR_ORDER GRB                            // If colours look wrong, play with this
 #define CHIPSET WS2812B                            // LED strip type
-#define NUM_BANDS 32                               // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
+#define NUM_BANDS 8                                // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
 #define NOISE 200                                  // Used as a crude noise filter, values below this are ignore
 #define MATRIX_WIDTH 32                            // width of each matrix [xres]-[NUM_COLS]
 #define MATRIX_HEIGHT 8                            // height of each matrix [yres]-[NUM_ROWS]
 #define BAR_WIDTH (MATRIX_WIDTH / (NUM_BANDS - 1)) // If width >= 8 light 1 LED width per bar, >= 16 light 2 LEDs width bar etc
 #define TOP (MATRIX_HEIGHT - 0)                    // Don't allow the bars to go offscreen
 #define SERPENTINE false                           // Set to false if your LEDS are connected end to end, true if serpentine
-const int sampleWindow = 50;                       // Sample window width in mS (50 mS = 20Hz)
+const uint8_t sampleWindow = 50;                   // Sample window width in mS (50 mS = 20Hz)
 unsigned int sample;
-int Intensity[32] = {}; // initialize Frequency Intensity to zero
-int Displacement = 1;
+// int Intensity[32] = {}; // initialize Frequency Intensity to zero
+uint8_t Displacement = 1;
 unsigned int sampling_period_us;
 byte peak[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BANDS
-int oldBarHeights[MATRIX_WIDTH];
-int bandValues[MATRIX_WIDTH];
+uint8_t oldBarHeights[MATRIX_WIDTH];
+uint8_t bandValues[MATRIX_WIDTH];
 double vReal[SAMPLES];
 double vImag[SAMPLES];
 unsigned long newTimeForAudio;
+float reference = log10(100.0);
+double coutoffFrequencies[FREQUENCY_BANDS];
 /********************** FFT ***************************/
 //
 //
@@ -50,8 +52,8 @@ unsigned long newTimeForAudio;
 // #define photoresistor 39
 #define LED_PIN_MATRIX 23 // Data pin to matrix
 #define LED_PIN_STRIPE 16 // Data pin to stripe
-#define AUDIO_IN_PIN 35   // Signal in on this pin
-#define MIC_IN_PIN 38     // Signal in on this pin
+#define AUDIO_IN_PIN 38   // Signal in on this pin
+#define MIC_IN_PIN 35     // Signal in on this pin
 /********************** BOUNCING BALLS ***************************/
 //
 //
@@ -67,18 +69,17 @@ unsigned long newTimeForAudio;
 /********************** MENU ***************************/
 unsigned long startTime = 0;
 unsigned long timeOut = 500;
-boolean showMenu = false; // goes true if button is pressed
-boolean moreTime = false; // goes true if button is pressed and menu is still shown
-int menuNumber = 0;       // menuname
-int percentage = 0;       //???
-int changeColor = 0;      // COLORS value from 0 to 20 to change color from array colors[]
-int changeLedBright = 0;  // stripeBrightness
-int bright = map(changeLedBright, 0, 20, 0, 255);
-int chageClockBright = 0;  // clockBright
-int chngePatternSpeed = 0; // patternInterval
-int selected = 12;         // number of pattern are now showing
-int counter = 12;          // number of patter to be selected
-
+boolean showMenu = false;  // goes true if button is pressed
+boolean moreTime = false;  // goes true if button is pressed and menu is still shown
+uint8_t menuNumber = 0,    // menuname
+    percentage = 0,        //???
+    changeColor = 0,       // COLORS value from 0 to 20 to change color from array colors[]
+    changeLedBright = 0,   // stripeBrightness
+    chageClockBright = 0,  // clockBright
+    chngePatternSpeed = 0, // patternInterval
+    selected = 12,         // number of pattern are now showing
+    counter = 12;          // number of patter to be selected
+uint8_t bright = map(changeLedBright, 0, 20, 0, 255);
 long patternInterval = 20;
 long previousMillis = 0;
 int gCurrentPatternNumber = 1;
@@ -116,7 +117,20 @@ float COR[NUM_BALLS];                     // Coefficient of Restitution (bounce 
 //
 //
 /********************** BUTTONS OPTIONS ***************************/
-int buttonsValues[11][2] = {{86, 95}, {126, 134}, {194, 205}, {162, 173}, {332, 342}, {507, 512}, {678, 684}, {842, 856}, {927, 934}, {998, 1006}, {1018, 1023}};
+uint8_t buttonDebounceTime = 200;
+uint16_t delayss;
+int buttonsValues[11][2] = {
+    {92, 150},
+    {210, 134},
+    {194, 205},
+    {162, 173},
+    {332, 342},
+    {507, 512},
+    {678, 684},
+    {842, 856},
+    {927, 934},
+    {998, 1006},
+    {1018, 1023}};
 String buttonNames[11] = {
     "Select",
     "Pattern Minus",
@@ -130,6 +144,7 @@ String buttonNames[11] = {
     "Clock Brighness Minus",
     "Clock Brighness Plus",
 };
+
 /********************** BUTTONS OPTIONS ***************************/
 //
 //
@@ -185,7 +200,13 @@ struct NamedPalette
 
 extern NamedPalette Palette_List[];
 extern const uint16_t NUMpalettes;
-uint8_t StripePatternIndex;
+String
+    currentStripePatternName,
+    currentMatrixPatternName;
+uint8_t
+    delayStripe = 0,
+    BeatsPerMinute,
+    CurrentStripePatternNumber = 0;
 /********************** PATTERNS / PALETTES ***************************/
 //
 //
@@ -200,3 +221,5 @@ uint8_t StripePatternIndex;
 /*************************** MACROS ***************************/
 
 #define HTTP_PORT 80
+int result_vu[8],
+    input_vu[8];

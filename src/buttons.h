@@ -4,38 +4,20 @@
 
 void buttons()
 {
-    // int buttonVal = digitalRead(button);
 
-    int sensorValue = analogRead(36);
+
+    int sensorValue = analogRead(34);
 
     unsigned long currentMillis = millis();
-    if (sensorValue > 86 && sensorValue < 1023)
-    {
-        if (showMenu)
-        {
-            moreTime = true;
-        }
-        else
-        {
-            showMenu = true;
-        }
-        if (millis() - delayEEPROM > (1000 * 60))
-        {
-            EEPROM.write(0, selected);
-            EEPROM.write(1, changeLedBright);
-            EEPROM.write(2, changeColor);
-            EEPROM.write(3, chngePatternSpeed);
-            EEPROM.write(4, chageClockBright);
-            delayEEPROM = millis();
-            Serial.println("EEPROM Updated");
-        }
-    }
+
     if (sensorValue > 86 && sensorValue < 95)
     {
+
+
         // button 1
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
-            Serial.println("Button pressed! SELECT ");
+            Serial.println("Button pressed! next pattern ");
             selected = counter;
         }
         delayss = millis();
@@ -44,7 +26,7 @@ void buttons()
     {
         menuNumber = 0;
         // button 2
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! Mode MINUS");
             if (counter <= 0)
@@ -62,7 +44,7 @@ void buttons()
     {
         menuNumber = 0;
         // button 3
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! Mode PLUS");
             if (counter >= 16)
@@ -80,7 +62,7 @@ void buttons()
     if (sensorValue > 162 && sensorValue < 173)
     {
         // button 4
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! stripeBrightness MINUS");
 
@@ -101,7 +83,7 @@ void buttons()
     if (sensorValue > 332 && sensorValue < 342)
     {
         // button 5
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! stripeBrightness PLUS");
             if (changeLedBright > 230)
@@ -122,7 +104,7 @@ void buttons()
     if (sensorValue > 507 && sensorValue < 512)
     {
         // button 6
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! changeColor MINUS");
             if (changeColor <= 25)
@@ -142,7 +124,7 @@ void buttons()
     if (sensorValue > 678 && sensorValue < 684)
     {
         // button 7
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! changeColor PLUS");
             if (changeColor > 255)
@@ -162,7 +144,7 @@ void buttons()
     if (sensorValue > 842 && sensorValue < 856)
     {
         // button 8
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! SPEEDS MINUS");
             if (chngePatternSpeed <= 25)
@@ -182,7 +164,7 @@ void buttons()
     if (sensorValue > 927 && sensorValue < 934)
     {
         // button 9
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! SPEEDS PLUS");
             if (chngePatternSpeed > 255)
@@ -202,7 +184,7 @@ void buttons()
     if (sensorValue > 998 && sensorValue < 1006)
     {
         // button 10
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! chageClockBright MINUS");
             if (chageClockBright <= 25)
@@ -222,7 +204,7 @@ void buttons()
     if (sensorValue > 1018 && sensorValue < 1023)
     {
         // button 11
-        if (millis() - delayss > 200)
+        if (millis() - delayss > buttonDebounceTime)
         {
             Serial.println("Button pressed! chageClockBright PLUS");
             if (chageClockBright > 230)

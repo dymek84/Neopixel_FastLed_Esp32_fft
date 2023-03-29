@@ -2,17 +2,22 @@
 #pragma once
 
 #include "Imports.h"
-
-uint8_t colorWipe()
+void addGlitter(uint8_t chanceOfGlitter = 200)
+{
+    if (random8() < chanceOfGlitter)
+    {
+        stripe[random16(NUM_LEDS_STRIPE)] += CRGB::White;
+    }
+}
+void colorWipe()
 {
 
     //  Update delay time
-    stripe[pixelCurrent] = CHSV(gHue, 255, 255); //  Set pixel's color (in RAM)
-    FastLED.show();                              //  Update strip to match
-    pixelCurrent++;                              //  Advance current pixel
-    if (pixelCurrent >= NUM_LEDS_STRIPE)         //  Loop the pattern from the first LED
+    stripe[pixelCurrent] = CHSV(colorTimer, 255, 255); //  Set pixel's color (in RAM)
+    FastLED.show();                                    //  Update strip to match
+    pixelCurrent++;                                    //  Advance current pixel
+    if (pixelCurrent >= NUM_LEDS_STRIPE)               //  Loop the pattern from the first LED
         pixelCurrent = 0;
-    return patternInterval;
 }
 
 CRGBPalette16 pacifica_palette_1 =
@@ -72,7 +77,7 @@ void pacifica_deepen_colors()
         stripe[i] |= CRGB(2, 5, 7);
     }
 }
-uint8_t pacifica_loop()
+void pacifica_loop()
 {
     // Increment the four "color index start" counters, one for each wave layer.
     // Each is incremented at a different speed, and the speeds vary over time.
@@ -105,18 +110,6 @@ uint8_t pacifica_loop()
 
     // Deepen the blues and greens a bit
     pacifica_deepen_colors();
-    return patternInterval;
-}
-
-uint8_t rainbow()
-{
-
-    for (uint16_t i = 0; i < NUM_LEDS_STRIPE; i++)
-    {
-        stripe[i] = CRGB((i + gHue) & 255); //  Update delay time
-    }
-    FastLED.show();         //  Update strip to match
-    return patternInterval; //  Loop the cycle back to the begining
 }
 
 uint8_t max_bright = 128; // Overall brightness definition. It can be changed on the fly.
@@ -132,7 +125,7 @@ struct ripple
     // Temporary local variables
     uint8_t brightness; // 0 to 255
     int8_t color;       // 0 to 255
-    int16_t pos;        // -1 to NUM_LEDS  (up to 127 LED's)
+    int16_t pos;        // -1 to NUM_LEDS_STRIPE  (up to 127 LED's)
     int8_t velocity;    // 1 or -1
     uint8_t life;       // 0 to 20
     uint8_t maxLife;    // 10. If it's too long, it just goes on and on. . .
@@ -183,7 +176,7 @@ struct ripple
 typedef struct ripple Ripple;
 
 Ripple ripples[maxRipples];
-uint8_t rippless()
+void rippless()
 {
     currentPatternName = "ripple";
     for (int i = 0; i < maxRipples; i += 2)
@@ -209,7 +202,7 @@ uint8_t rippless()
     }
 
     fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 160);
-    return patternInterval;
+
 } // rippless()
 
 int s_start_pos[5];
@@ -218,8 +211,9 @@ int s_color[5];
 int s_brightness[5];
 int s_tick[5] = {0, 0, 0, 0, 0};
 int s_scale[5];
-uint8_t salut()
+void salut()
 {
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64);
     int s_count = random16(1, 5);
     static uint32_t prevTime;
     // стартовая позиция
@@ -247,10 +241,9 @@ uint8_t salut()
             stripe[s_start_pos[s_count] - s_tick[s_count] - i] = CHSV(s_color[s_count], 255, s_brightness[s_count]);
         }
     }
-    return 20;
 }
 
-uint8_t theaterChase()
+void theaterChase()
 { // modified from Adafruit example to make it a state machine
 
     static int j = 0, q = 0;
@@ -259,8 +252,8 @@ uint8_t theaterChase()
     {
         for (int i = 0; i < NUM_LEDS_STRIPE; i = i + 3)
         {
-            stripe[i + q] = CHSV(gHue, 255, 255); // turn every third pixel on
-                                                  /// stripe[i + q] = CHSV((i + j) % 255, 1));
+            stripe[i + q] = CHSV(colorTimer + j, 255, 255); // turn every third pixel on
+                                                            /// stripe[i + q] = CHSV((i + j) % 255, 1));
         }
     }
     else
@@ -280,53 +273,169 @@ uint8_t theaterChase()
         if (j >= 256)
             j = 0;
     }
-
-    return patternInterval;
 }
 
 int pixelQueue = 0; // Pattern Pixel Queue
 int pixelCycle = 0; // Pattern Pixel Cycle
-uint8_t theaterChaseRainbow()
+void theaterChaseRainbow()
 {
+    int firstPixelHue = 0; // First pixel starts at red (hue 0)
+    for (int a = 0; a < 30; a++)
+    { // Repeat 30 times...
+        for (int b = 0; b < 3; b++)
+        {                                                     //  'b' counts from 0 to 2...
+            fill_solid(stripe, NUM_LEDS_STRIPE, CRGB::Black); // fill red      //   Set all pixels in RAM to 0 (off)
+            // 'c' counts up from 'b' to end of strip in increments of 3...
+            for (int c = b; c < NUM_LEDS_STRIPE; c += 3)
+            {
+                // hue of pixel 'c' is offset by an amount to make one full
+                // revolution of the color wheel (range 65536) along the length
+                // of the strip (strip.numPixels() steps):
+                int hue = firstPixelHue + c * 65536L / NUM_LEDS_STRIPE;
 
-    for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
+                stripe[c] = CHSV(hue, 255, 255); // Set pixel 'c' to value 'color'
+            }
+            FastLED.show();              // Update strip with new contents
+            firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
+        }
+    }
+}
+void bpmStripe()
+{
+    uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
+
+    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
     {
-        stripe[i + pixelQueue] = CHSV((i + pixelCycle) % 255, 255, 255); //  Update delay time
+        stripe[i] = ColorFromPalette(currentPalette, colorTimer + (i * 2), beat - colorTimer + (i * 10));
+    }
+
+    FastLED.show();
+}
+uint8_t active = 0;
+void strobo()
+{
+    CRGB stripcolor = CRGB::Black;
+    if (active == 0)
+    {
+        stripcolor = CRGB::Black;
+        active = 1;
+    }
+    else
+    {
+        stripcolor = CRGB::White;
+        active = 0;
+    }
+    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
+    {
+        stripe[i] = stripcolor;
     }
     FastLED.show();
-    for (int i = 0; i < NUM_LEDS_STRIPE; i += 3)
+}
+// List of patterns to cycle through.  Each is defined as a separate function below.
+void sinelon()
+{
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 20);
+    int pos2 = beatsin16(13, 0, NUM_LEDS_STRIPE - 1);
+    stripe[pos2] += CHSV(colorTimer, 255, 255);
+}
+void juggle()
+{
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 20);
+    uint8_t dothue = 0;
+    for (int i = 0; i < 8; i++)
     {
-        stripe[i + pixelQueue] = (0, 0, 0); //  Update delay time
+        stripe[beatsin16(i + 7, 0, NUM_LEDS_STRIPE - 1)] |= CHSV(dothue, 200, 255);
+        dothue += 32;
     }
-    pixelQueue++; //  Advance current queue
-    pixelCycle++; //  Advance current cycle
-    if (pixelQueue >= 3)
-        pixelQueue = 0; //  Loop
-    if (pixelCycle >= 256)
-        pixelCycle = 0; //  Loop
-    return patternInterval;
+}
+void confetti()
+{
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 20);
+    int pos2 = random16(NUM_LEDS_STRIPE);
+    stripe[pos2] += CHSV(gHue + random8(64), 200, 255);
 }
 
-typedef uint8_t (*SimplePatterna)();
-typedef SimplePatterna SimplePatternList[];
-typedef struct
+void rainbow()
 {
-    SimplePatterna drawFrame;
-    String name;
-} PatternAndName;
-typedef PatternAndName PatternAndNameList[];
+    fill_rainbow(stripe, NUM_LEDS_STRIPE, gHue, 7);
+}
 
-// List of patterns to cycle through.  Each is defined as a separate function below.
+void rainbowWithGlitter()
+{
+    rainbow();
+    addGlitter(80);
+}
+uint8_t sparking = 120;
+uint8_t cooling = 50;
+// based on FastLED example Fire2012WithPalette: https://github.com/FastLED/FastLED/blob/master/examples/Fire2012WithPalette/Fire2012WithPalette.ino
+void heatMap(CRGBPalette16 palette, bool up)
+{
+    fill_solid(stripe, NUM_LEDS_STRIPE, CRGB::Black);
 
-const PatternAndNameList patterns = {
+    // Add entropy to random number generator; we use a lot of it.
+    random16_add_entropy(random(256));
+
+    // Array of temperature readings at each simulation cell
+    static byte heat[NUM_LEDS_STRIPE];
+
+    byte colorindex;
+
+    // Step 1.  Cool down every cell a little
+    for (uint16_t i = 0; i < NUM_LEDS_STRIPE; i++)
+    {
+        heat[i] = qsub8(heat[i], random8(0, ((cooling * 10) / NUM_LEDS_STRIPE) + 2));
+    }
+
+    // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+    for (uint16_t k = NUM_LEDS_STRIPE - 1; k >= 2; k--)
+    {
+        heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2]) / 3;
+    }
+
+    // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
+    if (random8() < sparking)
+    {
+        int y = random8(7);
+        heat[y] = qadd8(heat[y], random8(160, 255));
+    }
+
+    // Step 4.  Map from heat cells to LED colors
+    for (uint16_t j = 0; j < NUM_LEDS_STRIPE; j++)
+    {
+        // Scale the heat value from 0-255 down to 0-240
+        // for best results with color palettes.
+        colorindex = scale8(heat[j], 190);
+
+        CRGB color = ColorFromPalette(palette, colorindex);
+
+        if (up)
+        {
+            stripe[j] = color;
+        }
+        else
+        {
+            stripe[(NUM_LEDS_STRIPE - 1) - j] = color;
+        }
+    }
+}
+const PatternAndNameList patternsStripe = {
+    {stripeVuBandsSolidColor, "Stripe_Vu_Bands_Solid-Color"},
+    {stripeVuBandsColors, "Vu_Bands_Colors"},
+    {stripeVuBandsBeatsin, "Vu_Bands_ Beatsin"},
     {colorWipe, "colorWipe"},
     {pacifica_loop, "Pacifica"},
     {rainbow, "Rainbow"},
     {rippless, "Ripple"},
     {salut, "Salut"},
-    {theaterChase, "Theater Chase"},
-    {rainbow, "Rainbow"},
-    {theaterChaseRainbow, "Theater Chase Rainbow"},
-};
+    {theaterChase, "Theater_Chase"},
+    {theaterChaseRainbow, "Theater_Chase_Rainbow"},
+    {bpmStripe, "BPM_Stripe"},
+    //{displayUpdateStripe, "Display_Update_Stripe"},
+    {sinelon, "Sinelon"},
+    {juggle, "Juggle"},
+    {strobo, "Strobo"},
+    {VUStripe, "VUStripe"},
+    {confetti, "Confetti"},
+    {rainbowWithGlitter, "Rainbow_With_Glitter"}};
 
-const uint8_t patternCount = ARRAY_SIZE(patterns);
+const uint8_t StripePatternsAmount = ARRAY_SIZE(patternsStripe);

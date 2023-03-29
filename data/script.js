@@ -34,80 +34,12 @@ function onClose(event) {
 
 function onMessage(event) {
     let data = JSON.parse(event.data);
-    //document.getElementById('led').className = data.status;
-    //document.getElementById('led' + data.rank).className = data.status;
-
-    if (data.rank == "1") {
-        if (data.status == "on") {
-            document.getElementById('toggle1').style.backgroundColor = "#F9E79F";
-            document.getElementById('toggle1').style.color = "#1B2E3C";
-        } else {
-            document.getElementById('toggle1').style.backgroundColor = "#1B2E3C";
-            document.getElementById('toggle1').style.color = "#Fff";
-        }
+    
+   
+    if (data.patternName != "") {
+        var patternName = data.patternName;
+        document.getElementById('patternName').innerHTML = patternName;
     }
-
-    if (data.rank == "2") {
-        if (data.status == "on") {
-            document.getElementById('toggle2').style.backgroundColor = "#F9E79F";
-            document.getElementById('toggle2').style.color = "#1B2E3C";
-        } else {
-            document.getElementById('toggle2').style.backgroundColor = "#1B2E3C";
-            document.getElementById('toggle2').style.color = "#Fff";
-        }
-    }
-    if (data.rank == "3") {
-        if (data.status == "on") {
-            document.getElementById('toggle3').style.backgroundColor = "#F9E79F";
-            document.getElementById('toggle3').style.color = "#1B2E3C";
-        } else {
-            document.getElementById('toggle3').style.backgroundColor = "#1B2E3C";
-            document.getElementById('toggle3').style.color = "#Fff";
-        }
-    }
-    if (data.rank == "4") {
-        if (data.status == "on") {
-            document.getElementById('toggle4').style.backgroundColor = "#F9E79F";
-            document.getElementById('toggle4').style.color = "#1B2E3C";
-        } else {
-            document.getElementById('toggle4').style.backgroundColor = "#1B2E3C";
-            document.getElementById('toggle4').style.color = "#Fff";
-        }
-    }
-    if (data.rank == "5") {
-        if (data.status == "on") {
-            document.getElementById('toggle5').style.backgroundColor = "#F9E79F";
-            document.getElementById('toggle5').style.color = "#1B2E3C";
-        } else {
-            document.getElementById('toggle5').style.backgroundColor = "#1B2E3C";
-            document.getElementById('toggle5').style.color = "#Fff";
-        }
-    }
-    if (data.rank == "6") {
-        if (data.status == "on") {
-            document.getElementById('toggle6').style.backgroundColor = "#F9E79F";
-            document.getElementById('toggle6').style.color = "#1B2E3C";
-        } else {
-            document.getElementById('toggle6').style.backgroundColor = "#1B2E3C";
-            document.getElementById('toggle6').style.color = "#Fff";
-        }
-    }
-    if (data.rank == "8") {
-        if (data.status == "on") {
-            document.getElementById('rank8').style.backgroundColor = "#fff";
-            document.getElementById('rank8').style.color = "#000";
-
-        } else {
-            document.getElementById('rank8').style.backgroundColor = "#ff0000";
-            document.getElementById('rank8').style.color = "#00ff00";
-
-        }
-    }
-    if (data.patternNumber != "") {
-        var patternNumber = data.patternNumber;
-        document.getElementById('rank8info').innerHTML = patternNumber;
-    }
-
 
 }
 
@@ -119,62 +51,23 @@ function onMessage(event) {
 function nextPattern() {
     websocket.send(JSON.stringify({ 'action': 'nextPattern' }));
 }
-
-function initButton1() {
-    document.getElementById('toggle1').addEventListener('click', onToggle1);
-    console.log("Button 1 initialized");
+function prevPattern() {
+    websocket.send(JSON.stringify({ 'action': 'prevPattern' }));
 }
 
-function initButton2() {
-    document.getElementById('toggle2').addEventListener('click', onToggle2);
-}
-
-function initButton3() {
-    document.getElementById('toggle3').addEventListener('click', onToggle3);
-}
-
-function initButton4() {
-    document.getElementById('toggle4').addEventListener('click', onToggle4);
-}
-
-function initButton5() {
-    document.getElementById('toggle5').addEventListener('click', onToggle5);
-}
-
-function initButton6() {
-    document.getElementById('toggle6').addEventListener('click', onToggle6);
-}
 
 function myFunction() {
     websocket.send(JSON.stringify({ 'action': 'rank8' }));
     console.log("Button rank8 pressed");
 }
-
-function onToggle1(event) {
-    websocket.send(JSON.stringify({ 'action': 'toggle1' }));
-    console.log("Button 1 pressed");
+function updateSliderSpeed(element) {
+    var sliderNumber = element.id.charAt(element.id.length-1);
+    var sliderValue = document.getElementById(element.id).value;
+    document.getElementById("speedSliderVal").innerHTML = sliderValue;
+    console.log(sliderValue);
+    websocket.send(JSON.stringify({ 'action': 'speedSlider', 'sliderValue': sliderValue.toString()})
+    );
 }
-
-function onToggle2(event) {
-    websocket.send(JSON.stringify({ 'action': 'toggle2' }));
-}
-
-function onToggle3(event) {
-    websocket.send(JSON.stringify({ 'action': 'toggle3' }));
-}
-
-function onToggle4(event) {
-    websocket.send(JSON.stringify({ 'action': 'toggle4' }));
-}
-
-function onToggle5(event) {
-    websocket.send(JSON.stringify({ 'action': 'toggle5' }));
-}
-
-function onToggle6(event) {
-    websocket.send(JSON.stringify({ 'action': 'toggle6' }));
-}
-
 function openCity(evt, cityName) {
     // Declare all variables
     var i, tabcontent, tablinks;

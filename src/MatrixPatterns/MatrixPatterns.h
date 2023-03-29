@@ -3,10 +3,8 @@
 
 #include "Imports.h"
 
-void Enoise(ledTypeConnected whichLeds)
+void Enoise()
 {
-  // Serial.println("Enoise");
-  currentPatternName = "Enoise";
   static bool eff = 1;
   EVERY_N_MILLISECONDS(25000) { eff ^= 1; } // speed of  effect change
 
@@ -24,3 +22,21 @@ void Enoise(ledTypeConnected whichLeds)
 
   FastLED.show();
 }
+
+void bpmMatrix()
+{
+  uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
+
+  for (int i = 0; i < NUM_LEDS_MATRIX; i++)
+  {
+    matrix[i] = ColorFromPalette(currentPalette, colorTimer + (i * 2), beat - colorTimer + (i * 10));
+  }
+
+  FastLED.show();
+}
+const PatternAndNameList patternsMatrix = {
+    {Enoise, "Enoise"},
+    {bpmMatrix, "BPM Matrix"},
+};
+
+const uint8_t MatrixPatternsAmount = ARRAY_SIZE(patternsMatrix);

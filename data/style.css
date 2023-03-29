@@ -331,107 +331,6 @@ body {
     --hl: 1;
 }
 
-input[type='range'] {
-    z-index: 2;
-    width: calc(var(--track-w) + 2.4em);
-    height: 1.25em;
-    cursor: pointer;
-}
-
-input[type='range'],
-input[type='range']::-webkit-slider-thumb,
-input[type='range']::-webkit-slider-runnable-track {
-    -webkit-appearance: none;
-}
-
-input[type='range']::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-}
-
-input[type='range']::-moz-range-track {
-    width: 100%;
-    height: 100%;
-    background: transparent;
-}
-
-input[type='range']::-webkit-slider-thumb {
-    border: none;
-    padding: 0;
-    width: 2.5em;
-    height: 100%;
-    border-radius: 0;
-    box-shadow: inset 0 -1px rgba(34, 34, 34, 0.8), inset 0 0 0 1px rgba(128, 128, 128, 0.3), 1px 1px #222, 2px 2px 0.125em #222, 3px 3px 0.25em #222;
-    --list: transparent 20%, #333 0 calc(20% + 2px), transparent 0 40%, #333 0 calc(40% + 2px), transparent 0 60%, #333 0 calc(60% + 2px), transparent 0;
-    background: radial-gradient(at 50% 100%, #111111, rgba(17, 17, 17, 0) 75%) 50% 100%/100% 3px, radial-Gradient(rgba(255, 255, 255, 0.5), rgba(0, 255, 255, 0) 65%) 0/calc(var(--js, 0)*Min(1, calc(var(--val) - 5))*2px) 100%, linear-Gradient(90deg, transparent calc(50% - 1px), #222 0 50%, #444 0 calc(50% + 1px), transparent 0), linear-Gradient(90deg, var(--list)) 0/50% 300%, linear-Gradient(-90deg, var(--list)) 100% 50%/50% 300%, radial-Gradient(circle at 100% 50%, rgba(34, 34, 34, 0) 10%, #222) 0 50%/50% 300%, radial-Gradient(circle at 0 50%, rgba(68, 68, 68, 0) 10%, #444) 100% 50%/50% 300% #333436;
-    background-repeat: no-repeat;
-}
-
-input[type='range']::-moz-range-thumb {
-    border: none;
-    padding: 0;
-    width: 2.5em;
-    height: 100%;
-    border-radius: 0;
-    box-shadow: inset 0 -1px rgba(34, 34, 34, 0.8), inset 0 0 0 1px rgba(128, 128, 128, 0.3), 1px 1px #222, 2px 2px 0.125em #222, 3px 3px 0.25em #222;
-    --list: transparent 20%, #333 0 calc(20% + 2px), transparent 0 40%, #333 0 calc(40% + 2px), transparent 0 60%, #333 0 calc(60% + 2px), transparent 0;
-    background: radial-gradient(at 50% 100%, #ff0000, rgba(17, 17, 17, 0) 75%) 50% 100%/100% 3px, radial-Gradient(rgba(0, 255, 255, 0.5), rgba(0, 255, 255, 0) 65%) 0/calc(var(--js, 0)*Min(1, calc(var(--val) - 5))*2px) 100%, linear-Gradient(90deg, transparent calc(50% - 1px), #222 0 50%, #444 0 calc(50% + 1px), transparent 0), linear-Gradient(90deg, var(--list)) 0/50% 300%, linear-Gradient(-90deg, var(--list)) 100% 50%/50% 300%, radial-Gradient(circle at 100% 50%, rgba(34, 34, 34, 0) 10%, #222) 0 50%/50% 300%, radial-Gradient(circle at 0 50%, rgba(68, 68, 68, 0) 10%, #444) 100% 50%/50% 300% #333436;
-    background-repeat: no-repeat;
-}
-
-input[type='range']:focus {
-    outline: none;
-}
-
-input[type='range']+output {
-    display: var(--js, none);
-    place-self: start start;
-    margin-left: calc(.5*var(--track-u));
-    transform: translate(calc(var(--pos) - 50%), -100%);
-    filter: drop-shadow(0 -1px 1px rgba(255, 0, 0, 0.25)) drop-shadow(0 1px 1px black);
-    counter-reset: val var(--val);
-}
-
-input[type='range']+output::after {
-    --oy: 0;
-    display: grid;
-    border-bottom: solid var(--oy) transparent;
-    padding: 0 .5em;
-    transform-origin: 50% 100%;
-    color: #000;
-    transform: translatey(calc(-.5*var(--oy))) scale(var(--hl));
-    background: linear-gradient(to right bottom, #ffffff, #2c2d2f) border-box;
-    box-shadow: 0 0 1em 0 rgb(255 255 255 / 55%) inset, 0 2.2em 0 -1em rgb(255 255 255 / 10%) inset, 0 1.5em 1em -1em rgb(255 255 255 / 57%) inset, 0 0 4px 1px rgb(255 255 255 / 20%) inset;
-    border-color: #ffffff;
-    border-radius: 0.3em;
-    font-size: 2em;
-    font-weight: 600;
-    content: counter(val) "%";
-}
-
-@supports (background: conic-gradient(red, tan)) {
-    input[type='range']+output::after {
-        --oy: 0.3125em;
-        --mask: linear-gradient(#ffffff, #ff0000) padding-box, conic-gradient(from -37.5deg at 50% 100%, red 75deg, transparent 0%) 50% 100%/50% 50% no-repeat border-box;
-        -webkit-mask: var(--mask);
-        mask: var(--mask);
-    }
-}
-
-input[type='range'][list]~datalist {
-    display: grid;
-    grid-template-columns: repeat(calc(var(--n) + 1), var(--track-u));
-    padding-top: 1.25em;
-    background: repeating-linear-gradient(90deg, #ffffff 0 2px, rgba(238, 238, 238, 0.2) 0, transparent 3px var(--track-u)) 50% 0.5em/calc(var(--track-w) + 3px) 0.5em no-repeat;
-}
-
-input[type='range'][list]~datalist option {
-    display: grid;
-    place-content: center;
-    font-size: 0.875em;
-}
-
 input[type="submit"] {
     width: 192px;
     height: 35px;
@@ -1147,4 +1046,32 @@ input[type=checkbox]:checked~.checkbox__text .checkbox__text--options span.on {
 
 .btn-lg {
     font-size: 1.6em !important;
+}
+
+.slider {
+    -webkit-appearance: none;
+    margin: 0 auto;
+    width: 100%;
+    height: 15px;
+    border-radius: 10px;
+    background: #FFD65C;
+    outline: none;
+}
+
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #034078;
+    cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #034078;
+    cursor: pointer;
 }

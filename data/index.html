@@ -98,7 +98,10 @@
                 <div> Current effect: - <div id="patternName"> %patternLED%</div>
                     <div id="currentEffect">%patternLED%</div>
 
-                </div><br><br>
+                </div>
+                <div>
+                    <div id="patternNumber"></div>/<div id="StripePatternsAmount"></div><br><br>
+                </div>
             </div>
 
             <div> <button class="btn btn-custom" type="submit" value="prev" onclick="prevPattern()"
@@ -110,7 +113,11 @@
             <h3>LED Stripe Color Palette</h3>
 
             <div class="wrapper">
-                Current palette: - %paletteLED% <br><br> </div>
+                <div> Current effect: - <div id="paletteName"> %patternLED%</div>
+                    <div id="currentEffect">%patternLED%</div>
+
+                </div><br><br>
+            </div>
             <div><button class="btn btn-custom" name="paletteLED" type="submit" value="prev"
                     onclick="prevPalette()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
                     class="btn btn-custom" name="paletteLED" onclick="nextPalette()" type="submit"
@@ -121,8 +128,8 @@
             <div class="wrapper">
                 Current palette: - %paletteLED% <br><br> </div>
             <div><button class="btn btn-custom" name="paletteLED" type="submit" value="prev"
-                    onclick="prevPalette()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                    class="btn btn-custom" name="paletteLED" onclick="nextPalette()" type="submit"
+                    onclick="speedDown()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                    class="btn btn-custom" name="paletteLED" onclick="speedUP()" type="submit"
                     value="next">Next</button></div> <br>
 
 
@@ -134,9 +141,10 @@
             <form action="/get" target="hidden-form">
                 <div class="wrapper">
                     Current effect: - %patternMatrix% <br><br> </div>
-                <div><button type="submit" class="btn btn-custom" name="patternMatrix"
-                        value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        type="submit" class="btn btn-custom" name="patternMatrix" value="next">Next</button></div>
+                <div><button type="submit" class="btn btn-custom" name="patternMatrix" value="prev"
+                        onclick="prevMatrix()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                        type="submit" class="btn btn-custom" name="patternMatrix" value="next"
+                        onclick="nextMatrix()">Next</button></div>
             </form>
             <h3>Clock Color Palette</h3>
             <form action="/get" target="hidden-form">

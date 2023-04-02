@@ -4,17 +4,17 @@
 #include "Imports.h"
 
 /********************** FFT ***************************/
-#define SAMPLES 512                                // Must be a power of 2 (512)
+#define SAMPLES 256                                // Must be a power of 2 (512)
 #define MULTIPLY_BY 1                              // in case we want to amlify output
-#define SAMPLING_FREQ 20000                        // Hz, must be 40000 or less due to ADC conversion time. Determines
+#define SAMPLING_FREQ 40000                        // Hz, must be 40000 or less due to ADC conversion time. Determines
                                                    // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
-uint16_t AMPLITUDE = 2000;                         // Depending on your audio source level, you may need to alter this
+uint16_t AMPLITUDE = 1000;                         // Depending on your audio source level, you may need to alter this
                                                    // value. Can be used as a 'sensitivity' control.
 #define FREQUENCY_BANDS 14                         // band number
 #define COLOR_ORDER GRB                            // If colours look wrong, play with this
 #define CHIPSET WS2812B                            // LED strip type
 #define NUM_BANDS 8                                // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
-#define NOISE 200                                  // Used as a crude noise filter, values below this are ignore
+#define NOISE 500                                  // Used as a crude noise filter, values below this are ignore
 #define MATRIX_WIDTH 32                            // width of each matrix [xres]-[NUM_COLS]
 #define MATRIX_HEIGHT 8                            // height of each matrix [yres]-[NUM_ROWS]
 #define BAR_WIDTH (MATRIX_WIDTH / (NUM_BANDS - 1)) // If width >= 8 light 1 LED width per bar, >= 16 light 2 LEDs width bar etc
@@ -25,20 +25,24 @@ unsigned int sample;
 // int Intensity[32] = {}; // initialize Frequency Intensity to zero
 uint8_t Displacement = 1;
 unsigned int sampling_period_us;
-byte peak[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BANDS
+byte peakMatrix[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BANDS
+byte peakStripe[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BANDS
 uint8_t oldBarHeights[MATRIX_WIDTH];
 uint8_t bandValues[MATRIX_WIDTH];
+uint8_t stripeValues[MATRIX_WIDTH];
+uint8_t matrixValues[MATRIX_WIDTH];
 double vReal[SAMPLES];
 double vImag[SAMPLES];
 unsigned long newTimeForAudio;
 float reference = log10(100.0);
-double coutoffFrequencies[FREQUENCY_BANDS];
+
 /********************** FFT ***************************/
 //
 //
 /********************** matrix - stripe  ***************************/
 #define NUM_LEDS_MATRIX (MATRIX_WIDTH * MATRIX_HEIGHT)
-#define NUM_LEDS_STRIPE 1200
+#define NUM_LEDS_STRIPE 988
+#define LED_HALF_STRIPE NUM_LEDS_STRIPE / 2
 #define BRIGHTNESS 125 // LED information
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
@@ -94,9 +98,7 @@ int fourthCornerPixelNumber = 767;
 
 int AllLEDSAmount = NUM_LEDS_STRIPE;
 int halfofPixels = NUM_LEDS_STRIPE / 2;
-uint8_t gHue = 0;
 
-uint16_t pixelCurrent = 0;
 /********************** LED STRIPS***************************/
 //
 //
@@ -149,24 +151,15 @@ String buttonNames[11] = {
 //
 //
 /********************** PATTERNS / PALETTES ***************************/
-String currentPatternName = "None";
-uint8_t cyclePalettes = 0;
-uint8_t paletteDuration = 10;
-uint8_t currentPaletteIndex = 0;
-unsigned long paletteTimeout = 0;
+// String currentPatternName = "None";
+// uint8_t cyclePalettes = 0;
+// uint8_t paletteDuration = 10;
+// uint8_t currentPaletteIndex = 0;
+// unsigned long paletteTimeout = 0;
 
 // Button stuff
 
-int barMode = 0;
-
-uint8_t mode = 0;
-uint8_t strobeStatus = 0;
-uint16_t strobeRate = 50;
-
-uint8_t colorTimer = 0;
-
-uint8_t userColor = 0;
-uint8_t gCurrentPaletteNumber = 0;
+// int barMode = 0;
 
 typedef enum
 {
@@ -174,7 +167,17 @@ typedef enum
     STRIPELEDS = 0
 } ledTypeConnected;
 
+uint8_t
+    currentPaletteIndex = 0,
+    paletteDuration = 10,
+    colorTimer = 0,
+    delayStripe = 0,
+    BeatsPerMinute,
+    CurrentStripePatternNumber = 0,
+    CurrentMatrixPatternNumber = 0;
 String
+    currentStripePatternName,
+    currentMatrixPatternName,
     patternLED,
     paletteLED,
     patternMatrix,
@@ -187,7 +190,15 @@ String
 
 int
     scrollspeed,
-    overAllBrightness;
+    overAllBrightness,
+    pixelCurrent,
+    year,
+    month,
+    day,
+    hour,
+    minute,
+    second;
+
 /********************** PATTERNS / PALETTES ***************************/
 struct NamedPalette
 {
@@ -198,15 +209,9 @@ struct NamedPalette
         : Palette(p), Name(n) {}
 };
 
-extern NamedPalette Palette_List[];
+// extern NamedPalette Palette_List[];
 extern const uint16_t NUMpalettes;
-String
-    currentStripePatternName,
-    currentMatrixPatternName;
-uint8_t
-    delayStripe = 0,
-    BeatsPerMinute,
-    CurrentStripePatternNumber = 0;
+
 /********************** PATTERNS / PALETTES ***************************/
 //
 //
@@ -218,8 +223,15 @@ uint8_t
 #define FOR_i_down(from, to) for (int i = (from); i > (to); i--) // loop for "i" to descending
 #define FOR_j_down(from, to) for (int j = (from); j > (to); j--) // loop for "j" to descending
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+#define Minim(a, b) (((a) < (b)) ? (a) : (b))
+#define Maxim(a, b) (((a) > (b)) ? (a) : (b))
+#define PALETTE_NAME(x) NamedPalette(x, #x)
 /*************************** MACROS ***************************/
 
 #define HTTP_PORT 80
 int result_vu[8],
     input_vu[8];
+
+const char *ntpServer = "pool.ntp.org";
+const long gmtOffset_sec = 3600;
+const int dayLightOffset_sec = 3600;

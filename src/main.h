@@ -6,3 +6,5 @@
 
 void nextPattern();
 void prevPattern();
+void prevMatrix();
+void nextMatrix();

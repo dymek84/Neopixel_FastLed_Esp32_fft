@@ -202,62 +202,6 @@ DEFINE_GRADIENT_PALETTE(BlacK_Magenta_Red_gp){0, 0, 0, 0, 63, 42, 0, 45, 127, 25
 DEFINE_GRADIENT_PALETTE(BlacK_Red_Magenta_Yellow_gp){0, 0, 0, 0, 42, 42, 0, 0, 84, 255, 0, 0, 127, 255, 0, 45, 170, 255, 0, 255, 212, 255, 55, 45, 255, 255, 255, 0};
 DEFINE_GRADIENT_PALETTE(Blue_Cyan_Yellow_gp){0, 0, 0, 255, 63, 0, 55, 255, 127, 0, 255, 255, 191, 42, 255, 45, 255, 255, 255, 0};
 
-CRGBPalette16 paletteList[] = {
-    purple_gp,
-    outrun_gp,
-    greenblue_gp,
-    redyellow_gp,
-    Sunset_Real_gp,
-    es_rivendell_15_gp,
-    es_ocean_breeze_036_gp,
-    rgi_15_gp,
-    retro2_16_gp,
-    Analogous_1_gp,
-    es_pinksplash_08_gp,
-    Coral_reef_gp,
-    es_ocean_breeze_068_gp,
-    es_pinksplash_07_gp,
-    es_vintage_01_gp,
-    departure_gp,
-    es_landscape_64_gp,
-    es_landscape_33_gp,
-    rainbowsherbet_gp,
-    gr65_hult_gp,
-    gr64_hult_gp,
-    GMT_drywet_gp,
-    ib_jul01_gp,
-    es_vintage_57_gp,
-    ib15_gp,
-    Fuschia_7_gp,
-    es_emerald_dragon_08_gp,
-    lava_gp,
-    fire_gp,
-    Colorfull_gp,
-    Magenta_Evening_gp,
-    Pink_Purple_gp,
-    es_autumn_19_gp,
-    BlacK_Blue_Magenta_White_gp,
-    BlacK_Magenta_Red_gp,
-    BlacK_Red_Magenta_Yellow_gp,
-    Blue_Cyan_Yellow_gp,
-    YlOrBr_03_gp,
-    RdPu_03_gp,
-    BuGn_03_gp,
-    GMT_panoply_gp,
-    pm3d07_gp,
-    Life_is_beautiful_gp,
-    min_gp,
-    seismic_gp,
-    Romanian_flag_gp,
-    cmy_gp,
-};
-
-int paletteIndex = 0;
-CRGBPalette16 currentPalette = paletteList[paletteIndex];
-CRGBPalette16 targetPalette = paletteList[paletteIndex];
-
-#define PALETTE_NAME(x) NamedPalette(x, #x)
-
 DEFINE_GRADIENT_PALETTE(Border_Rainbow){
     0, 0, 0, 0,
     115, 255, 0, 0,
@@ -459,7 +403,56 @@ DEFINE_GRADIENT_PALETTE(Matrix){
 };
 
 // Border_Rainbow,Warm_Forest,Popsicle,Arizona_Trip,Pit,Redyell,Startup,Tropicana,Gilt,Sunburst,Newspaper,Purple_Cascade,Blackwhite,RainbowStripeColors,RainbowColors,Pastel
-NamedPalette Palette_List[] = {
+
+NamedPalette paletteList[] = {
+
+    PALETTE_NAME(purple_gp),
+    PALETTE_NAME(outrun_gp),
+    PALETTE_NAME(greenblue_gp),
+    PALETTE_NAME(redyellow_gp),
+    PALETTE_NAME(Sunset_Real_gp),
+    PALETTE_NAME(es_rivendell_15_gp),
+    PALETTE_NAME(es_ocean_breeze_036_gp),
+    PALETTE_NAME(rgi_15_gp),
+    PALETTE_NAME(retro2_16_gp),
+    PALETTE_NAME(Analogous_1_gp),
+    PALETTE_NAME(es_pinksplash_08_gp),
+    PALETTE_NAME(Coral_reef_gp),
+    PALETTE_NAME(es_ocean_breeze_068_gp),
+    PALETTE_NAME(es_pinksplash_07_gp),
+    PALETTE_NAME(es_vintage_01_gp),
+    PALETTE_NAME(departure_gp),
+    PALETTE_NAME(es_landscape_64_gp),
+    PALETTE_NAME(es_landscape_33_gp),
+    PALETTE_NAME(rainbowsherbet_gp),
+    PALETTE_NAME(gr65_hult_gp),
+    PALETTE_NAME(gr64_hult_gp),
+    PALETTE_NAME(GMT_drywet_gp),
+    PALETTE_NAME(ib_jul01_gp),
+    PALETTE_NAME(es_vintage_57_gp),
+    PALETTE_NAME(ib15_gp),
+    PALETTE_NAME(Fuschia_7_gp),
+    PALETTE_NAME(es_emerald_dragon_08_gp),
+    PALETTE_NAME(lava_gp),
+    PALETTE_NAME(fire_gp),
+    PALETTE_NAME(Colorfull_gp),
+    PALETTE_NAME(Magenta_Evening_gp),
+    PALETTE_NAME(Pink_Purple_gp),
+    PALETTE_NAME(es_autumn_19_gp),
+    PALETTE_NAME(BlacK_Blue_Magenta_White_gp),
+    PALETTE_NAME(BlacK_Magenta_Red_gp),
+    PALETTE_NAME(BlacK_Red_Magenta_Yellow_gp),
+    PALETTE_NAME(Blue_Cyan_Yellow_gp),
+    PALETTE_NAME(YlOrBr_03_gp),
+    PALETTE_NAME(RdPu_03_gp),
+    PALETTE_NAME(BuGn_03_gp),
+    PALETTE_NAME(GMT_panoply_gp),
+    PALETTE_NAME(pm3d07_gp),
+    PALETTE_NAME(Life_is_beautiful_gp),
+    PALETTE_NAME(min_gp),
+    PALETTE_NAME(seismic_gp),
+    PALETTE_NAME(Romanian_flag_gp),
+    PALETTE_NAME(cmy_gp),
     PALETTE_NAME(Border_Rainbow),
     PALETTE_NAME(Warm_Forest), // cool foresty teal
     PALETTE_NAME(Popsicle),    // good, add orange
@@ -480,8 +473,10 @@ NamedPalette Palette_List[] = {
 };
 
 // How many palettes are defined
-const uint16_t NUMpalettes = sizeof(Palette_List) / sizeof(Palette_List[0]);
+const uint16_t NUMpalettes = sizeof(paletteList) / sizeof(paletteList[0]);
 
+CRGBPalette16 currentPalette = paletteList[currentPaletteIndex].Palette;
+CRGBPalette16 targetPalette = paletteList[currentPaletteIndex].Palette;
 /*
 RainbowColors_p;
 RainbowStripeColors_p;

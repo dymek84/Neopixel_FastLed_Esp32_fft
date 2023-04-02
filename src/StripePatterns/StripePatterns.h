@@ -9,13 +9,32 @@ void addGlitter(uint8_t chanceOfGlitter = 200)
         stripe[random16(NUM_LEDS_STRIPE)] += CRGB::White;
     }
 }
+
+void twinkleFox()
+{
+
+    static int tspeed = 6;
+    static int tdensity = 1;
+
+    EVERY_N_SECONDS(10)
+    {
+        // chooseNextColorPalette(targetTwinklePalette);
+
+        tspeed = max((tspeed + 1) % 9, 6);
+        tdensity = max((tdensity + 1) % 9, 1);
+        //    PRINTX("Speed:", tspeed);
+        //   PRINTX("Density:", tdensity);
+    }
+    drawTwinkles(5, 5);
+}
+
 void colorWipe()
 {
 
     //  Update delay time
     stripe[pixelCurrent] = CHSV(colorTimer, 255, 255); //  Set pixel's color (in RAM)
     FastLED.show();                                    //  Update strip to match
-    pixelCurrent++;                                    //  Advance current pixel
+    pixelCurrent + 15;                                 //  Advance current pixel
     if (pixelCurrent >= NUM_LEDS_STRIPE)               //  Loop the pattern from the first LED
         pixelCurrent = 0;
 }
@@ -178,7 +197,7 @@ typedef struct ripple Ripple;
 Ripple ripples[maxRipples];
 void rippless()
 {
-    currentPatternName = "ripple";
+
     for (int i = 0; i < maxRipples; i += 2)
     { // Check to see if ripple has expired, and if so, create a new one.
         if (random8() > 224 && !ripples[i].exist)
@@ -275,31 +294,6 @@ void theaterChase()
     }
 }
 
-int pixelQueue = 0; // Pattern Pixel Queue
-int pixelCycle = 0; // Pattern Pixel Cycle
-void theaterChaseRainbow()
-{
-    int firstPixelHue = 0; // First pixel starts at red (hue 0)
-    for (int a = 0; a < 30; a++)
-    { // Repeat 30 times...
-        for (int b = 0; b < 3; b++)
-        {                                                     //  'b' counts from 0 to 2...
-            fill_solid(stripe, NUM_LEDS_STRIPE, CRGB::Black); // fill red      //   Set all pixels in RAM to 0 (off)
-            // 'c' counts up from 'b' to end of strip in increments of 3...
-            for (int c = b; c < NUM_LEDS_STRIPE; c += 3)
-            {
-                // hue of pixel 'c' is offset by an amount to make one full
-                // revolution of the color wheel (range 65536) along the length
-                // of the strip (strip.numPixels() steps):
-                int hue = firstPixelHue + c * 65536L / NUM_LEDS_STRIPE;
-
-                stripe[c] = CHSV(hue, 255, 255); // Set pixel 'c' to value 'color'
-            }
-            FastLED.show();              // Update strip with new contents
-            firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
-        }
-    }
-}
 void bpmStripe()
 {
     uint8_t beat = beatsin8(BeatsPerMinute, 64, 255);
@@ -352,12 +346,12 @@ void confetti()
 {
     fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 20);
     int pos2 = random16(NUM_LEDS_STRIPE);
-    stripe[pos2] += CHSV(gHue + random8(64), 200, 255);
+    stripe[pos2] += CHSV(colorTimer + random8(64), 200, 255);
 }
 
 void rainbow()
 {
-    fill_rainbow(stripe, NUM_LEDS_STRIPE, gHue, 7);
+    fill_rainbow(stripe, NUM_LEDS_STRIPE, colorTimer, 7);
 }
 
 void rainbowWithGlitter()
@@ -365,6 +359,7 @@ void rainbowWithGlitter()
     rainbow();
     addGlitter(80);
 }
+
 uint8_t sparking = 120;
 uint8_t cooling = 50;
 // based on FastLED example Fire2012WithPalette: https://github.com/FastLED/FastLED/blob/master/examples/Fire2012WithPalette/Fire2012WithPalette.ino
@@ -418,24 +413,431 @@ void heatMap(CRGBPalette16 palette, bool up)
         }
     }
 }
+void heatMapShow()
+{
+    heatMap(currentPalette, true);
+}
+
+void displayUpdateStripe()
+{
+    // analyzeAudio();
+    uint16_t color;
+
+    for (int i = 0; i < NUM_BANDS; i++)
+    {
+        color += 255 / NUM_BANDS;
+        for (int j = NUM_BANDS * i; j < NUM_BANDS * i + 50; j++)
+        {
+            // Serial.println(stripeValues[i]);
+            if (j <= (map(stripeValues[i], 0, 255, 0, 50) + NUM_BANDS * i))
+            { // Light everything within the intensity range
+
+                stripe[NUM_BANDS * (i + 1) - j - 1] = CHSV(color, 255, BRIGHTNESS);
+            }
+            else
+            {
+
+                stripe[NUM_BANDS * (i + 1) - j - 1] = CHSV(color, 255, 0);
+            }
+        }
+    }
+}
+int peaksStripe[8] = {};
+void stripeVuBandsSolidColor()
+{
+
+    // analyzeAudio();
+    //  createBands();
+    for (uint8_t x = 0; x < 8; x++)
+    {
+        if (stripeValues[x] > peaksStripe[x])
+        {
+            // push the peaks higher
+            peaksStripe[x] = stripeValues[x];
+        }
+        for (int i = 0; i < 37; i++)
+        {
+            int on = 75 + x * 150;
+            if (i < stripeValues[x])
+            {
+                stripe[on + i] = CHSV(16 * x, 255, 255);
+                stripe[on - i] = CHSV(16 * x, 255, 255);
+            }
+            else
+            {
+                stripe[on + i] = CHSV(0, 0, 0);
+                stripe[on - i] = CHSV(0, 0, 0);
+            }
+            if (i == peaksStripe[x])
+            {
+                stripe[on + i] = CRGB::White;
+                stripe[on - i] = CRGB::White;
+            }
+            if (i == 0)
+            {
+                stripe[on + i] = CHSV(16 * x, 255, 255);
+                stripe[on - i] = CHSV(16 * x, 255, 255);
+            }
+        }
+    }
+    EVERY_N_MILLISECONDS(120)
+    {
+        for (byte band = 0; band < NUM_BANDS; band++)
+        {
+            if (peaksStripe[band] > 0)
+                peaksStripe[band]--;
+        }
+    }
+}
+CRGB led_bucket[NUM_LEDS_STRIPE];
+int s = 0;
+void bucketVU()
+{
+    int halfStripe = NUM_LEDS_STRIPE / 2;
+    //  processAudio();
+    s = stripeValues[0];
+    s = s * 10;
+    //  Serial.println(s);
+    //  delay(50);
+
+    led_bucket[600] = CHSV(map(stripeValues[2], 0, 75, 0, 255), 255, map(stripeValues[0], 0, 75, 0, 255));
+    led_bucket[601] = CHSV(map(stripeValues[2], 0, 75, 0, 255), 255, map(stripeValues[0], 0, 75, 0, 255));
+
+    for (int i = 0; i <= (NUM_LEDS_STRIPE - 2); i++)
+    {
+        //   led_bucket[NUM_LEDS_STRIPE - 1 - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
+        //   stripe[NUM_LEDS_STRIPE - 1 - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
+        led_bucket[NUM_LEDS_STRIPE - 1 - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
+        stripe[NUM_LEDS_STRIPE - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
+        stripe[i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
+        stripe[(NUM_LEDS_STRIPE - 1) - i] = led_bucket[NUM_LEDS_STRIPE - 1 - i];
+    }
+    if (s >= 450)
+    {
+        s = 450;
+    }
+    if (s <= 100)
+    {
+        s = 100;
+    }
+    for (int i = (450 - s) / 15; i >= 0; i--)
+    {
+        // stripe[ i] = CRGB(0, 0, 0);
+    }
+}
+void stripeVuBandsBeatsin()
+{
+    // processAudio();
+
+    // fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 125); // Fade out pixels.
+    for (uint8_t x = 0; x < 8; x++)
+    {
+        for (int i = 0; i < 75; i++)
+        {
+            int on = 75 + x * 150;
+            input_vu[x] = stripeValues[x];
+            if (result_vu[x] < input_vu[x])
+            {
+                result_vu[x] = result_vu[x] + ((input_vu[x] - result_vu[x]) * 0.9); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
+            }
+            else
+            {
+                result_vu[x] = result_vu[x] - ((result_vu[x] - input_vu[x]) * 0.1); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
+            }
+            if (i < result_vu[x])
+            {
+                stripe[on + i] = CHSV(beatsin8(30, 0, 255, 0, i * x / 4), 255, 255);
+                stripe[on - i] = CHSV(beatsin8(30, 0, 255, 0, i * x / 4), 255, 255);
+            }
+            else
+            {
+                stripe[on + i] = CHSV(beatsin8(30, 0, 255, 0, i * x / 4), 255, 0);
+                stripe[on - i] = CHSV(beatsin8(30, 0, 255, 0, i * x / 4), 255, 0);
+            }
+        }
+    }
+}
+void stripeVuBandsColors()
+{
+    // processAudio();
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 125); // Fade out pixels.
+    for (uint8_t x = 0; x < 8; x++)
+    {
+        for (int i = 0; i < 75; i++)
+        {
+            int on = 75 + x * 150;
+
+            if (i < stripeValues[x])
+            {
+                stripe[on + i] = CHSV(colorTimer + (x * 32), 255, BRIGHTNESS);
+                stripe[on - i] = CHSV(colorTimer + (x * 32), 255, BRIGHTNESS);
+            }
+            else
+            {
+                // stripe[on - i] = CHSV(colorTimer + (x * 32), 255, 0);
+                // stripe[on + i] = CHSV(colorTimer + (x * 32), 255, 0);
+            }
+            /*  if (i < stripeValues[1])
+              {
+                  stripe[225 + i] = CHSV(colorTimer + 25, 255, BRIGHTNESS);
+                  stripe[225 - i] = CHSV(colorTimer + 25, 255, BRIGHTNESS);
+              }
+              else
+              {
+                  stripe[225 - i] = CHSV(colorTimer + 25, 255, 0);
+                  stripe[225 + i] = CHSV(colorTimer + 25, 255, 0);
+              }*/
+        }
+    }
+}
+float noise_fact[] = {15, 7, 1.5, 1, 1.2, 1.4, 1.7, 3};     // noise level determined by playing pink noise and seeing levels [trial and error]{204,188,68,73,150,98,88,68}
+float noise_fact_adj[] = {15, 7, 1.5, 1, 1.2, 1.4, 1.7, 3}; // noise level determined by playing pink noise and seeing levels [trial and error]{204,188,68,73,150,98,88,68}
+int counter2 = 0;
+void runningVU()
+{
+    // processAudio();
+    int prev_j[8];
+    int beat = 0;
+    int prev_oct_j;
+    int counter = 0;
+    int prev_beat = 0;
+    int led_index = 0;
+    int saturation = 0;
+    int saturation_prev = 0;
+    int brightness = 0;
+    int brightness_prev = 0;
+    for (int i = 1; i < 8; i++)
+    { // goes through each octave. skip the first 1, which is not useful
+
+        int j;
+        j = stripeValues[i]; // take the pink noise average level out, take the asbolute value to avoid negative numbers
+        if (j < 10)
+        {
+            j = 0;
+        }
+        j = j * noise_fact_adj[i];
+
+        if (j < 10)
+        {
+            j = 0;
+        }
+        else
+        {
+            j = j * noise_fact_adj[i];
+            if (j > 180)
+            {
+                if (i >= 7)
+                {
+                    beat += 2;
+                }
+                else
+                {
+                    beat += 1;
+                }
+            }
+            j = j / 30;
+            j = j * 30; // (force it to more discrete values)
+        }
+
+        prev_j[i] = j;
+
+        //     Serial.print(j);
+        //     Serial.print(" ");
+
+        // this fills in 11 LED's with interpolated values between each of the 8 OCT values
+        if (i >= 2)
+        {
+            led_index = 2 * i - 3;
+            prev_oct_j = (j + prev_j[i - 1]) / 2;
+
+            saturation = constrain(j + 30, 0, 255);
+            saturation_prev = constrain(prev_oct_j + 30, 0, 255);
+            brightness = constrain(j, 0, 255);
+            brightness_prev = constrain(prev_oct_j, 0, 255);
+            if (brightness == 255)
+            {
+                saturation = 50;
+                brightness = 200;
+            }
+            if (brightness_prev == 255)
+            {
+                saturation_prev = 50;
+                brightness_prev = 200;
+            }
+
+            for (uint8_t y = 0; y < 5; y++)
+            {
+                stripe[XY(led_index - 1, y)] = CHSV(j + y * 30, saturation, brightness);
+                if (i > 2)
+                {
+                    prev_oct_j = (j + prev_j[i - 1]) / 2;
+                    stripe[XY(led_index - 2, y)] = CHSV(prev_oct_j + y * 30, saturation_prev, brightness_prev);
+                }
+            }
+        }
+    }
+
+    if (beat >= 7)
+    {
+        fill_solid(stripe, NUM_LEDS_STRIPE, CRGB::Gray);
+        FastLED.setBrightness(120);
+
+        //    FastLED.setBrightness(200);
+    }
+    else
+    {
+        if (prev_beat != beat)
+        {
+            FastLED.setBrightness(40 + beat * beat * 5);
+            prev_beat = beat;
+        }
+    }
+
+    FastLED.show();
+    if (beat)
+    {
+        counter2 += ((beat + 4) / 2 - 2);
+        if (counter2 < 0)
+        {
+            counter2 = 1000;
+        }
+        if (beat > 3 && beat < 7)
+        {
+            FastLED.delay(20);
+        }
+        beat = 0;
+    }
+
+    // Serial.println();
+}
+
+// function used by "fadeTowardColor"
+void nblendU8TowardU8(uint8_t &cur, const uint8_t target, uint8_t amount)
+{
+    if (cur == target)
+        return;
+
+    if (cur < target)
+    {
+        uint8_t delta = target - cur;
+        delta = scale8_video(delta, amount);
+        cur += delta;
+    }
+    else
+    {
+        uint8_t delta = cur - target;
+        delta = scale8_video(delta, amount);
+        cur -= delta;
+    }
+}
+// Functions from Kriegsman example
+CRGB fadeTowardColor(CRGB &cur, const CRGB &target, uint8_t amount)
+{
+    nblendU8TowardU8(cur.red, target.red, amount);
+    nblendU8TowardU8(cur.green, target.green, amount);
+    nblendU8TowardU8(cur.blue, target.blue, amount);
+    return cur;
+}
+int i;
+void meteorRain()
+{
+    CRGB color = ColorFromPalette(currentPalette, colorTimer, 255);
+
+    for (int j = 0; j < NUM_LEDS_STRIPE; j++)
+    {
+        if (random(10) > 2)
+        {
+            stripe[j] = fadeTowardColor(stripe[j], CRGB::Black, 30);
+        }
+        if (random(10) > 3)
+        {
+            stripe[j + 1] = fadeTowardColor(stripe[j], CRGB::Black, 30);
+        }
+    }
+
+    // draw meteor
+    for (int j = 0; j < 20; j++)
+    {
+        if ((i - j < NUM_LEDS_STRIPE) && (i - j >= 0))
+        {
+            stripe[i - j] = color;
+            stripe[i - j + 1] = color;
+        }
+    }
+
+    i >= NUM_LEDS_STRIPE ? i = 0 : i += 15;
+    FastLED.show();
+}
+
+void beatDetector()
+{
+    if (matrixValues[0] + matrixValues[1] > 20)
+    {
+        int strt = random16(NUM_LEDS_STRIPE / 2);        // Start of FastLED stuff. Get a starting point.
+        int ende = strt + random16(NUM_LEDS_STRIPE / 2); // And and end point.
+        for (int i = strt; i < ende; i++)
+        {
+            uint8_t index = inoise8(i * 30, millis() + i * 30);                    // Make Perlin noise beteween those points.
+            stripe[i] = ColorFromPalette(currentPalette, index, 255, LINEARBLEND); // And display it with palettes.
+        }
+    }
+
+    EVERY_N_MILLIS(50)
+    {
+        fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64); // Fade the LED's
+                                                    // FastLED.show();                             // We can't show too often, or things break.
+    }
+}
+void spectrumDetector()
+{
+    for (uint8_t x = 0; x < 8; x++)
+    {
+        // NUM_LEDS_STRIPE / 16 (bands*2) = 61,75
+        int beat = 8;
+        if (x > 2 && x < 5)
+        {
+            beat = 6;
+        }
+        if (matrixValues[x] > beat)
+        {
+            int strt = random16(30);        // Start of FastLED stuff. Get a starting point.
+            int ende = strt + random16(31); // And and end point.
+            for (int i = strt; i < ende; i++)
+            {
+                uint8_t index = inoise8(i * 30, millis() + i * 30); // Make Perlin noise beteween those points.
+                stripe[i + x * 61] = ColorFromPalette(currentPalette, x * 32, 255, LINEARBLEND);
+                stripe[NUM_LEDS_STRIPE - (i + x * 61)] = ColorFromPalette(currentPalette, x * 32, 255, LINEARBLEND); // And display it with palettes.
+            }
+        }
+    }
+    EVERY_N_MILLIS(50)
+    {
+        fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64); // Fade the LED's
+                                                    // FastLED.show();                             // We can't show too often, or things break.
+    }
+}
 const PatternAndNameList patternsStripe = {
-    {stripeVuBandsSolidColor, "Stripe_Vu_Bands_Solid-Color"},
-    {stripeVuBandsColors, "Vu_Bands_Colors"},
-    {stripeVuBandsBeatsin, "Vu_Bands_ Beatsin"},
+    {spectrumDetector, "spectrumDetector"},
+    {beatDetector, "beatDetector"},
+    {meteorRain, "meteorRain"},
+    {twinkleFox, "TwinkleFox"},
+    {bucketVU, "BucketSpectrum"},
+    {heatMapShow, "Heatmap"},
+    {stripeVuBandsSolidColor, "SolidColorSpectrum"},
+    {stripeVuBandsColors, "Color-bands-Spectrum"},
+    {stripeVuBandsBeatsin, "Beatsin-Spectrum"},
     {colorWipe, "colorWipe"},
     {pacifica_loop, "Pacifica"},
     {rainbow, "Rainbow"},
     {rippless, "Ripple"},
     {salut, "Salut"},
-    {theaterChase, "Theater_Chase"},
-    {theaterChaseRainbow, "Theater_Chase_Rainbow"},
-    {bpmStripe, "BPM_Stripe"},
-    //{displayUpdateStripe, "Display_Update_Stripe"},
+    {theaterChase, "Theater-Chase"},
+    {bpmStripe, "BPM-Stripe"},
+    {displayUpdateStripe, "Display_Update_Stripe"},
     {sinelon, "Sinelon"},
     {juggle, "Juggle"},
     {strobo, "Strobo"},
-    {VUStripe, "VUStripe"},
     {confetti, "Confetti"},
-    {rainbowWithGlitter, "Rainbow_With_Glitter"}};
+    {rainbowWithGlitter, "Rainbow-With-Glitter"}};
 
-const uint8_t StripePatternsAmount = ARRAY_SIZE(patternsStripe);
+const uint8_t StripePatternsAmount = ARRAY_SIZE(patternsStripe) - 1;

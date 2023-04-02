@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <ThreeWire.h>
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Adafruit_NeoPixel.h>
@@ -9,6 +10,8 @@
 #include <Adafruit_NeoMatrix.h>
 #include <arduinoFFT.h>
 #include <FastLED_NeoMatrix.h>
+#include "Time.h"
+#include <RtcDS1302.h>
 
 // WebThings
 
@@ -27,7 +30,7 @@
 // #include "colorWipe.cpp"
 // #include "pixelChase.cpp"
 // #include "rainbow.h"
-
+#include <Adafruit_NeoPixel.h>
 // #include "buttons.ino"
 // #include "clock.ino"
 #include "define.h"
@@ -38,12 +41,10 @@
 #include "displayClock.h"
 #include "MatrixPatterns/AudioPatternsMatrix.h"
 #include "StripePatterns/AudioPatternsStripe.h"
-
+#include "StripePatterns/twinklefox.h"
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
 
 #include "WebThings.h"
 
 // #include "HTMLSite.h"
-
-

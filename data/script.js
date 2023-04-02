@@ -40,6 +40,27 @@ function onMessage(event) {
         var patternName = data.patternName;
         document.getElementById('patternName').innerHTML = patternName;
     }
+    if(data.patternNumber != "")
+    {
+        var patternNumber = data.patternNumber;
+        document.getElementById('patternNumber').innerHTML = patternNumber;
+    }
+    if(data.StripePatternsAmount!= "")
+    {
+        var StripePatternsAmount = data.StripePatternsAmount;
+        document.getElementById('StripePatternsAmount').innerHTML = StripePatternsAmount;
+    }
+    if(data.paletteName!= "")
+    {
+        var paletteName = data.paletteName;
+        document.getElementById('paletteName').innerHTML = paletteName;
+    }  
+    if(data.speed!= "")
+    {
+        var speed = data.speed;
+        document.getElementById('speed').innerHTML = speed;
+    }
+ 
 
 }
 
@@ -54,11 +75,23 @@ function nextPattern() {
 function prevPattern() {
     websocket.send(JSON.stringify({ 'action': 'prevPattern' }));
 }
-
-
-function myFunction() {
-    websocket.send(JSON.stringify({ 'action': 'rank8' }));
-    console.log("Button rank8 pressed");
+function prevPalette() {
+    websocket.send(JSON.stringify({ 'action': 'prevPalette' }));
+}
+function nextPalette() {
+    websocket.send(JSON.stringify({ 'action': 'nextPalette' }));
+}
+function speedDown() {
+    websocket.send(JSON.stringify({ 'action': 'speedDown' }));
+}
+function speedUp() {
+    websocket.send(JSON.stringify({ 'action': 'speedUp' }));
+}
+function prevMatrix(){
+    websocket.send(JSON.stringify({ 'action': 'prevMatrix' }));
+}
+function nextMatrix(){
+    websocket.send(JSON.stringify({ 'action': 'nextMatrix' }));
 }
 function updateSliderSpeed(element) {
     var sliderNumber = element.id.charAt(element.id.length-1);

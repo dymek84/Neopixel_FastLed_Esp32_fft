@@ -180,7 +180,7 @@ void nextPalette()
 {
 
     currentPaletteIndex = (currentPaletteIndex + 1) % NUMpalettes;
-    targetPalette = paletteList[currentPaletteIndex];
+    targetPalette = paletteList[currentPaletteIndex].Palette;
 }
 boolean connectToNetwork(String s, String p)
 {
@@ -207,8 +207,41 @@ boolean connectToNetwork(String s, String p)
     Serial.println(WiFi.localIP());
     return true;
 } // network()
+void syncTime()
+{
+    Serial.println("Syncing time...");
+    configTime(gmtOffset_sec, dayLightOffset_sec, ntpServer);
+
+    if (!getLocalTime(&timeinfo))
+    {
+        Serial.println("Failed to obtain time");
+        return;
+    }
+    Serial.println("");
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    Serial.println("");
+    // setTime(timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_sec,
+    //         timeinfo.tm_mday, 1 + timeinfo.tm_mon, 1900 + timeinfo.tm_year);
+    //  prevMin = minute();
+    // rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    day = timeinfo.tm_mday;
+    month = timeinfo.tm_mon + 1;
+    year = timeinfo.tm_year + 1900;
+    hour = timeinfo.tm_hour;
+    minute = timeinfo.tm_min;
+    second = timeinfo.tm_sec;
+
+    Rtc.SetDateTime(RtcDateTime(year, month, day, hour, minute, second));
+}
 void setup()
 {
+
+    Rtc.Begin();
+    RtcDateTime now = Rtc.GetDateTime();
+
+    strip.begin();
+    strip.clear();
+    strip.show();
     boolean connectedToNetwork = false; // We want to know if we have a network before proceeding
     Serial.begin(115200);
     Serial.println("start");
@@ -256,28 +289,22 @@ void setup()
     }
     pinMode(MIC_IN_PIN, INPUT);
     preferences.end();
+    Serial.println("preferences.end");
     setupWebServer();
     sampling_period_us = (1.0 / SAMPLING_FREQ) * pow(10.0, 6);
-    // Calculate cuttoff frequencies,meake a logarithmic scale base basePOt
-    double basePot = pow(SAMPLING_FREQ / 2.0, 1.0 / FREQUENCY_BANDS);
-    coutoffFrequencies[0] = basePot;
-    for (int i = 1; i < FREQUENCY_BANDS; i++)
-    {
-        coutoffFrequencies[i] = basePot * coutoffFrequencies[i - 1];
-    }
 
+    syncTime();
     Serial.println("setup done");
 }
 
 void loop()
 {
-    // Serial.println(analogRead(MIC_IN_PIN));
+    RtcDateTime now = Rtc.GetDateTime();
+
+    processAudio();
     EVERY_N_MILLISECONDS(500)
     {
         colorTimer++;
-        //  Serial.println(patternsStripe[CurrentStripePatternNumber].name);
-
-        // analyzeAudioSerial();
     }
     EVERY_N_SECONDS(5)
     {
@@ -285,31 +312,18 @@ void loop()
     }
     EVERY_N_MILLISECONDS(40)
     {
-
         nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
     }
+    patternsStripe[CurrentStripePatternNumber].drawFrame();
+    patternsMatrix[CurrentMatrixPatternNumber].drawFrame();
+    // backgroundVuMatrix();
+    //  matrixSpectrum();
+    // Wave();
 
-    EVERY_N_SECONDS(20)
-    {
-
-        //  CurrentStripePatternNumber = (CurrentStripePatternNumber + 1) % StripePatternsAmount;
-        //  Serial.print("Stripe Pattern: ");
-        //  Serial.println(patternsStripe[CurrentStripePatternNumber].name);
-
-    } // change patterns periodically
-
-    EVERY_N_MILLIS(delayStripe)
-    {
-        patternsStripe[CurrentStripePatternNumber].drawFrame();
-
-        //   patternsStripe[12].drawFrame();
-    }
-    // analyzeAudio();
-    // VU_meter();
-    // getSamples();
-    // analyzeAudioSerial();
-    // stripeVuBandsSolidColor();
-
+    setNum(now.Hour() / 10, 0);   // set first digit of hour
+    setNum(now.Hour() % 10, 1);   // set second digit of hour
+    setNum(now.Minute() / 10, 2); // set first digit of hour
+    setNum(now.Minute() % 10, 3); // set second digit of hour
     FastLED.show();
 }
 void nextPattern()
@@ -319,4 +333,12 @@ void nextPattern()
 void prevPattern()
 {
     CurrentStripePatternNumber <= 0 ? CurrentStripePatternNumber = 0 : CurrentStripePatternNumber--;
+}
+void nextMatrix()
+{
+    CurrentMatrixPatternNumber >= MatrixPatternsAmount ? CurrentMatrixPatternNumber = MatrixPatternsAmount : CurrentMatrixPatternNumber++;
+}
+void prevMatrix()
+{
+    CurrentMatrixPatternNumber <= 0 ? CurrentMatrixPatternNumber = 0 : CurrentMatrixPatternNumber--;
 }

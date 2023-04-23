@@ -2,6 +2,10 @@
 #pragma once
 #define stripethickness 33
 #include "Imports.h"
+#include "pgmspace.h"
+
+CRGBPalette16 Pal = CRGBPalette16(CRGB::Black, CRGB::Red);
+
 static uint8_t theta = 0;
 int LEDposx = 0; // starting x position for the LED
 int LEDposy = 0; // starting y posiiton for the LED
@@ -91,13 +95,10 @@ void Enoise()
       matrix[XY(x, y)] = ColorFromPalette(currentPalette, pixelHue8 + ms / 20, 255, LINEARBLEND);
     }
   }
-
-  FastLED.show();
 }
 
 void drawCircle(int x0, int y0, int radius, const CRGB &color)
 {
-
   int a = radius, b = 0;
   int radiusError = 1 - a;
 
@@ -161,9 +162,16 @@ void drop()
   }
 }
 unsigned long timer;
-float adjastHeight;
-uint16_t adjScale;
+
 uint16_t _scale;
+static float fmap(const float x, const float in_min, const float in_max, const float out_min, const float out_max)
+{
+  return (out_max - out_min) * (x - in_min) / (in_max - in_min) + out_min;
+}
+float adjastHeight = fmap(MATRIX_HEIGHT, 8, 32, 28, 12);
+uint16_t adjScale = map(MATRIX_WIDTH, 8, 64, 310, 63);
+byte scale = 80;
+byte speed = 92;
 void aurora()
 {
   // Serial.println("aurora");
@@ -190,13 +198,13 @@ void aurora()
                                        timer / _speed),
                                fabs((float)MATRIX_HEIGHT * 2. - (float)y) * adjastHeight));
 
-      // CRGB temColor = leds[XY(x, y)];
-      // leds[XY(x, y)].g = temColor.r;
-      // leds[XY(x, y)].r = temColor.g;
-      // leds[XY(x, y)].g /= 6;
-      // leds[XY(x, y)].r += leds[XY(x, y)].r < 206 ? 48 : 0;
-      //         leds[XY(x, y)].b += 48;
-      // leds[XY(x, y)].g += leds[XY(x, y)].g < 206 ? 48 : 0;
+      // CRGB temColor = matrix[XY(x, y)];
+      // matrix[XY(x, y)].g = temColor.r;
+      // matrix[XY(x, y)].r = temColor.g;
+      // matrix[XY(x, y)].g /= 6;
+      // matrix[XY(x, y)].r += matrix[XY(x, y)].r < 206 ? 48 : 0;
+      //         matrix[XY(x, y)].b += 48;
+      // matrix[XY(x, y)].g += matrix[XY(x, y)].g < 206 ? 48 : 0;
     }
   }
 }
@@ -209,8 +217,6 @@ void bpmMatrix()
   {
     matrix[i] = ColorFromPalette(currentPalette, colorTimer + (i * 2), beat - colorTimer + (i * 10));
   }
-
-  FastLED.show();
 }
 
 CRGBPalette16 fire_for_fire(fire_gp);
@@ -231,7 +237,6 @@ void Fire()
 }
 void Wave()
 {
-
   for (byte i = 0; i < MATRIX_WIDTH; i++)
   {
     byte thisVal = inoise8(i * 45, millis(), millis());
@@ -333,18 +338,190 @@ void backgroundVuMatrix()
     }
   }
 }
-const PatternAndNameList patternsMatrix = {
+// DigitalRain_____________________________________
+byte rain[NUM_LEDS_MATRIX];
+int InitNeeded = 1;
 
-    {matrixSpectrum, "matrix"},
-    {backgroundVuMatrix, "background"},
-    {Twirl, "twirl"},
-    {Bands, "Bands"},
-    {Wave, "Wave"},
-    {Fire, "Fire"},
-    {aurora, "Aurora"},
-    {drop, "Drop"},
-    {Enoise, "Enoise"},
-    {bpmMatrix, "BPM Matrix"},
-};
+void changepattern()
+{
+  int rand1 = random16(NUM_LEDS_MATRIX);
+  int rand2 = random16(NUM_LEDS_MATRIX);
+  if (rain[rand1] && !rain[rand2])
+  {
+    rain[rand1] = 0;
+    rain[rand2] = 1;
+  }
+} // changepattern
+
+void raininit()
+{ // init array of dots. run once
+  for (int i = 0; i < NUM_LEDS_MATRIX; i++)
+    rain[i] = !random8(15) ? 1 : 0;
+} // raininit
+
+void updaterain()
+{
+  static int speed = 1;
+
+  for (byte j = 0; j < MATRIX_HEIGHT; j++)
+  {
+    int yindex = (j + speed) % MATRIX_HEIGHT * MATRIX_WIDTH;
+    for (byte i = 0; i < MATRIX_WIDTH; i++)
+    {
+      byte layer = rain[yindex + i];
+      if (layer)
+        matrix[XY((MATRIX_WIDTH - 1) - i, (MATRIX_HEIGHT - 1) - j)].setHue(100);
+    }
+  }
+
+  fadeToBlackBy(matrix, 256, 70);
+  speed++;
+} // updaterain
+void DigitalRain()
+{
+  if (InitNeeded)
+  {
+    raininit();
+    InitNeeded = 0;
+  }
+  EVERY_N_MILLISECONDS(80) { updaterain(); }
+  EVERY_N_MILLISECONDS(15) { changepattern(); }
+}
+byte dist(uint8_t x1, uint8_t y1, uint8_t x2, uint8_t y2)
+{
+  byte dist;
+  int a = y2 - y1;
+  int b = x2 - x1;
+  a *= a;
+  b *= b;
+  a += b;
+  dist = a ? 200 / sqrt16(a) : 200;
+  return dist;
+}
+void metaballs()
+{
+  uint8_t bx1 = beatsin8(15, 0, MATRIX_WIDTH - 1, 0, 0);
+  uint8_t by1 = beatsin8(18, 0, MATRIX_HEIGHT - 1, 0, 0);
+  uint8_t bx2 = beatsin8(28, 0, MATRIX_WIDTH - 1, 0, 32);
+  uint8_t by2 = beatsin8(23, 0, MATRIX_HEIGHT - 1, 0, 32);
+  uint8_t bx3 = beatsin8(30, 0, MATRIX_WIDTH - 1, 0, 64);
+  uint8_t by3 = beatsin8(24, 0, MATRIX_HEIGHT - 1, 0, 64);
+  uint8_t bx4 = beatsin8(17, 0, MATRIX_WIDTH - 1, 0, 128);
+  uint8_t by4 = beatsin8(25, 0, MATRIX_HEIGHT - 1, 0, 128);
+  uint8_t bx5 = beatsin8(19, 0, MATRIX_WIDTH - 1, 0, 170);
+  uint8_t by5 = beatsin8(21, 0, MATRIX_HEIGHT - 1, 0, 170);
+
+  for (int i = 0; i < MATRIX_WIDTH; i++)
+  {
+    for (int j = 0; j < MATRIX_HEIGHT; j++)
+    {
+      byte sum = dist(i, j, bx1, by1);
+      sum = qadd8(sum, dist(i, j, bx2, by2));
+      sum = qadd8(sum, dist(i, j, bx3, by3));
+      sum = qadd8(sum, dist(i, j, bx4, by4));
+      sum = qadd8(sum, dist(i, j, bx5, by5));
+      int index = XY(i, j);
+      if (index != 256)
+        matrix[XY(i, j)] = ColorFromPalette(HeatColors_p, qsub8(sum, 100), BRIGHTNESS);
+    }
+  }
+}
+void FireButterfly()
+{
+  uint16_t a = millis() / 2;
+
+  for (int j = 0; j < MATRIX_HEIGHT; j++)
+  {
+    for (int i = 0; i < MATRIX_WIDTH; i++)
+    {
+      uint16_t index = XY(i, j);
+      if (index != 256)
+        matrix[index] = HeatColor(qsub8(inoise8(i * 80 + a, j * 5 + a, a / 3), abs8(j - (MATRIX_HEIGHT - 1)) * 255 / (MATRIX_HEIGHT + 3)));
+    }
+  }
+}
+void audioPlasma()
+{
+  static byte offset = 0;    // counter for radial color wave motion
+  static int plasVector = 0; // counter for orbiting plasma center
+
+  int xOffset = (cos8(plasVector / 256) - 127) / 2;
+  int yOffset = (sin8(plasVector / 256) - 127) / 2;
+
+  for (int x = 0; x < kMatrixWidth; x++)
+  {
+    for (int y = 0; y < kMatrixHeight; y++)
+    {
+      byte color = sin8(sqrt(sq(((float)x - 7.5) * 12 + xOffset) + sq(((float)y - 2) * 12 + yOffset)) + offset);
+      matrix[XY(x, y)] = ColorFromPalette(Pal, color, 255);
+    }
+  }
+
+  offset++;                                                                                                                                                           // wraps at 255 for sin8
+  plasVector += (stripeValues[0] + stripeValues[1] + stripeValues[2] + stripeValues[3] + stripeValues[4] + stripeValues[5] + stripeValues[6] + stripeValues[7]) * 10; // using an int for slower orbit (wraps at 65536) //spectrumValue
+  //  plasVector += (spectrumValue[1] + spectrumValue[2] + spectrumValue[3])/3;
+} // audioPlasma()
+void RedPeak()
+{
+  fadeToBlackBy(matrix, NUM_LEDS_MATRIX, 90);
+  for (byte band = 0; band < NUM_BANDS; band++)
+  {
+    if (matrixValues[band] > peaks[band])
+    {
+      peaks[band] = matrixValues[band];
+    }
+    for (uint8_t i = 0; i < 16; i++)
+    {
+      if (i == peaks[band])
+      {
+        matrix[MatrixArray[band][i]] = CRGB::White;
+        matrix[MatrixArrayFlip[band][i]] = CRGB::White;
+      }
+      int hue = map8(sin8(band) * 5, HUE_GREEN, HUE_MAX_SPECTRUM);
+
+      if (i < matrixValues[band])
+      {
+        matrix[MatrixArray[band][i]] = CHSV(128, 0, 128);
+        matrix[MatrixArrayFlip[band][i]] = CHSV(128, 0, 128);
+      }
+      else
+      {
+        // matrix[MatrixArray[band][i]] = CRGB::Black;
+        // matrix[MatrixArrayFlip[band][i]] = CRGB::Black;
+      }
+    }
+  }
+  EVERY_N_MILLISECONDS(120)
+  {
+    for (byte band = 0; band < NUM_BANDS; band++)
+    {
+      if (peaks[band] < 16)
+      {
+        peaks[band]++;
+      }
+      else
+      {
+        if (matrixValues[band] > 1)
+          peaks[band] = matrixValues[band];
+      }
+    }
+  }
+}
+const PatternAndNameList patternsMatrix = {
+    {RedPeak, "RedPeak", true},
+    {audioPlasma, "audioPlasma", true},
+    {FireButterfly, "FireButterfly", false},
+    {metaballs, "metaballs", false},
+    {DigitalRain, "digitalrain", false},
+    {matrixSpectrum, "matrix", true},
+    {backgroundVuMatrix, "background", true},
+    {Twirl, "twirl", false},
+    {Bands, "Bands", false},
+    {Wave, "Wave", false},
+    {Fire, "Fire", false},
+    {aurora, "Aurora", false},
+    {drop, "Drop", false},
+    {Enoise, "Enoise", false},
+    {bpmMatrix, "BPM Matrix", false}};
 
 const uint8_t MatrixPatternsAmount = ARRAY_SIZE(patternsMatrix) - 1;

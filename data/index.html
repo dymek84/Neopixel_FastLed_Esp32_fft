@@ -18,62 +18,52 @@
     <div class="centered-content tabs">
         <ul class="circles">
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="42px" width="30px"></img>
+                <div> <img src="finger.png" height="42px" width="30px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="63px" width="45px"></img>
+                <div> <img src="finger.png" height="63px" width="45px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="127px" width="100px"></img>
+                <div> <img src="finger.png" height="127px" width="100px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="42px" width="30px"></img>
+                <div> <img src="finger.png" height="42px" width="30px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="63px" width="45px"></img>
+                <div> <img src="finger.png" height="63px" width="45px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="127px" width="100px"></img>
+                <div> <img src="/finger.png" height="127px" width="100px"></img>
                 </div>
                 <div>
             </li>
             <li>
-                <div> <img src="https://www.clipartmax.com/png/full/35-351504_middle-finger-middle-finger-png.png"
-                        height="84px" width="60px"></img>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
                 </div>
                 <div>
             </li>
@@ -84,126 +74,69 @@
             <button class="tablinks" onclick="openCity(event,
                     'MatrixEffects')">Clock Effects</button>
             <button class="tablinks" onclick="openCity(event, 'Options')">Options</button>
-            <button class="tablinks" onclick="openCity(event, 'Settings')">Settings</button>
         </div>
 
         <!-- Stripe / leds -->
         <div id="StripeEffects" class="tabcontent led">
             <h3>LED Stripe Effects</h3>
-
-
-
-
             <div class="wrapper">
                 <div> Current effect: - <div id="patternName"> %patternLED%</div>
-                    <div id="currentEffect">%patternLED%</div>
-
+                    <div id="currentPatternStripe"></div>
                 </div>
-                <div>
-                    <div id="patternNumber"></div>/<div id="StripePatternsAmount"></div><br><br>
-                </div>
+              
             </div>
-
             <div> <button class="btn btn-custom" type="submit" value="prev" onclick="prevPattern()"
                     name="patternLED">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <button class="btn btn-custom" type="submit" value="next" name="patternLED"
                     onclick="nextPattern()">Next</button>
-            </div>
-
-            <h3>LED Stripe Color Palette</h3>
-
-            <div class="wrapper">
-                <div> Current effect: - <div id="paletteName"> %patternLED%</div>
-                    <div id="currentEffect">%patternLED%</div>
-
-                </div><br><br>
-            </div>
-            <div><button class="btn btn-custom" name="paletteLED" type="submit" value="prev"
-                    onclick="prevPalette()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                    class="btn btn-custom" name="paletteLED" onclick="nextPalette()" type="submit"
-                    value="next">Next</button></div> <br>
-
-            <h3>LED Stripe Pattern Speed</h3>
-
-            <div class="wrapper">
-                Current palette: - %paletteLED% <br><br> </div>
-            <div><button class="btn btn-custom" name="paletteLED" type="submit" value="prev"
-                    onclick="speedDown()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                    class="btn btn-custom" name="paletteLED" onclick="speedUP()" type="submit"
-                    value="next">Next</button></div> <br>
-
-
+            </div><BR><BR><BR><BR>
         </div>
 
         <!-- Matrix / clock -->
         <div id="MatrixEffects" class="tabcontent clock">
             <h3>Clock/Controller Settings</h3>
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Current effect: - %patternMatrix% <br><br> </div>
-                <div><button type="submit" class="btn btn-custom" name="patternMatrix" value="prev"
-                        onclick="prevMatrix()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        type="submit" class="btn btn-custom" name="patternMatrix" value="next"
-                        onclick="nextMatrix()">Next</button></div>
-            </form>
-            <h3>Clock Color Palette</h3>
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Current palette: - %paletteMatrix% <br><br> </div>
-                <div><button type="submit" class="btn btn-custom" name="paletteMatrix"
-                        value="prev">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                        type="submit" class="btn btn-custom" name="paletteMatrix" value="next">Next</button></div>
-                <br>
-            </form>
+
+            <div class="wrapper">
+                Current effect: - %patternMatrix% <br><br> </div>
+            <div><button type="submit" class="btn btn-custom" name="patternMatrix" value="prev"
+                    onclick="prevMatrix()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                    type="submit" class="btn btn-custom" name="patternMatrix" value="next"
+                    onclick="nextMatrix()">Next</button></div>
+
+            <BR><BR><BR><BR>
 
         </div>
         <div id="Options" class="tabcontent">
 
 
             <form action="/get" target="hidden-form">
-                <h3>Brightness</h3>
+                <h3>Overall Brighness</h3>
                 <div class="wrapper">
-                    <input type="range" onchange="updateSliderSpeed(this)" id="slider2" min="0" max="100" step="1"
+                    <input type="range" onchange="updateSliderBrightness(this)" id="slider1" min="0" max="100" step="1"
                         value="0" class="slider">
-                    <p class="state">Brightness: <span id="speedSliderVal"></span> &percnt;</p>
+                    <p class="state">Brightness: <span id="brightnessSliderVal"></span> &percnt;</p>
                 </div>
             </form>
-            <h3> Text to display on matrix</h3>
             <form action="/get" target="hidden-form">
-                Text to display on the clock: <br>
-                <input type="text" id="scrolltext" name="scrolltext" value="%scrolltext%" maxlength="20">
+                <h3>Patterns Speed</h3>
+                <div class="wrapper" id="speed">
+
+                    <input type="range" onchange="updateSliderSpeed(this)" id="slider2" min="0" max="100" step="1"
+                        value="%speed%" class="slider">
+                    <p class="state">Speed: <span id="speedSliderVal"></span> &percnt;</p>
+                </div>
+            </form>
+            <h3>
+                
+            </h3>
+            <form action="/get" target="hidden-form">
+                Welcome message text <br>
+                <input type="text" id="welcommessage" name="welcommessage" value="" maxlength="20">
                 <input type="submit" value="Submit">
             </form>
 
 
 
-        </div>
-
-        <div id="Settings" class="tabcontent">
-            <h3> Settings </h3>
-            <h3> User Settings </h3>
-
-            <form action="/get" target="hidden-form">
-                SSID: <br>
-                <input type="text" id="SSID" name="SSID" value="%SSID%">
-                <br> Password: <br>
-                <input type="text" id="pass" name="pass" value="%password%">
-                <input type="submit" value="Submit">
-            </form> <br>
-
-
-            <br>
-            <h3> Clock setting </h3>
-            Change the data output pin on ESP32 to communicatie with the
-            LEDmatrix (restart required):
-
-            <form action="/get" target="hidden-form">
-                <div class="wrapper">
-                    Some settings: <br>
-
-                </div>
-            </form>
-            <br>
         </div>
     </div>
     <iframe style="display:none" name="hidden-form"></iframe>

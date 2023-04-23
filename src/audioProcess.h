@@ -223,7 +223,7 @@ double fftResultPink[8] = {
     1.99,
     1.90,
     2.77,
-    3.53,
+    1.53,
 };
 
 double fftAdd(int from, int to)
@@ -236,6 +236,7 @@ double fftAdd(int from, int to)
     }
     return result;
 }
+
 void FFTcode()
 {
 
@@ -285,7 +286,7 @@ void FFTcode()
      * Multiplier = 1.320367784
      */
     int squelch = 0;
-    int gain = 1;
+    int gain = 5;
     // Range
     fftCalc[0] = (fftAdd(3, 5)) / 2;      // 80 - 120
     fftCalc[1] = (fftAdd(5, 9)) / 3;      // 140 - 200
@@ -327,5 +328,8 @@ void FFTcode()
 } // FFTcode()
 void processAudio()
 {
+    //createBands();
+    //analyzeAudio();
     FFTcode();
 }
+

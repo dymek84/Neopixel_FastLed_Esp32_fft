@@ -41,7 +41,7 @@ float reference = log10(100.0);
 //
 /********************** matrix - stripe  ***************************/
 #define NUM_LEDS_MATRIX (MATRIX_WIDTH * MATRIX_HEIGHT)
-#define NUM_LEDS_STRIPE 988
+#define NUM_LEDS_STRIPE 990
 #define LED_HALF_STRIPE NUM_LEDS_STRIPE / 2
 #define BRIGHTNESS 125 // LED information
 #define LED_TYPE WS2812B
@@ -87,6 +87,7 @@ uint8_t bright = map(changeLedBright, 0, 20, 0, 255);
 long patternInterval = 20;
 long previousMillis = 0;
 int gCurrentPatternNumber = 1;
+String welcommessage;
 /**********************MENU===================== END ==
 //
 //
@@ -172,7 +173,7 @@ uint8_t
     paletteDuration = 10,
     colorTimer = 0,
     delayStripe = 0,
-    BeatsPerMinute,
+    BeatsPerMinute = 60,
     CurrentStripePatternNumber = 0,
     CurrentMatrixPatternNumber = 0;
 String

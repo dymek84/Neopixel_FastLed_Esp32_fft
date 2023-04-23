@@ -30,11 +30,13 @@ typedef struct
 {
     SimplePatterna drawFrame;
     String name;
+    bool isAudio;
 } PatternAndName;
 typedef PatternAndName PatternAndNameList[];
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS_STRIPE, LED_PIN_STRIPE, NEO_GRB + NEO_KHZ800);
 
-ThreeWire myWire(21, 22, 19);      //26 data, 27 clock e 25 reset do módulo RTC DS1302
+ThreeWire myWire(21, 22, 19); // 26 data, 27 clock e 25 reset do módulo RTC DS1302
 RtcDS1302<ThreeWire> Rtc(myWire);
 struct tm timeinfo;
+RtcDateTime now;

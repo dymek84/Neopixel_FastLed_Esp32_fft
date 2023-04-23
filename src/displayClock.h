@@ -6,10 +6,10 @@ void setNum(byte number, byte pos)
 {
     if ((millis() / 1000) % 2 == 0)
     {
-        matrix[MatrixArray[2][14]] = CRGB::White;
-        matrix[MatrixArray[1][14]] = CRGB::White;
-        matrix[MatrixArray[5][14]] = CRGB::White;
-        matrix[MatrixArray[4][14]] = CRGB::White;
+        matrix[MatrixArray[2][14]] = CRGB::Wheat;
+        matrix[MatrixArray[1][14]] = CRGB::Wheat;
+        matrix[MatrixArray[5][14]] = CRGB::Wheat;
+        matrix[MatrixArray[4][14]] = CRGB::Wheat;
     }
     else
     {
@@ -27,7 +27,7 @@ void setNum(byte number, byte pos)
         for (int y = 0; y < 8; y++)
         {
             if (num[number][y] & (0b01000000 >> x))
-                matrix[MatrixArray[y][pos + x]] = CRGB::White;
+                matrix[MatrixArray[y][pos + x]] = CRGB::Wheat;
         }
     }
 }

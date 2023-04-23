@@ -1,13 +1,16 @@
 #pragma once
 
 #include "Imports.h"
-uint8_t patternNumber = 0;
 
 String processor(const String &var)
 {
     if (var == "patternLED")
     {
         return patternLED;
+    }
+    else if (var == "speed")
+    {
+        return String(map(patternInterval, 2000, 0, 0, 100));
     }
     else if (var == "paletteLED")
     {
@@ -242,11 +245,12 @@ void initWebServer()
                       overAllBrightness = inputMessage.toInt();
                       preferences.putUInt("oaBrightness", overAllBrightness);
                   }
-                  else if (request->hasParam("scrolltext"))
+                  else if (request->hasParam("welcommessage"))
                   {
-                      inputMessage = request->getParam("scrolltext")->value();
-                      preferences.putString("scrolltext", inputMessage);
-                      scrolltext = inputMessage;
+                      inputMessage = request->getParam("welcommessage")->value();
+                      preferences.putString("welcommessage", inputMessage);
+                      runString(welcommessage, CRGB::Red, 20);
+                    //  scrolltext = inputMessage;
                   }
                   else if (request->hasParam("scrollspeed"))
                   {
@@ -273,6 +277,32 @@ void initWebServer()
 // WebSocket initialization
 // ----------------------------------------------------------------------------
 
+void sendAll()
+{
+    String json = "{";
+
+    json += "\"brightness\":" + String(map(overAllBrightness, 255, 0, 100, 0)) + ",";
+
+    json += "\"speed\":" + String(map(patternInterval, 2000, 0, 0, 100));
+    +",";
+
+    json += "\"currentPatternStripe\":{";
+    json += "\"index\":" + String(CurrentStripePatternNumber);
+    json += ",\"name\":\"" + patternsStripe[CurrentStripePatternNumber].name + "\"}";
+
+    json += "\"currentPatternMatrix\":{";
+    json += "\"index\":" + String(CurrentMatrixPatternNumber);
+    json += ",\"name\":\"" + patternsMatrix[CurrentMatrixPatternNumber].name + "\"}";
+
+    json += ",\"currentPalette\":{";
+    json += "\"index\":" + String(currentPaletteIndex);
+    json += ",\"name\":\"" + paletteList[currentPaletteIndex].Name + "\"}";
+
+    json += "}";
+    ws.printfAll(json.c_str());
+    // server.send(200, "text/json", json);
+    json = String();
+}
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
 {
     AwsFrameInfo *info = (AwsFrameInfo *)arg;
@@ -293,15 +323,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
         if (strcmp(action, "nextPattern") == 0)
         {
             nextPattern();
-            // notifyClients(" v", String(patternsStripe[CurrentStripePatternNumber].name));
             Serial.print(String(CurrentStripePatternNumber));
             Serial.print("/");
             Serial.print(String(StripePatternsAmount));
             Serial.print(" ");
             Serial.println(String(patternsStripe[CurrentStripePatternNumber].name));
             notifyClients("patternNumber", String(CurrentStripePatternNumber));
-            //   notifyClients("StripePatternsAmount", String(StripePatternsAmount));
-            //  preferences.putString("patternNumber", String(patternNumber));
+            sendAll();
         }
         if (strcmp(action, "prevPattern") == 0)
         {
@@ -311,23 +339,15 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
             Serial.print(String(StripePatternsAmount));
             Serial.print(" ");
             Serial.println(String(patternsStripe[CurrentStripePatternNumber].name));
-            //  notifyClients("patternName", String(patternsStripe[CurrentStripePatternNumber].name));
+            sendAll();
             notifyClients("patternNumber", String(CurrentStripePatternNumber));
-            // notifyClients("StripePatternsAmount", String(StripePatternsAmount));
-            //  preferences.putString("patternNumber", String(patternNumber));
         }
-        if (strcmp(action, "stripPatternSpeedUp") == 0)
+        if (strcmp(action, "speedSlider") == 0)
         {
-            patternInterval <= 1 ? patternInterval == 1 : patternInterval -= 10;
-            //  notifyClients("stripePatternSpeed", String(256 - patternInterval));
-            preferences.putString("patternInterval", String(patternInterval));
+            setSpeed(map(json["speedValue"], 0, 100, 2000, 0));
+            sendAll();
         }
-        if (strcmp(action, "stripPatternSpeedDown") == 0)
-        {
-            patternInterval >= 256 ? patternInterval == 256 : patternInterval += 10;
-            //   notifyClients("stripePatternSpeed", String(256 - patternInterval));
-            preferences.putString("patternInterval", String(patternInterval));
-        }
+
         if (strcmp(action, "nextMatrix") == 0)
         {
             nextMatrix();
@@ -349,17 +369,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
             Serial.println(String(patternsMatrix[CurrentMatrixPatternNumber].name));
             //  notifyClients("patternNameMatrix", String() )
         }
-
-        if (strcmp(action, "toggle6") == 0)
+        if (strcmp(action, "brightnessSlider") == 0)
         {
-
-            notifyClients();
-        }
-        if (strcmp(action, "rank8") == 0)
-        {
-            Serial.print(F("rank8 action"));
-
-            notifyClients();
+            setBright(map(json["brightnessValue"], 0, 100, 1, 255));
+            sendAll();
         }
     }
 }
@@ -399,46 +412,4 @@ void setupWebServer()
     Serial.println("setupWebServer");
     initWebSocket();
     initWebServer();
-}
-
-void sendAll()
-{
-    String json = "{";
-
-    json += "\"brightness\":" + String(BRIGHTNESS) + ",";
-
-    json += "\"currentPatternStripe\":{";
-    json += "\"index\":" + String(CurrentStripePatternNumber);
-    json += ",\"name\":\"" + patternsStripe[CurrentStripePatternNumber].name + "\"}";
-
-    json += "\"currentPattern\":{";
-    json += "\"index\":" + String(CurrentStripePatternNumber);
-    json += ",\"name\":\"" + patternsStripe[CurrentStripePatternNumber].name + "\"}";
-
-    json += ",\"currentPalette\":{";
-    json += "\"index\":" + String(currentPaletteIndex);
-    json += ",\"name\":\"" + paletteList[currentPaletteIndex].Name + "\"}";
-
-    json += ",\"patterns\":[";
-    for (uint8_t i = 0; i < patternNumber; i++)
-    {
-        json += "\"" + paletteList[i].Name + "\"";
-        if (i < patternNumber - 1)
-            json += ",";
-    }
-    json += "]";
-
-    json += ",\"palettes\":[";
-    for (uint8_t i = 0; i < NUMpalettes; i++)
-    {
-        json += "\"" + paletteList[i].Name + "\"";
-        if (i < NUMpalettes - 1)
-            json += ",";
-    }
-    json += "]";
-
-    json += "}";
-    ws.printfAll(json.c_str());
-    // server.send(200, "text/json", json);
-    json = String();
 }

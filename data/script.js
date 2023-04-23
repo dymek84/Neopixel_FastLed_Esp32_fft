@@ -36,26 +36,26 @@ function onMessage(event) {
     let data = JSON.parse(event.data);
     
    
-    if (data.patternName != "") {
-        var patternName = data.patternName;
-        document.getElementById('patternName').innerHTML = patternName;
+    if (data.currentPatternStripe != "") {
+        var patternName = data.currentPatternStripe;
+        document.getElementById('currentPatternStripe').innerHTML = patternName.name;
     }
     if(data.patternNumber != "")
     {
         var patternNumber = data.patternNumber;
         document.getElementById('patternNumber').innerHTML = patternNumber;
     }
-    if(data.StripePatternsAmount!= "")
+    if(data.StripePatternsAmount != "")
     {
         var StripePatternsAmount = data.StripePatternsAmount;
         document.getElementById('StripePatternsAmount').innerHTML = StripePatternsAmount;
     }
-    if(data.paletteName!= "")
+    if(data.paletteName != "")
     {
         var paletteName = data.paletteName;
         document.getElementById('paletteName').innerHTML = paletteName;
     }  
-    if(data.speed!= "")
+    if(data.speed != "")
     {
         var speed = data.speed;
         document.getElementById('speed').innerHTML = speed;
@@ -98,8 +98,14 @@ function updateSliderSpeed(element) {
     var sliderValue = document.getElementById(element.id).value;
     document.getElementById("speedSliderVal").innerHTML = sliderValue;
     console.log(sliderValue);
-    websocket.send(JSON.stringify({ 'action': 'speedSlider', 'sliderValue': sliderValue.toString()})
-    );
+    websocket.send(JSON.stringify({ 'action': 'speedSlider', 'speedValue': sliderValue.toString()}));
+}
+function updateSliderBrightness(element) {
+    var sliderNumber = element.id.charAt(element.id.length-1);
+    var sliderValue = document.getElementById(element.id).value;
+    document.getElementById("brightnessSliderVal").innerHTML = sliderValue;
+    console.log(sliderValue);
+    websocket.send(JSON.stringify({ 'action': 'brightnessSlider', 'brightnessValue': sliderValue.toString()}));
 }
 function openCity(evt, cityName) {
     // Declare all variables

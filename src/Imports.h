@@ -39,11 +39,11 @@
 #include "helperFuction.h"
 #include "audioProcess.h"
 #include "displayClock.h"
-#include "MatrixPatterns/AudioPatternsMatrix.h"
-#include "StripePatterns/AudioPatternsStripe.h"
+
 #include "StripePatterns/twinklefox.h"
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
+#include "StripeGames/randomGame.h"
 
 #include "WebThings.h"
 

@@ -27,16 +27,21 @@ void twinkleFox()
     }
     drawTwinkles(5, 5);
 }
-
+byte colorForWipe;
 void colorWipe()
 {
-
-    //  Update delay time
-    stripe[pixelCurrent] = CHSV(colorTimer, 255, 255); //  Set pixel's color (in RAM)
-    FastLED.show();                                    //  Update strip to match
-    pixelCurrent + 15;                                 //  Advance current pixel
-    if (pixelCurrent >= NUM_LEDS_STRIPE)               //  Loop the pattern from the first LED
+    uint8_t steps = 15;
+    FOR_i(0, steps)
+    {
+        stripe[pixelCurrent + i] = CHSV(colorForWipe, 255, 255);
+    }
+    pixelCurrent += steps;
+    if (pixelCurrent >= NUM_LEDS_STRIPE)
         pixelCurrent = 0;
+    if (stripeValues[0] > 30)
+    {
+        colorForWipe += 16;
+    }
 }
 
 CRGBPalette16 pacifica_palette_1 =
@@ -224,44 +229,6 @@ void rippless()
 
 } // rippless()
 
-int s_start_pos[5];
-int s_time[5] = {random(30), random(30), random(30), random(30), random(30)};
-int s_color[5];
-int s_brightness[5];
-int s_tick[5] = {0, 0, 0, 0, 0};
-int s_scale[5];
-void salut()
-{
-    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 64);
-    int s_count = random16(1, 5);
-    static uint32_t prevTime;
-    // стартовая позиция
-    if (s_time[s_count] < s_tick[s_count])
-    {
-        s_time[s_count] = random(80) + 20;
-        s_tick[s_count] = 0;
-        s_start_pos[s_count] = random(NUM_LEDS_STRIPE);
-        s_color[s_count] = random(255);
-        s_brightness[s_count] = 255 - random(100);
-        s_scale[s_count] = random(25) + 1;
-    }
-
-    s_tick[s_count]++;
-    s_brightness[s_count] = s_brightness[s_count] - (s_brightness[s_count] / 12);
-    s_color[s_count] = s_color[s_count] + 1;
-    FOR_i(1, s_scale[s_count])
-    {
-        if ((s_start_pos[s_count] + s_tick[s_count] + i) < NUM_LEDS_STRIPE)
-        {
-            stripe[s_start_pos[s_count] + s_tick[s_count] + i] = CHSV(s_color[s_count], 255, s_brightness[s_count]);
-        }
-        if ((s_start_pos[s_count] - s_tick[s_count] - i) > 0)
-        {
-            stripe[s_start_pos[s_count] - s_tick[s_count] - i] = CHSV(s_color[s_count], 255, s_brightness[s_count]);
-        }
-    }
-}
-
 void theaterChase()
 { // modified from Adafruit example to make it a state machine
 
@@ -324,6 +291,7 @@ void strobo()
         stripe[i] = stripcolor;
     }
     FastLED.show();
+    FastLED.delay(patternInterval);
 }
 // List of patterns to cycle through.  Each is defined as a separate function below.
 void sinelon()
@@ -489,42 +457,7 @@ void stripeVuBandsSolidColor()
         }
     }
 }
-CRGB led_bucket[NUM_LEDS_STRIPE];
-int s = 0;
-void bucketVU()
-{
-    int halfStripe = NUM_LEDS_STRIPE / 2;
-    //  processAudio();
-    s = stripeValues[0];
-    s = s * 10;
-    //  Serial.println(s);
-    //  delay(50);
 
-    led_bucket[600] = CHSV(map(stripeValues[2], 0, 75, 0, 255), 255, map(stripeValues[0], 0, 75, 0, 255));
-    led_bucket[601] = CHSV(map(stripeValues[2], 0, 75, 0, 255), 255, map(stripeValues[0], 0, 75, 0, 255));
-
-    for (int i = 0; i <= (NUM_LEDS_STRIPE - 2); i++)
-    {
-        //   led_bucket[NUM_LEDS_STRIPE - 1 - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
-        //   stripe[NUM_LEDS_STRIPE - 1 - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
-        led_bucket[NUM_LEDS_STRIPE - 1 - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
-        stripe[NUM_LEDS_STRIPE - i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
-        stripe[i] = led_bucket[(NUM_LEDS_STRIPE)-i - 2];
-        stripe[(NUM_LEDS_STRIPE - 1) - i] = led_bucket[NUM_LEDS_STRIPE - 1 - i];
-    }
-    if (s >= 450)
-    {
-        s = 450;
-    }
-    if (s <= 100)
-    {
-        s = 100;
-    }
-    for (int i = (450 - s) / 15; i >= 0; i--)
-    {
-        // stripe[ i] = CRGB(0, 0, 0);
-    }
-}
 void stripeVuBandsBeatsin()
 {
     // processAudio();
@@ -590,126 +523,6 @@ void stripeVuBandsColors()
         }
     }
 }
-float noise_fact[] = {15, 7, 1.5, 1, 1.2, 1.4, 1.7, 3};     // noise level determined by playing pink noise and seeing levels [trial and error]{204,188,68,73,150,98,88,68}
-float noise_fact_adj[] = {15, 7, 1.5, 1, 1.2, 1.4, 1.7, 3}; // noise level determined by playing pink noise and seeing levels [trial and error]{204,188,68,73,150,98,88,68}
-int counter2 = 0;
-void runningVU()
-{
-    // processAudio();
-    int prev_j[8];
-    int beat = 0;
-    int prev_oct_j;
-    int counter = 0;
-    int prev_beat = 0;
-    int led_index = 0;
-    int saturation = 0;
-    int saturation_prev = 0;
-    int brightness = 0;
-    int brightness_prev = 0;
-    for (int i = 1; i < 8; i++)
-    { // goes through each octave. skip the first 1, which is not useful
-
-        int j;
-        j = stripeValues[i]; // take the pink noise average level out, take the asbolute value to avoid negative numbers
-        if (j < 10)
-        {
-            j = 0;
-        }
-        j = j * noise_fact_adj[i];
-
-        if (j < 10)
-        {
-            j = 0;
-        }
-        else
-        {
-            j = j * noise_fact_adj[i];
-            if (j > 180)
-            {
-                if (i >= 7)
-                {
-                    beat += 2;
-                }
-                else
-                {
-                    beat += 1;
-                }
-            }
-            j = j / 30;
-            j = j * 30; // (force it to more discrete values)
-        }
-
-        prev_j[i] = j;
-
-        //     Serial.print(j);
-        //     Serial.print(" ");
-
-        // this fills in 11 LED's with interpolated values between each of the 8 OCT values
-        if (i >= 2)
-        {
-            led_index = 2 * i - 3;
-            prev_oct_j = (j + prev_j[i - 1]) / 2;
-
-            saturation = constrain(j + 30, 0, 255);
-            saturation_prev = constrain(prev_oct_j + 30, 0, 255);
-            brightness = constrain(j, 0, 255);
-            brightness_prev = constrain(prev_oct_j, 0, 255);
-            if (brightness == 255)
-            {
-                saturation = 50;
-                brightness = 200;
-            }
-            if (brightness_prev == 255)
-            {
-                saturation_prev = 50;
-                brightness_prev = 200;
-            }
-
-            for (uint8_t y = 0; y < 5; y++)
-            {
-                stripe[XY(led_index - 1, y)] = CHSV(j + y * 30, saturation, brightness);
-                if (i > 2)
-                {
-                    prev_oct_j = (j + prev_j[i - 1]) / 2;
-                    stripe[XY(led_index - 2, y)] = CHSV(prev_oct_j + y * 30, saturation_prev, brightness_prev);
-                }
-            }
-        }
-    }
-
-    if (beat >= 7)
-    {
-        fill_solid(stripe, NUM_LEDS_STRIPE, CRGB::Gray);
-        FastLED.setBrightness(120);
-
-        //    FastLED.setBrightness(200);
-    }
-    else
-    {
-        if (prev_beat != beat)
-        {
-            FastLED.setBrightness(40 + beat * beat * 5);
-            prev_beat = beat;
-        }
-    }
-
-    FastLED.show();
-    if (beat)
-    {
-        counter2 += ((beat + 4) / 2 - 2);
-        if (counter2 < 0)
-        {
-            counter2 = 1000;
-        }
-        if (beat > 3 && beat < 7)
-        {
-            FastLED.delay(20);
-        }
-        beat = 0;
-    }
-
-    // Serial.println();
-}
 
 // function used by "fadeTowardColor"
 void nblendU8TowardU8(uint8_t &cur, const uint8_t target, uint8_t amount)
@@ -739,6 +552,7 @@ CRGB fadeTowardColor(CRGB &cur, const CRGB &target, uint8_t amount)
     return cur;
 }
 int i;
+int aa = NUM_LEDS_STRIPE;
 void meteorRain()
 {
     CRGB color = ColorFromPalette(currentPalette, colorTimer, 255);
@@ -758,14 +572,22 @@ void meteorRain()
     // draw meteor
     for (int j = 0; j < 20; j++)
     {
-        if ((i - j < NUM_LEDS_STRIPE) && (i - j >= 0))
+        if ((i - j < NUM_LEDS_STRIPE / 2) && (i - j >= 0))
         {
             stripe[i - j] = color;
             stripe[i - j + 1] = color;
         }
     }
-
-    i >= NUM_LEDS_STRIPE ? i = 0 : i += 15;
+    for (int j = 0; j < 20; j++)
+    {
+        if ((aa - j > NUM_LEDS_STRIPE / 2) && (aa - j >= 0))
+        {
+            stripe[aa - j] = color;
+            stripe[aa - j + 1] = color;
+        }
+    }
+    aa <= NUM_LEDS_STRIPE / 2 ? aa = NUM_LEDS_STRIPE : aa -= 10;
+    i >= NUM_LEDS_STRIPE / 2 ? i = 0 : i += 10;
     FastLED.show();
 }
 
@@ -816,28 +638,662 @@ void spectrumDetector()
                                                     // FastLED.show();                             // We can't show too often, or things break.
     }
 }
+void water_fall_vu()
+{
+    EVERY_N_MILLIS(300)
+    {
+        fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 1);
+    }
+    int complex_wave = matrixValues[0] + matrixValues[1];
+    // int complex_wave =  vReal[5];
+    complex_wave = constrain(map(complex_wave, 0, 32, 0, 255), 0, 255);
+    stripe[(NUM_LEDS_STRIPE / 2)] = CHSV(complex_wave, 255, complex_wave);
+    stripe[(NUM_LEDS_STRIPE / 2) - 1] = CHSV(complex_wave, 255, complex_wave);
+    FOR_i(0, NUM_LEDS_STRIPE / 2)
+    {
+        stripe[i] = stripe[i + 1];
+        stripe[NUM_LEDS_STRIPE - i] = stripe[(NUM_LEDS_STRIPE - i) - 1];
+    }
+}
+int dotPos = 0;
+bool left = false;
+void PaletteDance()
+{
+    if (matrixValues[0] + matrixValues[1] > 20) // if (volume > avgVol) {
+    {
+        left = !left;
+        for (int i = 0; i < NUM_LEDS_STRIPE; i++)
+        {
+            float sinVal = abs(sin(
+                (i + dotPos) *
+                (PI / float(NUM_LEDS_STRIPE / 1.25))));
+            sinVal *= sinVal;
+            sinVal *= map(matrixValues[0] + matrixValues[1], 0, 32, 0, 255);
+            CRGB col = ColorFromPalette(currentPalette, sinVal, 255, LINEARBLEND);
+            stripe[i] = col;
+        }
+        dotPos += (left) ? -1 : 1;
+    }
+    else
+    {
+        fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 5);
+    }
+    if (dotPos < 0)
+        dotPos = NUM_LEDS_STRIPE - (NUM_LEDS_STRIPE / 6);
+    else if (dotPos >= NUM_LEDS_STRIPE - NUM_LEDS_STRIPE / 6)
+        dotPos = 0;
+}
+uint8_t gradient = 0;
+uint8_t gradient2 = 0;
+uint8_t gradient3 = 0;
+float avgTime = 0;
+float avgTime2 = 0;
+float avgTime3 = 0;
+float timeBump = 0;
+float timeBump2 = 0;
+float timeBump3 = 0;
+int dotPos2 = 300;
+int dotPos3 = 600;
+bool left2 = false;
+bool left3 = false;
+void Snake()
+{
+    if (matrixValues[0] > 10)
+    {
+
+        avgTime = (((millis() / 1000.0) - timeBump) + avgTime) / 2.0;
+        timeBump = millis() / 1000.0;
+
+        // Change color a little on a bump
+        gradient += 3;
+        left ? gradient += 30 : gradient -= 30;
+        // Change the direction the dot is going to create the illusion of "dancing."
+        left = !left;
+    }
+    /*   if (matrixValues[3] + matrixValues[4] > 10)
+       {
+
+           avgTime2 = (((millis() / 1000.0) - timeBump2) + avgTime2) / 2.0;
+           timeBump2 = millis() / 1000.0;
+
+           // Change color a little on a bump
+           gradient2 += 3;
+
+           // Change the direction the dot is going to create the illusion of "dancing."
+           left2 = !left2;
+       }
+       if (matrixValues[5] + matrixValues[6] + matrixValues[7] > 20)
+       {
+           avgTime3 = (((millis() / 1000.0) - timeBump3) + avgTime3) / 2.0;
+           timeBump3 = millis() / 1000.0;
+
+           // Change color a little on a bump
+           gradient3 += 3;
+
+           // Change the direction the dot is going to create the illusion of "dancing."
+           left3 = !left3;
+       }*/
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 10); // Leave a trail behind the dot.
+
+    // uint32_t col = ColorPalette(-1); // Get the color at current "gradient."
+
+    // The dot should only be moved if there's sound happening.
+    //   Otherwise if noise starts and it's been moving, it'll appear to teleport.
+
+    // Sets the dot to appropriate color and intensity
+    for (int i = 0; i < 5; i++)
+    {
+        stripe[dotPos + i] = ColorFromPalette(currentPalette, gradient, map(matrixValues[0], 0, 16, 40, 255), LINEARBLEND);
+    }
+
+    // stripe[dotPos2] = ColorFromPalette(currentPalette, gradient2, map(matrixValues[4], 0, 16, 40, 255), LINEARBLEND);
+    // stripe[dotPos3] = ColorFromPalette(currentPalette, gradient3, map(matrixValues[7], 0, 16, 40, 255), LINEARBLEND);
+    // This is where "avgTime" comes into play.
+    //   That variable is the "average" amount of time between each "bump" detected.
+    //   So we can use that to determine how quickly the dot should move so it matches the tempo of the music.
+    //   The dot moving at normal loop speed is pretty quick, so it's the max speed if avgTime < 0.15 seconds.
+    //   Slowing it down causes the color to update, but only change position every other amount of loops.
+    if (avgTime < 0.15)
+    {
+        dotPos += (left) ? -5 : 5;
+    }
+    else if (avgTime >= 0.15 && avgTime < 0.5 && gradient % 2 == 0)
+    {
+        dotPos += (left) ? -5 : 5;
+    }
+    else if (avgTime >= 0.5 && avgTime < 1.0 && gradient % 3 == 0)
+    {
+        dotPos += (left) ? -5 : 5;
+    }
+    else if (gradient % 4 == 0)
+    {
+        dotPos += (left) ? -5 : 5;
+    }
+    /*if (avgTime2 < 0.15)
+    {
+
+        dotPos2 += (left2) ? -1 : 1;
+    }
+    else if (avgTime2 >= 0.15 && avgTime2 < 0.5 && gradient2 % 2 == 0)
+    {
+
+        dotPos2 += (left2) ? -1 : 1;
+    }
+    else if (avgTime2 >= 0.5 && avgTime2 < 1.0 && gradient2 % 3 == 0)
+    {
+
+        dotPos2 += (left2) ? -1 : 1;
+    }
+    else if (gradient2 % 4 == 0)
+    {
+
+        dotPos2 += (left2) ? -1 : 1;
+    }
+    if (avgTime3 < 0.15)
+    {
+
+        dotPos3 += (left3) ? -1 : 1;
+    }
+    else if (avgTime3 >= 0.15 && avgTime3 < 0.5 && gradient3 % 2 == 0)
+    {
+
+        dotPos3 += (left3) ? -1 : 1;
+    }
+    else if (avgTime3 >= 0.5 && avgTime3 < 1.0 && gradient3 % 3 == 0)
+    {
+
+        dotPos3 += (left3) ? -1 : 1;
+    }
+    else if (gradient3 % 4 == 0)
+    {
+
+        dotPos3 += (left3) ? -1 : 1;
+    }*/
+
+    // Check if dot position is out of bounds.
+    if (dotPos < 0)
+        dotPos = NUM_LEDS_STRIPE - 1;
+    else if (dotPos >= NUM_LEDS_STRIPE)
+        dotPos = 0;
+
+    /*if (dotPos2 < 0)
+        dotPos2 = NUM_LEDS_STRIPE - 1;
+    else if (dotPos2 >= NUM_LEDS_STRIPE)
+        dotPos2 = 0;
+
+    if (dotPos3 < 0)
+        dotPos3 = NUM_LEDS_STRIPE - 1;
+    else if (dotPos3 >= NUM_LEDS_STRIPE)
+        dotPos3 = 0;*/
+}
+void audioLoop()
+{
+
+    // -- re-arrange FFT result to match with no. of columns on display ( xres )
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 2);
+    FOR_i(0, NUM_LEDS_STRIPE / 2)
+    {
+        // data_avgs[i]=data_avgs[i]/2;
+        int result = map(matrixValues[map(i, 0, 500, 0, 7)], 0, 16, 0, 255);
+        // result = constrain(vImag[i],0,255);
+        result = constrain(stripe[(NUM_LEDS_STRIPE / 2) - i].getLuma() + result, 0, 255);
+        // stripe[(NUM_LEDS_STRIPE/2)+i]=constrain(stripe[(NUM_LEDS_STRIPE/2)-i].getLuma()+result,0,255);
+        // data_avgs[i] = data_avgs[i]+result;
+        stripe[(NUM_LEDS_STRIPE / 2) - i] = CHSV(beatsin8(30, 0, 255, 0, i), 255, result);
+        stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(30, 0, 255, 0, i), 255, result);
+    }
+}
+void meteorRain2()
+{
+    static int wave;
+    EVERY_N_MILLIS(8000)
+    {
+        wave = random(10);
+    }
+    stripe[NUM_LEDS_STRIPE / 2].setHSV(beatsin8(wave), 255, 255);
+    stripe[NUM_LEDS_STRIPE / 2 - 1].setHSV(beatsin8(wave), 255, 255);
+
+    FOR_i(0, NUM_LEDS_STRIPE / 2)
+    {
+        stripe[i] = stripe[i + 1];
+        stripe[i].r -= random(10);
+        stripe[i].g -= random(10);
+        stripe[i].b -= random(10);
+        stripe[NUM_LEDS_STRIPE - i] = stripe[NUM_LEDS_STRIPE - i - 1];
+        stripe[NUM_LEDS_STRIPE - i].r -= random(10);
+        stripe[NUM_LEDS_STRIPE - i].g -= random(10);
+        stripe[NUM_LEDS_STRIPE - i].b -= random(10);
+    }
+
+    FastLED.show();
+    // FastLED.delay(SpeedDelay);
+}
+// настройки пламени
+int HUE_GAP = 30;      // заброс по hue
+#define FIRE_STEP 20   // шаг огня
+int HUE_START = 0;     // начальный цвет огня (0 красный, 80 зелёный, 140 молния, 190 розовый)
+#define MIN_BRIGHT 00  // мин. яркость огня
+#define MAX_BRIGHT 255 // макс. яркость огня
+#define MIN_SAT 245    // мин. насыщенность
+#define MAX_SAT 255    // макс. насыщенность
+CHSV getFireColor(int val)
+{
+    // чем больше val, тем сильнее сдвигается цвет, падает насыщеность и растёт яркость
+    return CHSV(
+        HUE_START + map(val, 0, 255, 0, HUE_GAP),                   // H
+        constrain(map(val, 0, 255, MAX_SAT, MIN_SAT), 0, 255),      // S
+        constrain(map(val, 0, 255, MIN_BRIGHT, MAX_BRIGHT), 0, 255) // V
+    );
+}
+void fireTick()
+{
+    static uint32_t prevTime;
+    HUE_START = 0;
+    HUE_GAP = 30; // заброс по hue
+    // двигаем пламя
+    if (millis() - prevTime > 40)
+    {
+        prevTime = millis();
+        FOR_i(0, NUM_LEDS_STRIPE)
+        {
+            stripe[i] = getFireColor((inoise8(i * FIRE_STEP, counter)));
+        }
+        counter += 20;
+        FastLED.show();
+    }
+}
+
+// Define variables used by the sequences.
+uint8_t thisfade = 8;  // How quickly does it fade? Lower = slower fade rate.
+int thishue = 50;      // Starting hue.
+uint8_t thisinc = 1;   // Incremental value for rotating hues
+uint8_t thissat = 100; // The saturation, where 255 = brilliant colours.
+uint8_t thisbri = 255; // Brightness of a sequence. Remember, max_bright is the overall limiter.
+int huediff = 256;     // Range of random #'s to use for hue
+uint8_t thisdelay = 5; // We don't need much delay (if any)
+void ChangeMe()
+{                                                // A time (rather than loop) based demo sequencer. This gives us full control over the length of each sequence.
+    uint8_t secondHand = (millis() / 1000) % 15; // IMPORTANT!!! Change '15' to a different value to change duration of the loop.
+    static uint8_t lastSecond = 99;              // Static variable, means it's only defined once. This is our 'debounce' variable.
+    if (lastSecond != secondHand)
+    { // Debounce to make sure we're not repeating an assignment.
+        lastSecond = secondHand;
+        switch (secondHand)
+        {
+        case 0:
+            thisinc = 1;
+            thishue = 192;
+            thissat = 255;
+            thisfade = 2;
+            huediff = 256;
+            break; // You can change values here, one at a time , or altogether.
+        case 5:
+            thisinc = 2;
+            thishue = 128;
+            thisfade = 8;
+            huediff = 64;
+            break;
+        case 10:
+            thisinc = 1;
+            thishue = random16(255);
+            thisfade = 1;
+            huediff = 16;
+            break; // Only gets called once, and not continuously for the next several seconds. Therefore, no rainbows.
+        case 15:
+            break; // Here's the matching 15 for the other one.
+        }
+    }
+} // ChangeMe()
+int new_star;
+void effect1()
+{
+    new_star++;
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 8);
+    if (new_star > 1)
+    {
+        stripe[random(NUM_LEDS_STRIPE)] = CRGB::White;
+        new_star = 0;
+    }
+
+    FastLED.delay(30);
+    FastLED.show();
+}
+int result_vu2;
+void VU_meter()
+{
+#define chanel 27
+
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 100);
+    int input_vu2 = constrain(map(vReal[chanel], 0, NUM_LEDS_STRIPE / 2, 0, NUM_LEDS_STRIPE / 2), 0, NUM_LEDS_STRIPE / 2);
+    if (result_vu2 < input_vu2)
+    {
+        result_vu2 = result_vu2 + ((input_vu2 - result_vu2) * .3); //((map(vReal[chanel],0,512,0,NUM_LEDS_STRIPE/2)-result_vu)/2);
+    }
+    else
+    {
+        result_vu2 = result_vu2 - ((result_vu2 - input_vu2) * .3); //((map(vReal[chanel],0,512,0,NUM_LEDS_STRIPE/2)-result_vu)/2);
+    }
+    FOR_i(0, NUM_LEDS_STRIPE)
+    {
+        if (result_vu2 > i)
+        {
+            stripe[(NUM_LEDS_STRIPE / 2) - i] = ColorFromPalette(currentPalette, map(result_vu2, 0, 255, 0, i), 255, LINEARBLEND);
+
+            stripe[(NUM_LEDS_STRIPE / 2) + i] = ColorFromPalette(currentPalette, map(result_vu2, 0, 255, 0, i), 255, LINEARBLEND);
+        }
+        else
+        {
+            // stripe[(NUM_LEDS_STRIPE / 2) + i + 1] = stripe[(NUM_LEDS_STRIPE / 2) + i];
+            // stripe[(NUM_LEDS_STRIPE / 2) - i - 1] = stripe[(NUM_LEDS_STRIPE / 2) - i];
+            //  stripe[(NUM_LEDS_STRIPE / 2) - i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
+            //   stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
+        }
+    }
+    FastLED.show();
+}
+CRGBArray<NUM_LEDS_STRIPE> leds;
+void spectrumWaves2()
+{
+    // readAudio();
+    // fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 2);
+    int centerLed = NUM_LEDS_STRIPE / 2;
+    CRGB color = CRGB(matrixValues[5] / 8, matrixValues[6], matrixValues[1] / 2);
+
+    stripe[centerLed] = color;
+    stripe[centerLed].fadeToBlackBy(matrixValues[3] / 12);
+
+    stripe[centerLed - 1] = color;
+    stripe[centerLed - 1].fadeToBlackBy(matrixValues[3] / 12);
+
+    // move to the left
+    for (int i = NUM_LEDS_STRIPE - 1; i > centerLed / 2; i--)
+    {
+        stripe[i] = stripe[i - 1];
+        stripe[centerLed + i] = stripe[centerLed + i - 1];
+    }
+    // move to the right
+    for (int i = 0; i < centerLed / 2; i++)
+    {
+        stripe[i] = stripe[i + 1];
+        stripe[centerLed + i] = stripe[centerLed + i + 1];
+    }
+}
+void dot_beat()
+{
+    CHSV colorix = CHSV(255, 255, map(matrixValues[0], 0, 16, 50, 255));
+    uint8_t bpm = 5;
+    uint16_t inner = beatsin16(bpm, NUM_LEDS_STRIPE / 4, NUM_LEDS_STRIPE / 4 * 3);  // Move 1/4 to 3/4
+    uint16_t outer = beatsin16(bpm, 5, NUM_LEDS_STRIPE - (bpm * 2));                // Move entire length
+    uint16_t middle = beatsin16(bpm, NUM_LEDS_STRIPE / 3, NUM_LEDS_STRIPE / 3 * 2); // Move 1/3 to 2/3
+
+    stripe[middle] = CRGB::Yellow;
+    stripe[inner] = CRGB::Blue;
+    for (uint8_t i = 0; i < (bpm * 2); i++)
+    {
+        stripe[outer + i] = colorix;
+    }
+
+    stripe[outer] = colorix;
+
+    nscale8(stripe, NUM_LEDS_STRIPE, 200); // Fade the entire array. Or for just a few LED's, use  nscale8(&leds[2], 5, fadeval);
+}
+void beatWave()
+{
+
+    uint8_t wave1 = beatsin8(9, 0, 255); // That's the same as beatsin8(9);
+    uint8_t wave2 = beatsin8(8, 0, 255);
+    uint8_t wave3 = beatsin8(7, 0, 255);
+    uint8_t wave4 = beatsin8(6, 0, 255);
+
+    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
+    { // make from the map and array int[lednumber]=realposition
+        stripe[i] = ColorFromPalette(ForestColors_p, i + wave1 + wave2 + wave3 + wave4, 255, LINEARBLEND);
+        //    leds[t.first].fadeLightBy( dbrightness );
+    }
+
+} // beatWave()
+uint8_t wave1 = 0; // That's the same as 9);
+uint8_t wave2 = 0;
+uint8_t wave3 = 0;
+uint8_t wave4 = 0;
+void test()
+{
+
+    wave1 += matrixValues[0]; // That's the same as 9);
+    wave2 += matrixValues[2];
+    wave3 += matrixValues[4];
+    wave4 += matrixValues[6];
+
+    for (int i = 0; i < NUM_LEDS_STRIPE; i++)
+    { // make from the map and array int[lednumber]=realposition
+        stripe[i] = ColorFromPalette(currentPalette, i + wave1 + wave2 + wave3 + wave4, 255, LINEARBLEND);
+        //    leds[t.first].fadeLightBy( dbrightness );
+    }
+}
+void audioSparkleTreb3()
+{
+    fadeToBlackBy(leds, NUM_LEDS_STRIPE, 128);
+    float specCombo = (matrixValues[5] + matrixValues[6]) / 2.0;
+    for (int i = 0; i < specCombo / 50; i++)
+    {
+        leds[random16(NUM_LEDS_STRIPE)] = ColorFromPalette(currentPalette, random8(255), 255, LINEARBLEND);
+    }
+} // audioSparkleTreb3()
+boolean beat()
+{
+    int beatDelay = 500;
+    bool isBeat = false;
+    for (int i = 0; i < 7; i++)
+    {
+        if (matrixValues[i] >= 5)
+        {
+            isBeat = true;
+        }
+    }
+    if (isBeat)
+    {
+        EVERY_N_MILLIS(beatDelay)
+        {
+            // Serial.println("BEAT");
+            return true;
+        }
+    }
+    else
+    {
+        return false;
+    }
+    return false;
+}
+void CometKITT(byte baseHueColor = 0, byte commetSpeed = 32, byte fadeSpeed = 128, byte colorSpeed = 64)
+{
+    int cometSize = 15;
+    // fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 128);
+    for (int j = 0; j < NUM_LEDS_STRIPE; j++)
+    {
+        if (random(10) > 6)
+        {
+            stripe[j].fadeToBlackBy(fadeSpeed);
+        }
+    }
+    EVERY_N_MILLISECONDS(50)
+    {
+        // fadeToBlackBy(leds, NUM_LEDS, fadeSpeed);
+
+        int iPos = beatsin16(((stripeValues[7] / 10) + (stripeValues[1] / 10)) / 2, 0, NUM_LEDS_STRIPE - cometSize);
+        byte hue = beatsin8(map(stripeValues[3], 0, 75, 2, 10));
+        for (int i = iPos; i < iPos + cometSize; i++)
+            stripe[i] = CHSV(hue, 255, map(stripeValues[0], 0, 75, 100, 255));
+
+        int iPos2 = beatsin16(((stripeValues[0] / 10) + (stripeValues[6] / 10)) / 2, 0, NUM_LEDS_STRIPE - cometSize);
+        byte hue2 = beatsin8(map(stripeValues[4], 0, 75, 2, 10));
+        for (int i = iPos2; i < iPos2 + cometSize; i++)
+            stripe[i] = CHSV(hue2, 255, map(stripeValues[7], 0, 75, 100, 255));
+        // FastLED.show();
+    }
+}
+void justKITTTT()
+{
+    CometKITT();
+}
+
+void randomMeteor()
+{
+    CRGB color = ColorFromPalette(currentPalette, colorTimer, 255);
+
+    for (int j = 0; j < NUM_LEDS_STRIPE; j++)
+    {
+        if (random(10) > 2)
+        {
+            stripe[j] = fadeTowardColor(stripe[j], CRGB::Black, 30);
+        }
+        if (random(10) > 3)
+        {
+            stripe[j + 1] = fadeTowardColor(stripe[j], CRGB::Black, 30);
+        }
+    }
+
+    // draw meteor
+    for (int j = 0; j < 20; j++)
+    {
+        if ((i - j < NUM_LEDS_STRIPE / 2) && (i - j >= 0))
+        {
+            stripe[i - j] = color;
+            stripe[i - j + 1] = color;
+        }
+    }
+    for (int j = 0; j < 20; j++)
+    {
+        if ((aa - j > NUM_LEDS_STRIPE / 2) && (aa - j >= 0))
+        {
+            stripe[aa - j] = color;
+            stripe[aa - j + 1] = color;
+        }
+    }
+    aa <= NUM_LEDS_STRIPE / 2 ? aa = NUM_LEDS_STRIPE : aa -= 10;
+    i >= NUM_LEDS_STRIPE / 2 ? i = 0 : i += 10;
+    FastLED.show();
+}
+bool swap;
+struct meteor
+{ // Reko Meriö's structures
+
+    // Local definitions
+
+    // Persistent local variables
+
+    // Temporary local variables
+    uint8_t brightness; // 0 to 255
+    int8_t color;       // 0 to 255
+    int16_t pos;        // -1 to NUM_LEDS_STRIPE  (up to 127 LED's)
+    int8_t velocity;    // 1 or -1
+    uint8_t life;       // 0 to 20
+    uint8_t maxLife;    // 10. If it's too long, it just goes on and on. . .
+    uint8_t fade;       // 192
+    bool exist;         // 0 to 1
+
+    void Move()
+    {
+
+        pos += velocity;
+        life++;
+
+        brightness = scale8(brightness, fade); // Adjust brightness accordingly to strip length
+
+        if (pos >= NUM_LEDS_STRIPE)
+            exist = false; // Kill it once it's expired.
+        if (pos <= 0)
+            exist = false; // Kill it once it's expired.
+
+    } // Move()
+
+    void Init(uint8_t Fade, uint8_t MaxLife)
+    { // Typically 216, 20
+
+        pos = random16(NUM_LEDS_STRIPE / 20, NUM_LEDS_STRIPE - NUM_LEDS_STRIPE / 20); // Avoid spawning too close to edge.
+        if (swap)
+        {
+            velocity = 1;
+            swap = false;
+        }
+        else
+        {
+            velocity = -1;
+            swap = true;
+        }
+
+        // random(2) == 1 ? velocity = 2 : velocity = -2; // -1 or 1
+        life = 0;         // 0 to Maxlife                                                               // 10 called
+        exist = true;     // 0, 1
+        brightness = 255; // 0 to 255
+        color = millis(); // hue;
+        fade = Fade;      // 192 called
+    }
+};
+typedef struct meteor Meteor;
+
+Meteor meteors[20];
+void meteorBeatDetector()
+{
+    if (beat())
+    {
+
+        for (int i = 0; i < 20; i++)
+        { // Check to see if ripple has expired, and if so, create a new one.
+            if (random8() > 100 && !meteors[i].exist)
+            {                             // Randomly create a new ripple if this one has expired.
+                meteors[i].Init(232, 20); // Initialize the ripple array with Fade and MaxLife values.
+            }
+        }
+    }
+    EVERY_N_MILLIS(100)
+    {
+        for (int i = 0; i < 20; i++)
+        { // Move the ripple if it exists
+            if (meteors[i].exist)
+            {
+
+                stripe[meteors[i].pos] = ColorFromPalette(currentPalette, meteors[i].color, map(matrixValues[0], 0, 16, 25, 255), LINEARBLEND);
+                meteors[i].Move();
+            }
+        }
+    }
+
+    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 20);
+}
+//{function,"name", isAudioReactive }
 const PatternAndNameList patternsStripe = {
-    {spectrumDetector, "spectrumDetector"},
-    {beatDetector, "beatDetector"},
-    {meteorRain, "meteorRain"},
-    {twinkleFox, "TwinkleFox"},
-    {bucketVU, "BucketSpectrum"},
-    {heatMapShow, "Heatmap"},
-    {stripeVuBandsSolidColor, "SolidColorSpectrum"},
-    {stripeVuBandsColors, "Color-bands-Spectrum"},
-    {stripeVuBandsBeatsin, "Beatsin-Spectrum"},
-    {colorWipe, "colorWipe"},
-    {pacifica_loop, "Pacifica"},
-    {rainbow, "Rainbow"},
-    {rippless, "Ripple"},
-    {salut, "Salut"},
-    {theaterChase, "Theater-Chase"},
-    {bpmStripe, "BPM-Stripe"},
-    {displayUpdateStripe, "Display_Update_Stripe"},
-    {sinelon, "Sinelon"},
-    {juggle, "Juggle"},
-    {strobo, "Strobo"},
-    {confetti, "Confetti"},
-    {rainbowWithGlitter, "Rainbow-With-Glitter"}};
+    {meteorBeatDetector, "meteorBeatDetector", true},
+    {justKITTTT, "CometKITT", false},
+    {test, "test", false},
+    {beatWave, "beatWave", false},
+    {dot_beat, "dot_beat", true},
+    // {spectrumWaves2, "spectrumWaves2" , true},// making panic guru
+    {VU_meter, "vu_meter", true},
+    {fireTick, "fireTick", false},
+    {meteorRain2, "meteorRain", false},
+    {audioLoop, "audioLoop", true},
+    {Snake, "Snake", true},
+    {PaletteDance, "PaletteDance", true},
+    {water_fall_vu, "Waterfall", true},
+    {spectrumDetector, "spectrumDetector", true},
+    {beatDetector, "beatDetector", true},
+    {meteorRain, "meteorRain", false},
+    {twinkleFox, "TwinkleFox", false},
+    {heatMapShow, "Heatmap", false},
+    {stripeVuBandsSolidColor, "SolidColorSpectrum", true},
+    {stripeVuBandsColors, "Color-bands-Spectrum", true},
+    {stripeVuBandsBeatsin, "Beatsin-Spectrum", true},
+    {colorWipe, "colorWipe", false},
+    {pacifica_loop, "Pacifica", false},
+    {rainbow, "Rainbow", false},
+    {rippless, "Ripple", false},
+    {theaterChase, "Theater-Chase", false},
+    {bpmStripe, "BPM-Stripe", false},
+    {displayUpdateStripe, "Display_Update_Stripe", false},
+    {sinelon, "Sinelon", false},
+    {juggle, "Juggle", false},
+    {strobo, "Strobo", false},
+    {confetti, "Confetti", false},
+    {rainbowWithGlitter, "Rainbow-With-Glitter", false}};
 
 const uint8_t StripePatternsAmount = ARRAY_SIZE(patternsStripe) - 1;

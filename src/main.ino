@@ -18,135 +18,6 @@
 #define SAMPLES2 32 // Must be a power of 2
 double vReal2[SAMPLES2];
 double vImag2[SAMPLES2];
-double vResult2[NUM_LEDS_STRIPE / 2];
-int result_vu1;
-int result_vu2;
-int result_vu3;
-
-void VU_meter()
-{
-#define chanel 27
-    EVERY_N_MILLISECONDS(25)
-    {
-        analyzeAudio();
-    }
-    int input_vu1 = constrain(map(bandValues[25], 0, 3000, 0, NUM_LEDS_STRIPE / 2), 0, 255);
-    int input_vu2 = constrain(map(bandValues[3], 0, 3000, 0, NUM_LEDS_STRIPE / 2), 0, 255);
-    int input_vu3 = constrain(map(bandValues[16], 0, 3000, 0, NUM_LEDS_STRIPE / 2), 0, 255);
-    Serial.println(input_vu1);
-    Serial.println(input_vu2);
-    Serial.println(input_vu3);
-    Serial.println();
-    if (result_vu1 < input_vu1)
-    {
-        result_vu1 = result_vu1 + ((input_vu1 - result_vu1) * .5); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
-    }
-    else
-    {
-        result_vu1 = result_vu1 - ((result_vu1 - input_vu1) * .8); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
-    }
-    if (result_vu2 < input_vu2)
-    {
-        result_vu2 = result_vu2 + ((input_vu2 - result_vu2) * .5); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
-    }
-    else
-    {
-        result_vu2 = result_vu2 - ((result_vu2 - input_vu2) * .8); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
-    }
-    if (result_vu3 < input_vu3)
-    {
-        result_vu3 = result_vu3 + ((input_vu3 - result_vu3) * .5); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
-    }
-    else
-    {
-        result_vu3 = result_vu3 - ((result_vu3 - input_vu3) * .8); //((map(vReal[chanel],0,512,0,NUM_LEDS/2)-result_vu)/2);
-    }
-    FOR_i(0, NUM_LEDS_STRIPE / 4)
-    {
-        if (result_vu1 > i)
-        {
-            stripe[(NUM_LEDS_STRIPE / 2) - i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 255);
-            stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 255);
-        }
-        else
-        {
-            stripe[(NUM_LEDS_STRIPE / 2) - i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
-            stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
-        }
-        if (result_vu2 > i)
-        {
-            stripe[(NUM_LEDS_STRIPE)-i - 1] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 255);
-            // stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 255);
-        }
-        else
-        {
-            stripe[(NUM_LEDS_STRIPE)-i - 1] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
-            // stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
-        }
-        if (result_vu3 > i)
-        {
-            stripe[i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 255);
-            // stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 255);
-        }
-        else
-        {
-            stripe[i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
-            //  stripe[(NUM_LEDS_STRIPE / 2) + i] = CHSV(beatsin8(3, 0, 255, 0, i), 255, 0);
-        }
-    }
-    FastLED.show();
-    fadeToBlackBy(stripe, NUM_LEDS_STRIPE, 150);
-}
-
-void displayUpdate()
-{
-    // analyzeAudio();
-    int color = 0;
-    for (int i = 0; i < MATRIX_WIDTH; i++)
-    {
-        for (int j = 0; j < MATRIX_HEIGHT; j++)
-        {
-            if (j <= bandValues[i])
-            { // Light everything within the intensity range
-                if (j % 2 == 0)
-                {
-                    matrix[((MATRIX_WIDTH * (j + 1)) - i - 1)] = CHSV(color, 255, bright);
-                    matrix[255 - ((MATRIX_WIDTH * (j + 1)) - i - 1)] = CHSV(color, 255, bright);
-                }
-                else
-                {
-                    matrix[((MATRIX_WIDTH * j) + i)] = CHSV(color, 255, bright);
-                    matrix[255 - ((MATRIX_WIDTH * j) + i)] = CHSV(color, 255, bright);
-                }
-            }
-            else
-            { // Everything outside the range goes dark
-                if (j % 2 == 0)
-                {
-                    matrix[((MATRIX_WIDTH * (j + 1)) - i - 1)] = CHSV(color, 255, 0);
-                    matrix[255 - ((MATRIX_WIDTH * (j + 1)) - i - 1)] = CHSV(color, 255, 0);
-                }
-                else
-                {
-                    matrix[((MATRIX_WIDTH * j) + i)] = CHSV(color, 255, 0);
-                    matrix[255 - ((MATRIX_WIDTH * j) + i)] = CHSV(color, 255, 0);
-                }
-            }
-        }
-        color += 255 / MATRIX_WIDTH; // Increment the Hue to get the Rainbow
-    }
-    FastLED.show();
-}
-
-void displayVUWhite()
-{
-
-    for (int i = 0; i < bandValues[0]; i++)
-    {
-        stripe[i + NUM_LEDS_STRIPE / 2] = CRGB::White;
-        stripe[NUM_LEDS_STRIPE / 2 - i] = CRGB::White;
-    }
-}
 
 void drawOnSerial(int scale)
 {
@@ -248,7 +119,7 @@ void setup()
     FastLED.addLeds<CHIPSET, LED_PIN_MATRIX, COLOR_ORDER>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
     FastLED.addLeds<CHIPSET, LED_PIN_STRIPE, COLOR_ORDER>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalLEDStrip);
 
-    FastLED.setBrightness(255);
+    FastLED.setBrightness(100);
     preferences.begin("wificreds", false); // The WIFI credentials are stored here
     delay(1000);
 
@@ -287,6 +158,8 @@ void setup()
             //   displayIPAP();
         }
     }
+    runString(WiFi.localIP().toString(), CRGB::White, 1);
+    /// runString(WiFi.localIP().toString(), CRGB::White, 1);
     pinMode(MIC_IN_PIN, INPUT);
     preferences.end();
     Serial.println("preferences.end");
@@ -294,12 +167,25 @@ void setup()
     sampling_period_us = (1.0 / SAMPLING_FREQ) * pow(10.0, 6);
 
     syncTime();
+    preferences.begin("patterns", false);
+    CurrentStripePatternNumber = preferences.getInt("stripePattern");
+    Serial.println("stripePattern = " + String(CurrentStripePatternNumber));
+    CurrentMatrixPatternNumber = preferences.getInt("matrixPattern");
+    Serial.println("matrixPattern = " + String(CurrentMatrixPatternNumber));
+    overAllBrightness = preferences.getInt("oaBrightness");
+    Serial.println("oaBrightness = " + String(overAllBrightness));
+    preferences.end();
+    preferences.begin("matrixsettings", false);
+    welcommessage = preferences.getString("welcommessage");
+    runString(welcommessage, CRGB::Red, 20);
+    preferences.end();
+
     Serial.println("setup done");
 }
 
 void loop()
 {
-    RtcDateTime now = Rtc.GetDateTime();
+    now = Rtc.GetDateTime();
 
     processAudio();
     EVERY_N_MILLISECONDS(500)
@@ -314,31 +200,70 @@ void loop()
     {
         nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
     }
-    patternsStripe[CurrentStripePatternNumber].drawFrame();
-    patternsMatrix[CurrentMatrixPatternNumber].drawFrame();
-    // backgroundVuMatrix();
-    //  matrixSpectrum();
-    // Wave();
+    //  randomGame();
+    EVERY_N_MILLIS(patternInterval)
+    {
+        patternsStripe[CurrentStripePatternNumber].drawFrame();
+        //  FastLED[2].showLeds(overAllBrightness);
+    }
+    EVERY_N_MILLIS(patternInterval)
+    {
+        patternsMatrix[CurrentMatrixPatternNumber].drawFrame();
+        //  FastLED[0].showLeds(overAllBrightness);
+    }
 
-    setNum(now.Hour() / 10, 0);   // set first digit of hour
-    setNum(now.Hour() % 10, 1);   // set second digit of hour
-    setNum(now.Minute() / 10, 2); // set first digit of hour
-    setNum(now.Minute() % 10, 3); // set second digit of hour
+    drawTime(1, 0, CHSV(150, 150, 150), true, true);
+
     FastLED.show();
+    //  FastLED[2].delay(patternInterval);
+    FastLED.setBrightness(overAllBrightness);
 }
 void nextPattern()
 {
+    preferences.begin("patterns", false);
     CurrentStripePatternNumber >= StripePatternsAmount ? CurrentStripePatternNumber = StripePatternsAmount : CurrentStripePatternNumber++;
+    FastLED.clear();
+    preferences.putInt("stripePattern", CurrentStripePatternNumber);
+    runString(patternsStripe[CurrentStripePatternNumber].name, CRGB::White, 1);
+    preferences.end();
 }
 void prevPattern()
 {
+    preferences.begin("patterns", false);
     CurrentStripePatternNumber <= 0 ? CurrentStripePatternNumber = 0 : CurrentStripePatternNumber--;
+    FastLED.clear();
+    preferences.putInt("stripePattern", CurrentStripePatternNumber);
+    preferences.end();
 }
 void nextMatrix()
 {
+    preferences.begin("patterns", false);
     CurrentMatrixPatternNumber >= MatrixPatternsAmount ? CurrentMatrixPatternNumber = MatrixPatternsAmount : CurrentMatrixPatternNumber++;
+    FastLED.clear();
+    preferences.putInt("matrixPattern", CurrentMatrixPatternNumber);
+    preferences.end();
 }
 void prevMatrix()
 {
+    preferences.begin("patterns", false);
     CurrentMatrixPatternNumber <= 0 ? CurrentMatrixPatternNumber = 0 : CurrentMatrixPatternNumber--;
+    FastLED.clear();
+    preferences.putInt("matrixPattern", CurrentMatrixPatternNumber);
+    preferences.end();
+}
+void setBright(uint8_t bright)
+{
+    preferences.begin("patterns", false);
+    overAllBrightness = bright;
+    Serial.println(String(overAllBrightness));
+    preferences.putInt("oaBrightness", overAllBrightness);
+    preferences.end();
+}
+void setSpeed(uint16_t speed)
+{
+    preferences.begin("patterns", false);
+    patternInterval = speed;
+    Serial.println(String(patternInterval));
+    preferences.putInt("patternInterval", patternInterval);
+    preferences.end();
 }

@@ -6,10 +6,12 @@ arduinoFFT FFT = arduinoFFT(); // Create FFT object
 
 CRGB matrix[NUM_LEDS_MATRIX]; // Create LED Object
 CRGB stripe[NUM_LEDS_STRIPE]; // Create LED Object
+CLEDController *MatrtixController;
+CLEDController *StripeController;
 
 Adafruit_NeoMatrix AdafruitMatrix = Adafruit_NeoMatrix(32,
                                                        8,
-                                                       LED_PIN_MATRIX,
+                                                       MATRIX_DATA_PIN,
                                                        NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG,
                                                        NEO_GRB + NEO_KHZ800);
 
@@ -34,9 +36,8 @@ typedef struct
 } PatternAndName;
 typedef PatternAndName PatternAndNameList[];
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS_STRIPE, LED_PIN_STRIPE, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS_STRIPE, STRIPE_DATA_PIN, NEO_GRB + NEO_KHZ800);
 
-ThreeWire myWire(21, 22, 19); // 26 data, 27 clock e 25 reset do módulo RTC DS1302
-RtcDS1302<ThreeWire> Rtc(myWire);
 struct tm timeinfo;
-RtcDateTime now;
+DateTime now;
+RTC_DS1307 RTC;

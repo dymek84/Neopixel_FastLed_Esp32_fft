@@ -7,8 +7,6 @@ time_t utc, local;
 const uint8_t FontHeight = 8;
 const uint8_t FontWidth = 6;
 bool kMatrixSerpentineLayout = true;
-uint8_t kMatrixWidth = 32;
-uint8_t kMatrixHeight = 8;
 void SetLeftStripe(int i, uint32_t color)
 {
     stripe[NUM_LEDS_STRIPE / 2 + i] = CHSV(color, 255, 255);
@@ -458,8 +456,8 @@ const static uint8_t PROGMEM Font[256][6] = {
 
 void drawLetter(int posx, int posy, char letter, CRGB color)
 {
-    //    Serial.print("Buchstabe:");
-    //    Serial.println(letter);
+    //    Serial.print("drawLetter: ");
+    //   Serial.println(letter);
     if ((posx > -FontWidth) && (posx < kMatrixWidth))
     {
         for (int x = 0; x < FontWidth; x++)
@@ -476,25 +474,29 @@ void drawLetter(int posx, int posy, char letter, CRGB color)
 }
 void drawTime(int x, int y, CRGB color, bool colon, bool seconds)
 {
+    hour = now.hour();
+    minute = now.minute();
+    second = now.second();
+
     x -= 0;
-    if (now.Hour() / 10 > 0)
+    if (hour / 10 > 0)
     {
-        drawLetter(x, y, now.Hour() / 10 + 48, color);
+        drawLetter(x, y, hour / 10 + 48, color);
     }
     x += FontWidth + 1;
-    drawLetter(x, y, now.Hour() % 10 + 48, color);
+    drawLetter(x, y, hour % 10 + 48, color);
     x += FontWidth;
     if (colon)
     {
-        if (now.Second() % 2 == 0)
+        if (second % 2 == 0)
         {
             drawLetter(x - 1, y, ':', color);
         }
         x += 4;
     }
-    drawLetter(x, y, now.Minute() / 10 + 48, color);
+    drawLetter(x, y, minute / 10 + 48, color);
     x += FontWidth + 1;
-    drawLetter(x, y, now.Minute() % 10 + 48, color);
+    drawLetter(x, y, minute % 10 + 48, color);
     //  //Bottom bar for seconds
     //  for (int posx = 0; posx < kMatrixWidth; posx++) {
     //    if (posx <= (second(t)*kMatrixWidth / 60))
@@ -503,11 +505,13 @@ void drawTime(int x, int y, CRGB color, bool colon, bool seconds)
 
     // Bottom Point (with trail for fading) for second, may show problems (-> non-illuminating points) for matrices with width> 60px
     if (seconds)
-        matrix[XYsafe(now.Second() * kMatrixWidth / 60, kMatrixHeight - 1)] = color;
+        matrix[XYsafe(second * kMatrixWidth / 60, kMatrixHeight - 1)] = color;
 }
-
+unsigned long start = millis();
+int aa = kMatrixWidth;
 void runString(String str, CRGB fg, int del)
 {
+    showMessage = true;
     Serial.println(str);
     int l = str.length();
     Serial.println(l);
@@ -516,10 +520,14 @@ void runString(String str, CRGB fg, int del)
         for (int letter = 0; letter < l; letter++)
         {
             drawLetter(i + (FontWidth + 1) * letter, 0, str[letter], fg);
+            MatrtixController->showLeds(matrixBrightness);
+            // FastLED.show();
         }
-        FastLED.delay(del);
-         FastLED.clear();
+        // FastLED.delay(del);
+        delay(del);
+        fill_solid(matrix, NUM_LEDS_MATRIX, CRGB::Black);
     }
+    showMessage = false;
 }
 void drawstring(String str, CRGB fg)
 {
@@ -539,4 +547,27 @@ void ticker(String str, CRGB fg, int counter)
     {
         drawLetter((FontWidth + 1) * letter - pos, 0, str[letter], fg);
     }
+}
+
+CRGB stringToCRGB(String color)
+{
+    Serial.println(color);
+    CRGB tempcolor;
+    if (color == "white")
+    {
+        tempcolor = CRGB::White;
+    }
+    else if (color == "gray")
+    {
+        tempcolor = CRGB::Gray;
+    }
+    else if (color == "black")
+    {
+        tempcolor = CRGB::Black;
+    }
+    else
+    {
+        tempcolor = CHSV(map(color.toInt(), 0, 360, 0, 256), 255, 255);
+    }
+    return tempcolor;
 }

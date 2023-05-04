@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+	<title>Message Board</title>
+	<link href="main.css" rel="stylesheet">
+
+
+
+</head>
+
+<body>
+	<div class="area">
+		<ul class="circles">
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+			<li></li>
+		</ul>
+	</div>
+	<section class="wrapper">
+		<div class="card">
+			<div id="msgbox">
+				<h1>SSID WIFI Settings</h1>
+			</div>
+
+			<br><br>
+			<form action="/get" target="hidden-form">
+				<p><label> SSID : &nbsp;</label>
+					<input maxlength="30" name="SSIDname"><br><br><br>
+					<label>Key: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</label><input maxlength="30" name="SSIDpwd"><br><br><br>
+					<input class="button" type="submit" value="Save and Reboot">
+				</p>
+			</form>
+
+
+
+
+			<div>
+				<p id="signature" style="font-size: 12px;
+				padding: 22px;
+				margin: 5px;">Designed by: Dymek - 2023
+					(dymek1984@gmail.com)</p>
+			</div>
+		</div>
+	</section>
+	<script src="main.js"></script>
+	<iframe style="display:none" name="hidden-form"></iframe>
+</body>
+
+</html>

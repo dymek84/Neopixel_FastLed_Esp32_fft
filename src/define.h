@@ -4,19 +4,29 @@
 #include "Imports.h"
 
 /********************** FFT ***************************/
-#define SAMPLES 256                                // Must be a power of 2 (512)
-#define MULTIPLY_BY 1                              // in case we want to amlify output
-#define SAMPLING_FREQ 40000                        // Hz, must be 40000 or less due to ADC conversion time. Determines
-                                                   // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
-uint16_t AMPLITUDE = 1000;                         // Depending on your audio source level, you may need to alter this
-                                                   // value. Can be used as a 'sensitivity' control.
-#define FREQUENCY_BANDS 14                         // band number
-#define COLOR_ORDER GRB                            // If colours look wrong, play with this
-#define CHIPSET WS2812B                            // LED strip type
-#define NUM_BANDS 8                                // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
-#define NOISE 500                                  // Used as a crude noise filter, values below this are ignore
-#define MATRIX_WIDTH 32                            // width of each matrix [xres]-[NUM_COLS]
-#define MATRIX_HEIGHT 8                            // height of each matrix [yres]-[NUM_ROWS]
+#define SAMPLES 256         // Must be a power of 2 (512)
+#define MULTIPLY_BY 1       // in case we want to amlify output
+#define SAMPLING_FREQ 40000 // Hz, must be 40000 or less due to ADC conversion time. Determines
+                            // maximum frequency that can be analysed by the FFT Fmax=sampleF/2.
+uint16_t AMPLITUDE = 1000;  // Depending on your audio source level, you may need to alter this
+                            // value. Can be used as a 'sensitivity' control.
+#define FREQUENCY_BANDS 14  // band number
+#define COLOR_ORDER GRB     // If colours look wrong, play with this
+#define CHIPSET WS2812B     // LED strip type
+#define NUM_BANDS 8         // To change this, you will need to change the bunch of if statements describing the mapping from bins to bands
+#define NOISE 500           // Used as a crude noise filter, values below this are ignore
+#define MATRIX_WIDTH 32     // width of each matrix [xres]-[NUM_COLS]
+#define MATRIX_HEIGHT 8     // height of each matrix [yres]-[NUM_ROWS]
+#define kMatrixWidth MATRIX_WIDTH
+#define kMatrixHeight MATRIX_HEIGHT
+#define M_WIDTH MATRIX_WIDTH
+#define M_HEIGHT MATRIX_HEIGHT
+#define NUM_COLS 32
+#define NUM_ROWS 8
+#define LED_COLS NUM_COLS
+#define LED_ROWS NUM_ROWS
+#define WIDTH (LED_COLS)
+#define HEIGHT (LED_ROWS)
 #define BAR_WIDTH (MATRIX_WIDTH / (NUM_BANDS - 1)) // If width >= 8 light 1 LED width per bar, >= 16 light 2 LEDs width bar etc
 #define TOP (MATRIX_HEIGHT - 0)                    // Don't allow the bars to go offscreen
 #define SERPENTINE false                           // Set to false if your LEDS are connected end to end, true if serpentine
@@ -29,21 +39,41 @@ byte peakMatrix[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BAND
 byte peakStripe[MATRIX_WIDTH]; // The length of these arrays must be >= NUM_BANDS
 uint8_t oldBarHeights[MATRIX_WIDTH];
 uint8_t bandValues[MATRIX_WIDTH];
+int spectrumByte[MATRIX_WIDTH];
 uint8_t stripeValues[MATRIX_WIDTH];
 uint8_t matrixValues[MATRIX_WIDTH];
 double vReal[SAMPLES];
 double vImag[SAMPLES];
 unsigned long newTimeForAudio;
 float reference = log10(100.0);
+int squelch = 1; // Squelch, cuts out low level sounds
+int gain = 50;
+uint16_t micData;
 
+double FFT_MajorPeak = 0;
+double FFT_Magnitude = 0;
+double fftBin[SAMPLES];
+double fftCalc[8];
+int patternStripe, patternMatrix, micSquelch, micSensytivity, matrixSpeed, stripeSpeed, autoPalMat, autoPalStr;
+long lastUpdateMatrix, lastUpdateStripe, mappedMatrixInterval, mappedStripeInterval;
+
+// Table of linearNoise results to be multiplied by squelch in order to reduce squelch across fftResult bins.
+int linearNoise[8] = {34, 26, 20, 9, 4, 3, 2, 2};
+
+// Table of multiplication factors so that we can even out the frequency response.
+double fftResultPink[8] = {1.30, 1.23, 1.58, 1.75, 1.99, 1.90, 2.77, 3.53};
 /********************** FFT ***************************/
 //
 //
 /********************** matrix - stripe  ***************************/
-#define NUM_LEDS_MATRIX (MATRIX_WIDTH * MATRIX_HEIGHT)
-#define NUM_LEDS_STRIPE 990
-#define LED_HALF_STRIPE NUM_LEDS_STRIPE / 2
-#define BRIGHTNESS 125 // LED information
+#define BRIGHTNESS 150
+#define MATRIX_DATA_PIN 14
+#define NUM_LEDS_MATRIX 256
+#define CENTER_LED_MATRIX NUM_LEDS_MATRIX / 2
+#define STRIPE_DATA_PIN 12
+#define NUM_LEDS_STRIPE 66
+#define CENTER_LED_STRIPE NUM_LEDS_STRIPE / 2
+int centerLedStripe = NUM_LEDS_STRIPE / 2;
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
 #define LED_VOLTS 5         // Usually 5 or 12
@@ -54,10 +84,9 @@ float reference = log10(100.0);
 /********************** OUTPUT/INPUT PINS ***************************/
 // #define buttons 34
 // #define photoresistor 39
-#define LED_PIN_MATRIX 23 // Data pin to matrix
-#define LED_PIN_STRIPE 16 // Data pin to stripe
-#define AUDIO_IN_PIN 38   // Signal in on this pin
-#define MIC_IN_PIN 35     // Signal in on this pin
+
+#define AUDIO_IN_PIN 38 // Signal in on this pin
+#define MIC_IN_PIN 35   // Signal in on this pin
 /********************** BOUNCING BALLS ***************************/
 //
 //
@@ -149,57 +178,82 @@ String buttonNames[11] = {
 };
 
 /********************** BUTTONS OPTIONS ***************************/
-//
-//
-/********************** PATTERNS / PALETTES ***************************/
-// String currentPatternName = "None";
-// uint8_t cyclePalettes = 0;
-// uint8_t paletteDuration = 10;
-// uint8_t currentPaletteIndex = 0;
-// unsigned long paletteTimeout = 0;
 
-// Button stuff
+CRGBPalette16 currentPaletteStripe;
+CRGBPalette16 targetPaletteStripe;
 
-// int barMode = 0;
+CRGBPalette16 currentPaletteMatrix;
+CRGBPalette16 targetPaletteMatrix;
 
+CRGB clockColor;
 typedef enum
 {
     MATRIXLEDS = 1,
     STRIPELEDS = 0
 } ledTypeConnected;
+struct ModeType
+{
+    uint8_t Brightness = 255U; // not used here
+    uint8_t Speed = 250;       // 1-255 is speed
+    uint8_t Scale = 70;        // 1-100 is something parameter
+};
+byte custom_eff = 1;
+byte FPSdelay;
+#define LOW_DELAY 0
+
+#define NUM_LAYERSMAX 2
+
+bool loadingFlag = true;
+ModeType modes[1];
 
 uint8_t
-    currentPaletteIndex = 0,
+    noise3d[NUM_LAYERSMAX][WIDTH][HEIGHT],
+    currentMode = 0,
+    selectedSettings = 1,
+    deltaValue,
+    pcnt,
+    step,
+    deltaHue,
+    deltaHue2,
+    hue,
+    hue2,
     paletteDuration = 10,
-    colorTimer = 0,
+    colorHue = 0,
     delayStripe = 0,
     BeatsPerMinute = 60,
+    colorHueMatrix,
+    colorHueStripe,
     CurrentStripePatternNumber = 0,
-    CurrentMatrixPatternNumber = 0;
+    CurrentMatrixPatternNumber = 0,
+    currentPaletteStripeIndex = 0,
+    currentPaletteMatrixIndex = 0;
 String
-    currentStripePatternName,
-    currentMatrixPatternName,
-    patternLED,
-    paletteLED,
-    patternMatrix,
-    paletteMatrix,
+    welcomeMessage,
     scrolltext,
     ssidAP = "Esp-LedServerAccessPoint",
     passwordAP,
-    password,
-    SSID;
-
+    ssid,
+    pass;
 int
+    paletteTime,
     scrollspeed,
-    overAllBrightness,
+    matrixBrightness,
+    stripBrightness,
     pixelCurrent,
     year,
     month,
     day,
-    hour,
-    minute,
+    hour, minute,
     second;
-
+bool
+    isAudioStripe,
+    isAudioMatrix,
+    clockOnOff,
+    messageIsShown = false,
+    showMessage;
+uint16_t
+    patternStripeInterval = 0,
+    patternMatrixInterval = 0;
 /********************** PATTERNS / PALETTES ***************************/
 struct NamedPalette
 {
@@ -236,3 +290,19 @@ int result_vu[8],
 const char *ntpServer = "pool.ntp.org";
 const long gmtOffset_sec = 3600;
 const int dayLightOffset_sec = 3600;
+
+// background color
+uint32_t currentBg = random(256);
+uint32_t nextBg = currentBg;
+int myhue = 0;
+int color;
+int center = 0;
+int steper = -1;
+int maxSteps = 16;
+float fadeRate = 0.80;
+
+int thishues = 95;
+int thissats = 255;
+int thisdirs = 0;
+bool huerots = 0;
+int thisdelays = 50;

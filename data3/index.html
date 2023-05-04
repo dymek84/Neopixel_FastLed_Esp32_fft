@@ -1,0 +1,150 @@
+﻿<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
+    <title>Men cave LEDs controller</title>
+    <link rel="stylesheet" href="style.css" type="text/css">
+    <script type="text/javascript" async="" src="script.js"></script>
+    <script src="script.js"></script>
+</head>
+<div name="hidden-form" id="snackbar">
+</div>
+
+<body class="centered-wrapper">
+    <div class="centered-content tabs">
+        <ul class="circles">
+            <li>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="42px" width="30px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="63px" width="45px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="127px" width="100px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="42px" width="30px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="63px" width="45px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="/finger.png" height="127px" width="100px"></img>
+                </div>
+                <div>
+            </li>
+            <li>
+                <div> <img src="finger.png" height="84px" width="60px"></img>
+                </div>
+                <div>
+            </li>
+        </ul>
+        <div class="tab">
+            <button class="tablinks" onclick="openCity(event,
+                    'StripeEffects')" id="defaultOpen">LED Effects</button>
+            <button class="tablinks" onclick="openCity(event,
+                    'MatrixEffects')">Clock Effects</button>
+            <button class="tablinks" onclick="openCity(event, 'Options')">Options</button>
+        </div>
+
+        <!-- Stripe / leds -->
+        <div id="StripeEffects" class="tabcontent led">
+            <h3>LED Stripe Effects</h3>
+            <div class="wrapper">
+                <div> Current effect: - <div id="patternName"> %patternLED%</div>
+                    <div id="currentPatternStripe"></div>
+                </div>
+              
+            </div>
+            <div> <button class="btn btn-custom" type="submit" value="prev" onclick="prevPattern()"
+                    name="patternLED">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <button class="btn btn-custom" type="submit" value="next" name="patternLED"
+                    onclick="nextPattern()">Next</button>
+            </div><BR><BR><BR><BR>
+        </div>
+
+        <!-- Matrix / clock -->
+        <div id="MatrixEffects" class="tabcontent clock">
+            <h3>Clock/Controller Settings</h3>
+
+            <div class="wrapper">
+                Current effect: - %patternMatrix% <br><br> </div>
+            <div><button type="submit" class="btn btn-custom" name="patternMatrix" value="prev"
+                    onclick="prevMatrix()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
+                    type="submit" class="btn btn-custom" name="patternMatrix" value="next"
+                    onclick="nextMatrix()">Next</button></div>
+
+            <BR><BR><BR><BR>
+
+        </div>
+        <div id="Options" class="tabcontent">
+
+
+            <form action="/get" target="hidden-form">
+                <h3>Overall Brighness</h3>
+                <div class="wrapper">
+                    <input type="range" onchange="updateSliderBrightness(this)" id="slider1" min="0" max="100" step="1"
+                        value="0" class="slider">
+                    <p class="state">Brightness: <span id="brightnessSliderVal"></span> &percnt;</p>
+                </div>
+            </form>
+            <form action="/get" target="hidden-form">
+                <h3>Patterns Speed</h3>
+                <div class="wrapper" id="speed">
+
+                    <input type="range" onchange="updateSliderSpeed(this)" id="slider2" min="0" max="100" step="1"
+                        value="%speed%" class="slider">
+                    <p class="state">Speed: <span id="speedSliderVal"></span> &percnt;</p>
+                </div>
+            </form>
+            <h3>
+                
+            </h3>
+            <form action="/get" target="hidden-form">
+                Welcome message text <br>
+                <input type="text" id="welcommessage" name="welcommessage" value="" maxlength="20">
+                <input type="submit" value="Submit">
+            </form>
+
+
+
+        </div>
+    </div>
+    <iframe style="display:none" name="hidden-form"></iframe>
+</body>
+
+<script>
+    // Get the element with id="defaultOpen" and click on it
+    document.getElementById("defaultOpen").click();
+</script>
+
+</html>

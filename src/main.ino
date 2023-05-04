@@ -46,38 +46,6 @@ void analyzeAudioSerial()
     }
 }
 
-// const uint8_t paletteCount = ARRAY_SIZE(paletteList);
-void nextPalette()
-{
-
-    currentPaletteIndex = (currentPaletteIndex + 1) % NUMpalettes;
-    targetPalette = paletteList[currentPaletteIndex].Palette;
-}
-boolean connectToNetwork(String s, String p)
-{
-    const char *ssid = s.c_str();
-    const char *password = p.c_str();
-
-    Serial.print("ACCESSING WIFI: ");
-    Serial.println(ssid);
-    WiFi.begin(ssid, password);
-
-    int timeout = 0;
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(2000);
-        Serial.println("Connecting to WiFi..");
-        if (timeout == 5)
-        {
-            return false;
-            break;
-        }
-        Serial.println(".");
-        timeout++;
-    }
-    Serial.println(WiFi.localIP());
-    return true;
-} // network()
 void syncTime()
 {
     Serial.println("Syncing time...");
@@ -101,30 +69,70 @@ void syncTime()
     hour = timeinfo.tm_hour;
     minute = timeinfo.tm_min;
     second = timeinfo.tm_sec;
-
-    Rtc.SetDateTime(RtcDateTime(year, month, day, hour, minute, second));
+    RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    // Rtc.SetDateTime(RtcDateTime(year, month, day, hour, minute, second));
 }
 void setup()
 {
+    Serial.begin(115200);
+    Serial.print("SDA: ");
+    Serial.println(SDA);
+    Serial.print("SCL: ");
+    Serial.println(SCL);
+    Serial.println("Setup Start");
+    // Wire.begin(19, 23);
+    Serial.println("wire begint");
+    if (!RTC.begin())
+    {
+        Serial.println("Couldn't find RTC");
+        while (1)
+            ;
+    }
+    else
+    {
+        Serial.println("RTC found");
+    }
+    // RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
-    Rtc.Begin();
-    RtcDateTime now = Rtc.GetDateTime();
-
+    randomSeed(analogRead(A0));
+    preferences.begin("settings");
+    CurrentStripePatternNumber = preferences.getInt("stripePattern");
+    CurrentMatrixPatternNumber = preferences.getInt("matrixPattern");
+    currentPaletteStripeIndex = preferences.getInt("stripePalette");
+    currentPaletteMatrixIndex = preferences.getInt("matrixPalette");
+    micSensytivity = preferences.getInt("micSensytivity");
+    micSquelch = preferences.getInt("micNoise");
+    matrixSpeed = preferences.getInt("matrixSpeed");
+    stripeSpeed = preferences.getInt("stripeSpeed");
+    matrixBrightness = preferences.getInt("mBrightness");
+    stripBrightness = preferences.getInt("sBrightness");
+    welcomeMessage = preferences.getString("WMessage");
+    paletteTime = preferences.getInt("paletteTime");
+    autoPalMat = preferences.getInt("autoPalMatrix");
+    autoPalStr = preferences.getInt("autoPalStr");
+    clockOnOff = preferences.getBool("clockOnOff");
+    clockColor = stringToCRGB(preferences.getString("clockColor"));
+    ssid = preferences.getString("ssid");
+    pass = preferences.getString("pass");
+    preferences.end();
+    currentPaletteStripe = paletteList[currentPaletteStripeIndex].Palette;
+    currentPaletteMatrix = paletteList[currentPaletteMatrixIndex].Palette;
+    targetPaletteMatrix = currentPaletteMatrix;
+    targetPaletteStripe = currentPaletteStripe;
     strip.begin();
     strip.clear();
     strip.show();
     boolean connectedToNetwork = false; // We want to know if we have a network before proceeding
-    Serial.begin(115200);
+
     Serial.println("start");
-    FastLED.addLeds<CHIPSET, LED_PIN_MATRIX, COLOR_ORDER>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalLEDStrip); // Initialize NEO_MATRIX
-    FastLED.addLeds<CHIPSET, LED_PIN_STRIPE, COLOR_ORDER>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalLEDStrip);
+    MatrtixController = &FastLED.addLeds<WS2812B, MATRIX_DATA_PIN, GRB>(matrix, NUM_LEDS_MATRIX).setCorrection(TypicalSMD5050);
+    StripeController = &FastLED.addLeds<WS2812B, STRIPE_DATA_PIN, GRB>(stripe, NUM_LEDS_STRIPE).setCorrection(TypicalSMD5050);
 
     FastLED.setBrightness(100);
-    preferences.begin("wificreds", false); // The WIFI credentials are stored here
+    // The WIFI credentials are stored here
     delay(1000);
 
-    preferences.getString("ssid");
-    if (connectToNetwork(preferences.getString("ssid"), preferences.getString("password")))
+    if (connectToNetwork(ssid, pass))
     {
         //  SPIFFS
         if (!SPIFFS.begin(true))
@@ -136,134 +144,229 @@ void setup()
         {
             listDir(SPIFFS, "/", 2);
         }
-        // RunWebserver();
-
-        FastLED.delay(1000); // to allow to start the 2nd processor.
+        initWebServer();
+        // runString(WiFi.localIP().toString(), CRGB::White, 15);
+        // FastLED.delay(1000); // to allow to start the 2nd processor.
+        Serial.println("connectedToNetwork");
         connectedToNetwork = true;
+        Serial.println("true");
     }
     else
     {
         Serial.println("No WIFI, let's offer an accesspoint");
-
+        //  SPIFFS
+        if (!SPIFFS.begin(true))
+        {
+            Serial.println("An Error has occurred while mounting SPIFFS");
+            return;
+        }
+        else
+        {
+            listDir(SPIFFS, "/", 2);
+        }
         RunAPmode();
-
+        runString(WiFi.softAPIP().toString(), CRGB::White, 15);
         FastLED.delay(1000); // to allow to start the 2nd processor.
         connectedToNetwork = false;
     }
-    while (!connectedToNetwork)
-    { // When we are not connected to a router (wifi point) we should not proceed. But only show the accesspoint website
-        EVERY_N_SECONDS(30)
-        {
-            // Serial.println("ESP Matrix Clock is in AccessPoint mode. Please enter your SSID and Key in the Accesspoint website (connect to the AP-wifi first)");
-            //   displayIPAP();
-        }
-    }
-    runString(WiFi.localIP().toString(), CRGB::White, 1);
-    /// runString(WiFi.localIP().toString(), CRGB::White, 1);
-    pinMode(MIC_IN_PIN, INPUT);
-    preferences.end();
+    Serial.println("1");
+    // runString(WiFi.localIP().toString(), CRGB::White, 1);
+
     Serial.println("preferences.end");
-    setupWebServer();
+
     sampling_period_us = (1.0 / SAMPLING_FREQ) * pow(10.0, 6);
 
     syncTime();
-    preferences.begin("patterns", false);
-    CurrentStripePatternNumber = preferences.getInt("stripePattern");
-    Serial.println("stripePattern = " + String(CurrentStripePatternNumber));
-    CurrentMatrixPatternNumber = preferences.getInt("matrixPattern");
-    Serial.println("matrixPattern = " + String(CurrentMatrixPatternNumber));
-    overAllBrightness = preferences.getInt("oaBrightness");
-    Serial.println("oaBrightness = " + String(overAllBrightness));
-    preferences.end();
-    preferences.begin("matrixsettings", false);
-    welcommessage = preferences.getString("welcommessage");
-    runString(welcommessage, CRGB::Red, 20);
-    preferences.end();
-
+    setup_i2s();
+    // runString(welcomeMessage, CRGB::Red, 20);
     Serial.println("setup done");
 }
 
 void loop()
 {
-    now = Rtc.GetDateTime();
-
-    processAudio();
-    EVERY_N_MILLISECONDS(500)
-    {
-        colorTimer++;
-    }
-    EVERY_N_SECONDS(5)
-    {
-        nextPalette();
-    }
+    // now = Rtc.GetDateTime();
+    now = RTC.now();
+    read_i2c_fft();
+    //i2s_read_fft2();
+    mappedMatrixInterval = map(matrixSpeed, 0, 255, 255, 0) + patternMatrixInterval;
+    mappedStripeInterval = map(stripeSpeed, 0, 255, 255, 0) + patternStripeInterval;
+    // Serial.println("1");
     EVERY_N_MILLISECONDS(40)
     {
-        nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
+        nblendPaletteTowardPalette(currentPaletteStripe, targetPaletteStripe, 12);
+        nblendPaletteTowardPalette(currentPaletteMatrix, targetPaletteMatrix, 12);
     }
-    //  randomGame();
-    EVERY_N_MILLIS(patternInterval)
+    // Serial.println("2");
+    if (autoPalMat)
     {
+        EVERY_N_SECONDS(paletteTime)
+        {
+            nextPaletteMatrix(true);
+        }
+    }
+    if (autoPalStr)
+    {
+        EVERY_N_SECONDS(paletteTime)
+        {
+            nextPaletteStripe(true);
+        }
+    }
+    // Serial.println("3");
+
+    if (millis() - lastUpdateStripe > mappedStripeInterval)
+    {
+        colorHueStripe++;
+        patternStripeInterval = 0;
         patternsStripe[CurrentStripePatternNumber].drawFrame();
-        //  FastLED[2].showLeds(overAllBrightness);
+        lastUpdateStripe = millis();
     }
-    EVERY_N_MILLIS(patternInterval)
+    if (showMessage)
     {
-        patternsMatrix[CurrentMatrixPatternNumber].drawFrame();
-        //  FastLED[0].showLeds(overAllBrightness);
     }
-
-    drawTime(1, 0, CHSV(150, 150, 150), true, true);
-
-    FastLED.show();
-    //  FastLED[2].delay(patternInterval);
-    FastLED.setBrightness(overAllBrightness);
+    else
+    {
+        if (millis() - lastUpdateMatrix > mappedMatrixInterval)
+        {
+            colorHueMatrix++;
+            patternMatrixInterval = 0;
+            patternsMatrix[CurrentMatrixPatternNumber].drawFrame();
+            lastUpdateMatrix = millis();
+        }
+        if (patternsMatrix[CurrentMatrixPatternNumber].name == "StrobeAndDiffusion" || messageIsShown || patternsMatrix[CurrentMatrixPatternNumber].name == "Falling Colors")
+        {
+        }
+        else
+        {
+            if (clockOnOff)
+                drawTime(1, 0, clockColor, true, true);
+        }
+    }
+    MatrtixController->showLeds(matrixBrightness);
+    StripeController->showLeds(stripBrightness);
 }
-void nextPattern()
+void nextPaletteStripe(bool isAuto)
 {
-    preferences.begin("patterns", false);
+    preferences.begin("settings", false);
+    if (isAuto)
+    {
+        currentPaletteStripeIndex >= NUMpalettes ? currentPaletteStripeIndex = 0 : currentPaletteStripeIndex++;
+    }
+    else
+    {
+        currentPaletteStripeIndex = (currentPaletteStripeIndex + 1) % NUMpalettes;
+    }
+    targetPaletteStripe = paletteList[currentPaletteStripeIndex].Palette;
+    preferences.putInt("stripePalette", currentPaletteStripeIndex);
+    preferences.end();
+}
+void prevPaletteStripe()
+{
+    preferences.begin("settings", false);
+    currentPaletteStripeIndex <= 0 ? currentPaletteStripeIndex = 0 : currentPaletteStripeIndex--;
+    targetPaletteStripe = paletteList[currentPaletteStripeIndex].Palette;
+    preferences.putInt("stripePalette", currentPaletteStripeIndex);
+    preferences.end();
+}
+void nextPaletteMatrix(bool isAuto)
+{
+    preferences.begin("settings", false);
+    if (isAuto)
+    {
+        currentPaletteMatrixIndex >= NUMpalettes ? currentPaletteMatrixIndex = 0 : currentPaletteMatrixIndex++;
+    }
+    else
+    {
+        currentPaletteMatrixIndex = (currentPaletteMatrixIndex + 1) % NUMpalettes;
+    }
+    targetPaletteMatrix = paletteList[currentPaletteMatrixIndex].Palette;
+    preferences.putInt("matrixPalette", currentPaletteMatrixIndex);
+    preferences.end();
+}
+void prevPaletteMatrix()
+{
+    preferences.begin("settings", false);
+    currentPaletteMatrixIndex <= 0 ? currentPaletteMatrixIndex = 0 : currentPaletteMatrixIndex--;
+    targetPaletteMatrix = paletteList[currentPaletteMatrixIndex].Palette;
+    preferences.putInt("matrixPalette", currentPaletteMatrixIndex);
+    preferences.end();
+}
+void nextPatternStripe()
+{
+    preferences.begin("settings", false);
     CurrentStripePatternNumber >= StripePatternsAmount ? CurrentStripePatternNumber = StripePatternsAmount : CurrentStripePatternNumber++;
+    isAudioStripe = patternsStripe[CurrentStripePatternNumber].isAudio;
+
     FastLED.clear();
     preferences.putInt("stripePattern", CurrentStripePatternNumber);
-    runString(patternsStripe[CurrentStripePatternNumber].name, CRGB::White, 1);
+    // runString(patternsStripe[CurrentStripePatternNumber].name, CRGB::White, 1);
     preferences.end();
 }
-void prevPattern()
+void prevPatternStripe()
 {
-    preferences.begin("patterns", false);
+    preferences.begin("settings", false);
     CurrentStripePatternNumber <= 0 ? CurrentStripePatternNumber = 0 : CurrentStripePatternNumber--;
+    isAudioStripe = patternsStripe[CurrentStripePatternNumber].isAudio;
+
     FastLED.clear();
     preferences.putInt("stripePattern", CurrentStripePatternNumber);
     preferences.end();
 }
-void nextMatrix()
+void nextPatternMatrix()
 {
-    preferences.begin("patterns", false);
+    preferences.begin("settings", false);
     CurrentMatrixPatternNumber >= MatrixPatternsAmount ? CurrentMatrixPatternNumber = MatrixPatternsAmount : CurrentMatrixPatternNumber++;
+    isAudioMatrix = patternsMatrix[CurrentMatrixPatternNumber].isAudio;
     FastLED.clear();
     preferences.putInt("matrixPattern", CurrentMatrixPatternNumber);
     preferences.end();
 }
-void prevMatrix()
+void prevPatternMatrix()
 {
-    preferences.begin("patterns", false);
+    preferences.begin("settings", false);
     CurrentMatrixPatternNumber <= 0 ? CurrentMatrixPatternNumber = 0 : CurrentMatrixPatternNumber--;
+    isAudioMatrix = patternsMatrix[CurrentMatrixPatternNumber].isAudio;
     FastLED.clear();
     preferences.putInt("matrixPattern", CurrentMatrixPatternNumber);
     preferences.end();
 }
-void setBright(uint8_t bright)
+void setBrightMatrix(uint8_t bright)
 {
-    preferences.begin("patterns", false);
-    overAllBrightness = bright;
-    Serial.println(String(overAllBrightness));
-    preferences.putInt("oaBrightness", overAllBrightness);
+    preferences.begin("settings", false);
+    matrixBrightness = bright;
+    Serial.println(String(matrixBrightness));
+    preferences.putInt("mBrightness", matrixBrightness);
     preferences.end();
 }
-void setSpeed(uint16_t speed)
+void setBrightStripe(uint8_t bright)
 {
-    preferences.begin("patterns", false);
-    patternInterval = speed;
-    Serial.println(String(patternInterval));
-    preferences.putInt("patternInterval", patternInterval);
+    preferences.begin("settings", false);
+    stripBrightness = bright;
+    Serial.println(String(stripBrightness));
+    preferences.putInt("sBrightness", stripBrightness);
     preferences.end();
+}
+void setSpeedMatrix(uint16_t speed)
+{
+    preferences.begin("settings", false);
+    matrixSpeed = speed;
+    Serial.println(String(matrixSpeed));
+    preferences.putInt("matrixSpeed", matrixSpeed);
+    preferences.end();
+}
+void setSpeedStripe(uint16_t speed)
+{
+    preferences.begin("settings", false);
+    stripeSpeed = speed;
+    Serial.println(String(stripeSpeed));
+    preferences.putInt("stripeSpeed", stripeSpeed);
+    preferences.end();
+}
+
+void minimumDelayFromPatternsMatrix(uint16_t delay)
+{
+    patternMatrixInterval = delay;
+}
+void minimumDelayFromPatternsStripe(uint16_t delay)
+{
+    patternStripeInterval = delay;
 }

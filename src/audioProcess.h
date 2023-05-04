@@ -2,230 +2,48 @@
 #pragma once
 
 #include "Imports.h"
-
-void createBands()
+#define I2S_WS 25
+#define I2S_SD 33
+#define I2S_SCK 32
+#define bufferLen 16
+int32_t sBuffer[bufferLen];
+#define I2S_PORT I2S_NUM_0
+const int numBands = 16;
+void i2s_install()
 {
-    EVERY_N_MILLISECONDS(60)
-    {
-        for (byte band = 0; band < NUM_BANDS; band++)
-        {
-            if (peakMatrix[band] > 0)
-                peakMatrix[band]--;
-            if (peakStripe[band] > 0)
-                peakStripe[band]--;
-        }
-    }
-    float amplitude = 150.0;
-    int dmax = amplitude;
-    for (int i = 0; i < NUM_BANDS; i++)
-    {
-        bandValues[i] = 0;
-    }
-    for (int i = 0; i < SAMPLES; i++)
-    {
-        newTimeForAudio = micros();
-        vReal[i] = analogRead(MIC_IN_PIN);
 
-        vImag[i] = 0;
-        while ((micros() - newTimeForAudio) < sampling_period_us)
-        {
-        }
-    }
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
-    FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQ);
-    for (int i = 2; i < (SAMPLES / 2); i++)
-    {
-        if (vReal[i] > 2000)
-        { // Add a crude noise filter, 10 x amplitude or more
-            uint8_t band = 0;
-            if (i <= 2)
-                band = 0; // 125Hz
-            else if (i <= 5)
-                band = 1; // 250Hz
-            else if (i <= 13)
-            {
-                band = 2; // 500Hz
-            }
-            else if (i <= 27)
-            {
-                band = 3; // 1000Hz
-            }
-            else if (i <= 45)
-            {
-                band = 4; // 2000Hz
-            }
-            else if (i <= 152)
-            {
-                band = 5; // 4000Hz
-            }
-            else if (i <= 264)
-            {
-                band = 6; // 8000Hz
-            }
-            else
-            {
-                band = 7;
-            }
-            int dmax = amplitude;
-            int dsize = (int)vReal[i] / amplitude;
-            if (dsize > dmax)
-                dsize = dmax;
-            if (dsize > bandValues[band])
-            {
-                bandValues[band] = dsize;
-            }
+    const i2s_config_t i2s_config = {
+        .mode = i2s_mode_t(I2S_MODE_MASTER | I2S_MODE_RX), // Receive, not transfer
+        .sample_rate = 16000,                              // 16KHz 44100
+        .bits_per_sample = I2S_BITS_PER_SAMPLE_32BIT,      // could only get it to work with 32bits
+        .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,      // although the SEL config should be left, it seems to transmit on right
+        .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
+        .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1, // Interrupt level 1
+        .dma_buf_count = 2,                       // number of buffers
+        .dma_buf_len = bufferLen                  // samples per buffer
+    };
 
-            bandValues[band] = ((oldBarHeights[band] * 1) + bandValues[band]) / 2;
-            bandValues[band] = map(bandValues[band], 0, amplitude, 0, 75);
-            oldBarHeights[band] = bandValues[band];
-        }
-    }
-    for (int i = 0; i < NUM_BANDS; i++)
-    {
-        stripeValues[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 75);
-        matrixValues[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 16);
-        // Move peak up
-        if (stripeValues[i] > peakStripe[i])
-        {
-            peakStripe[i] = stripeValues[i];
-        }
-        if (matrixValues[i] > peakMatrix[i])
-        {
-            peakMatrix[i] = matrixValues[i];
-        }
-    }
-}
-void analyzeAudio()
-{
-    for (int i = 0; i < NUM_BANDS; i++)
-    {
-        bandValues[i] = 0;
-    }
-    for (int i = 0; i < SAMPLES; i++)
-    {
-        newTimeForAudio = micros();
-        vReal[i] = analogRead(MIC_IN_PIN);
-
-        vImag[i] = 0;
-        while ((micros() - newTimeForAudio) < sampling_period_us)
-        {
-        }
-    }
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
-    FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQ);
-    for (int i = 2; i < (SAMPLES / 2); i++)
-    {
-        if (vReal[i] > NOISE)
-        {
-            if (i <= 3)
-                bandValues[0] += (int)vReal[i];
-            if (i > 3 && i <= 6)
-                bandValues[1] += (int)vReal[i];
-            if (i > 6 && i <= 13)
-                bandValues[2] += (int)vReal[i];
-            if (i > 13 && i <= 27)
-                bandValues[3] += (int)vReal[i];
-            if (i > 27 && i <= 55)
-                bandValues[4] += (int)vReal[i];
-            if (i > 55 && i <= 112)
-                bandValues[5] += (int)vReal[i];
-            if (i > 112 && i <= 120)
-                bandValues[6] += (int)vReal[i];
-            if (i > 120)
-                bandValues[7] += (int)vReal[i];
-        }
-    }
-    for (int i = 0; i < NUM_BANDS; i++)
-    {
-        stripeValues[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 75);
-        matrixValues[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 16);
-    }
+    i2s_driver_install(I2S_PORT, &i2s_config, 0, NULL);
 }
 
-int audioSample()
+void i2s_setpin()
 {
-    unsigned long startMillis = millis(); // Start of sample window
-    unsigned int peakToPeak = 0;          // peak-to-peak level
+    // Set I2S pin configuration
+    const i2s_pin_config_t pin_config = {
+        .bck_io_num = I2S_SCK,
+        .ws_io_num = I2S_WS,
+        .data_out_num = -1,
+        .data_in_num = I2S_SD};
 
-    unsigned int signalMax = 0;
-    unsigned int signalMin = 1024;
-
-    // collect data for 50 mS
-    while (millis() - startMillis < sampleWindow)
-    {
-        sample = analogRead(MIC_IN_PIN);
-        if (sample < 1024) // toss out spurious readings
-        {
-            if (sample > signalMax)
-            {
-                signalMax = sample; // save just the max levels
-            }
-            else if (sample < signalMin)
-            {
-                signalMin = sample; // save just the min levels
-            }
-        }
-    }
-    peakToPeak = signalMax - signalMin; // max - min = peak-peak amplitude
-    // Serial.println(peakToPeak);
-    double volts = (peakToPeak * 5.0) / 1024; // convert to volts
-    int val = map(peakToPeak, 0, 1024, 0, NUM_LEDS_STRIPE);
-    // Serial.println(val);
-    return val;
+    i2s_set_pin(I2S_PORT, &pin_config);
 }
 
-#define MIN_SHOW_DELAY 15
-
-const int BLOCK_SIZE = 64;
-
-const int SAMPLE_RATE = 1024;
-
-TaskHandle_t FFT_Task;
-
-unsigned long microseconds;
-
-double FFT_MajorPeak = 0;
-double FFT_Magnitude = 0;
-uint16_t mAvg = 0;
-
-// These are the input and output vectors.  Input vectors receive computed results from FFT.
-
-double fftBin[SAMPLES];
-
-// Try and normalize fftBin values to a max of 4096, so that 4096/16 = 256.
-// Oh, and bins 0,1,2 are no good, so we'll zero them out.
-double fftCalc[8];
-int fftResult[8];       // Our calculated result table, which we feed to the animations.
-double fftResultMax[8]; // A table used for testing to determine how our post-processing is working.
-
-// Table of linearNoise results to be multiplied by squelch in order to reduce squelch across fftResult bins.
-int linearNoise[8] = {
-    34,
-    26,
-    20,
-    9,
-    4,
-    3,
-    2,
-    2,
-};
-
-// Table of multiplication factors so that we can even out the frequency response.
-double fftResultPink[8] = {
-    1.70,
-    1.73,
-    1.58,
-    1.75,
-    1.99,
-    1.90,
-    2.77,
-    1.53,
-};
-
+void setup_i2s()
+{
+    i2s_install();
+    i2s_setpin();
+    i2s_start(I2S_PORT);
+}
 double fftAdd(int from, int to)
 {
     int i = from;
@@ -236,31 +54,42 @@ double fftAdd(int from, int to)
     }
     return result;
 }
-
-void FFTcode()
+void read_i2c_fft()
 {
 
     delay(1); // DO NOT DELETE THIS LINE! It is needed to give the IDLE(0) task enough time and to keep the watchdog happy.
               // taskYIELD(), yield(), vTaskDelay() and esp_task_wdt_feed() didn't seem to work.
-
-    microseconds = micros();
+    EVERY_N_MILLISECONDS(180)
+    {
+        for (byte band = 0; band < NUM_BANDS; band++)
+        {
+            if (peakStripe[band] > 0)
+            {
+                peakStripe[band]--;
+            }
+            if (peakMatrix[band] > 0)
+            {
+                peakMatrix[band]--;
+            }
+        }
+    }
 
     for (int i = 0; i < SAMPLES; i++)
     {
-        vReal[i] = analogRead(MIC_IN_PIN); // A conversion takes about 9.7uS on an ESP32
+        int32_t digitalSample = 0;
+        size_t bytes_read = 0;
+        esp_err_t result = i2s_read(I2S_PORT, &digitalSample, sizeof(digitalSample), &bytes_read, /*portMAX_DELAY*/ 10);
+        // int bytes_read = i2s_pop_sample(I2S_PORT, (char *)&digitalSample, portMAX_DELAY); // no timeout
+        if (bytes_read > 0)
+            micData = abs(digitalSample >> 16);
+
+        vReal[i] = micData; // Store Mic Data in an array
         vImag[i] = 0;
-        microseconds += sampling_period_us;
     }
 
-    //  FFT.DCRemoval();
-    //  FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD); // Weigh data
-    //  FFT.Compute(FFT_FORWARD);                        // Compute FFT
-    // FFT.ComplexToMagnitude();                        // Compute magnitudes
-
-    FFT.Windowing(vReal, SAMPLES, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
-    FFT.Compute(vReal, vImag, SAMPLES, FFT_FORWARD);
-    FFT.ComplexToMagnitude(vReal, vImag, SAMPLES);
-    FFT.MajorPeak(vReal, SAMPLES, SAMPLING_FREQ);
+    FFT.Windowing(FFT_WIN_TYP_HAMMING, FFT_FORWARD); // Weigh data
+    FFT.Compute(FFT_FORWARD);                        // Compute FFT
+    FFT.ComplexToMagnitude();                        // Compute magnitudes
 
     //
     // vReal[3 .. 255] contain useful data, each a 20Hz interval (60Hz - 5120Hz).
@@ -274,33 +103,23 @@ void FFTcode()
         t = abs(vReal[i]);
         t = t / 16.0; // Reduce magnitude. Want end result to be linear and ~4096 max.
         fftBin[i] = t;
+        //  Serial.println(fftBin[i]);
     } // for()
 
-    /* This FFT post processing is a DIY endeavour. What we really need is someone with sound engineering expertise to do a great job here AND most importantly, that the animations look GREAT as a result.
-     *
-     * Andrew's updated mapping of 256 bins down to the 16 result bins with Sample Freq = 10240, samples = 512 and some overlap.
-     * Based on testing, the lowest/Start frequency is 60 Hz (with bin 3) and a highest/End frequency of 5120 Hz in bin 255.
-     * Now, Take the 60Hz and multiply by 1.320367784 to get the next frequency and so on until the end. Then detetermine the bins.
-     * End frequency = Start frequency * multiplier ^ 16
-     * Multiplier = (End frequency/ Start frequency) ^ 1/16
-     * Multiplier = 1.320367784
-     */
-    int squelch = 0;
-    int gain = 5;
     // Range
-    fftCalc[0] = (fftAdd(3, 5)) / 2;      // 80 - 120
+    fftCalc[0] = (fftAdd(2, 5)) / 2;      // 80 - 120
     fftCalc[1] = (fftAdd(5, 9)) / 3;      // 140 - 200
-    fftCalc[2] = (fftAdd(9, 16)) / 5;     // 240 - 340
+    fftCalc[2] = (fftAdd(9, 16)) / 5;     // 240 - 340  --  381
     fftCalc[3] = (fftAdd(16, 28)) / 8;    // 420 - 600
     fftCalc[4] = (fftAdd(29, 48)) / 12;   // 740 - 980
     fftCalc[5] = (fftAdd(48, 84)) / 21;   // 1280 - 1700
     fftCalc[6] = (fftAdd(84, 167)) / 37;  // 2220 - 2960
     fftCalc[7] = (fftAdd(167, 255)) / 62; // 3880 - 5120
+    squelch = micSquelch / 10;
     // Noise supression of fftCalc bins using squelch adjustment for different input types.
     for (int i = 0; i < 8; i++)
     {
         fftCalc[i] = fftCalc[i] - (float)squelch * (float)linearNoise[i] / 4.0 <= 0 ? 0 : fftCalc[i];
-        //  Serial.println(fftCalc[i]);
     }
 
     // Adjustment for frequency curves.
@@ -308,28 +127,142 @@ void FFTcode()
     {
         fftCalc[i] = fftCalc[i] * fftResultPink[i];
     }
+    gain = micSensytivity / 2;
+
     // Manual linear adjustment of gain using gain adjustment for different input types.
     for (int i = 0; i < 8; i++)
     {
-        fftCalc[i] = fftCalc[i] * gain / 40 + fftCalc[i] / 8.0;
+        fftCalc[i] = fftCalc[i] * gain / 40 + fftCalc[i] / 16.0;
     }
 
     // Now, let's dump it all into fftResult. Need to do this, otherwise other routines might grab fftResult values prematurely.
-    for (int i = 0; i < 8; i++)
-    {
-        fftResult[i] = constrain((int)fftCalc[i], 0, 254);
-    }
     for (int i = 0; i < NUM_BANDS; i++)
     {
-        stripeValues[i] = map(constrain(fftResult[i], 0, 256), 0, 256, 0, 75);
-        matrixValues[i] = map(constrain(fftResult[i], 0, 256), 0, 256, 0, 16);
+        bandValues[i] = constrain((int)fftCalc[i], 0, 254);
+        spectrumByte[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 1024);
+        stripeValues[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 75);
+        matrixValues[i] = map(constrain(bandValues[i], 0, 256), 0, 256, 0, 16);
+        // Move peak up
+        if (stripeValues[i] > peakStripe[i])
+        {
+            peakStripe[i] = stripeValues[i];
+        }
+        if (matrixValues[i] > peakMatrix[i])
+        {
+            peakMatrix[i] = matrixValues[i];
+        }
     }
+}
+const int samplingFrequency = 44100;
+#define ADC_INPUT ADC1_CHANNEL_0
+uint16_t offset = (int)ADC_INPUT * 0x1000 + 0xFFF;
+#define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
+size_t bytesRead = 0;
+const int SAMPLEBLOCK = 1024;
+int16_t samples[SAMPLEBLOCK];
+float FreqBins[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int NoiseTresshold = 1500; // this will effect the upper bands most.
+static int BandCutoffTable[16] = {40, 60, 100, 150, 250, 400, 650, 1000, 1600, 2500, 4000, 6250, 12000, 14000, 16000, 17000};
+volatile float gVU = 0;   // Instantaneous read of VU value
+volatile float oldVU = 0; // Previous read of VU value
+int CalibrationType = 0;  // 0=none, 1=White, 2=Pink
+char Filtername[4][6] = {
+    "None", // see documentation on this one.
+    "Pink",
+    "White",
+    "Brown"};
 
-} // FFTcode()
-void processAudio()
+//static int BandCutoffTable[16] = {40, 60, 100, 150, 250, 400, 650, 1000, 1600, 2500, 4000, 6250, 12000, 14000, 16000, 17000};
+static double BandCalibration_Pink[16] = {4.52, 5.48, 5.54, 6.06, 2.98, 1.72, 1.49, 1.36, 1.00, 1.49, 2.04, 1.71, 2.19, 2.68, 1.85, 5.69};
+static double BandCalibration_White[16] = {169.55, 148.58, 141.29, 124.24, 35.59, 10.76, 6.97, 5.18, 2.89, 4.19, 4.24, 1.99, 1.00, 1.60, 1.53, 5.48};
+static double BandCalibration_Brown[16] = {1.81, 2.17, 2.49, 2.89, 1.57, 1.00, 1.10, 1.30, 1.22, 3.74, 113.96, 774.90, 7.76, 645.75, 2583.00, 7749.00};
+int BucketFrequency(int iBucket)
 {
-    //createBands();
-    //analyzeAudio();
-    FFTcode();
+    if (iBucket <= 1)
+        return 0;
+    int iOffset = iBucket - 2;
+    return iOffset * (samplingFrequency / 2) / (SAMPLEBLOCK / 2);
 }
 
+void i2s_read_fft2()
+{
+
+    i2s_read(I2S_PORT,
+             (void *)samples,
+             sizeof(samples),
+             &bytesRead,     // workaround This is the actual buffer size last half will be empty but why?
+             portMAX_DELAY); // no timeout
+
+    if (bytesRead != sizeof(samples))
+    {
+        Serial.printf("Could only read %u bytes of %u in FillBufferI2S()\n", bytesRead, sizeof(samples));
+        // return;
+    }
+
+    // ############ Step 2: compensate for Channel number and offset, safe all to vReal Array   ############
+    for (uint16_t i = 0; i < ARRAYSIZE(samples); i++)
+    {
+        vReal[i] = offset - samples[i];
+        vImag[i] = 0.0; // Imaginary part must be zeroed in case of looping to avoid wrong calculations and overflows
+
+        // ############ Step 3: Do FFT on the VReal array  ############
+        //  compute FFT
+        FFT.DCRemoval();
+        FFT.Windowing(vReal, SAMPLEBLOCK, FFT_WIN_TYP_HAMMING, FFT_FORWARD);
+        FFT.Compute(vReal, vImag, SAMPLEBLOCK, FFT_FORWARD);
+        FFT.ComplexToMagnitude(vReal, vImag, SAMPLEBLOCK);
+        FFT.MajorPeak(vReal, SAMPLEBLOCK, samplingFrequency);
+        for (int i = 0; i < numBands; i++)
+        {
+            FreqBins[i] = 0;
+        }
+        // ############ Step 4: Fill the frequency bins with the FFT Samples ############
+        float averageSum = 0.0f;
+        for (int i = 2; i < SAMPLEBLOCK / 2; i++)
+        {
+            averageSum += vReal[i];
+            if (vReal[i] > NoiseTresshold)
+            {
+                int freq = BucketFrequency(i);
+                int iBand = 0;
+                while (iBand < numBands)
+                {
+                    if (freq < BandCutoffTable[iBand])
+                        break;
+                    iBand++;
+                }
+                if (iBand > numBands)
+                    iBand = numBands;
+                FreqBins[iBand] += vReal[i];
+                //  float scaledValue = vReal[i];
+                //  if (scaledValue > peak[iBand])
+                //    peak[iBand] = scaledValue;
+            }
+        }
+
+
+
+        // ############ Step 5: Determine the VU value  and mingle in the readout...( cheating the bands ) ############ Step
+        float t = averageSum / (SAMPLEBLOCK / 2);
+        gVU = max(t, (oldVU * 3 + t) / 4);
+        oldVU = gVU;
+
+        // Serial.printf("gVu: %d\n",(int) gVU);
+
+        for (int j = 0; j < numBands; j++)
+        {
+            if (CalibrationType == 1)
+                FreqBins[j] *= BandCalibration_Pink[j];
+            else if (CalibrationType == 2)
+                FreqBins[j] *= BandCalibration_White[j];
+            else if (CalibrationType == 3)
+                FreqBins[j] *= BandCalibration_Brown[j];
+        }
+        for (int i = 0; i < numBands; i++)
+        {
+            Serial.print(FreqBins[i]);
+        }
+        Serial.printf("\n");
+        Serial.printf("gVU: %d\n", (int) gVU);
+
+    }

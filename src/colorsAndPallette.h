@@ -191,7 +191,7 @@ DEFINE_GRADIENT_PALETTE(ib15_gp){0, 113, 91, 147, 72, 157, 88, 78, 89, 208, 85, 
 DEFINE_GRADIENT_PALETTE(Fuschia_7_gp){0, 43, 3, 153, 63, 100, 4, 103, 127, 188, 5, 66, 191, 161, 11, 115, 255, 135, 20, 182};
 DEFINE_GRADIENT_PALETTE(es_emerald_dragon_08_gp){0, 97, 255, 1, 101, 47, 133, 1, 178, 13, 43, 1, 255, 2, 10, 1};
 DEFINE_GRADIENT_PALETTE(lava_gp){0, 0, 0, 0, 46, 18, 0, 0, 96, 113, 0, 0, 108, 142, 3, 1, 119, 175, 17, 1, 146, 213, 44, 2, 174, 255, 82, 4, 188, 255, 115, 4, 202, 255, 156, 4, 218, 255, 203, 4, 234, 255, 255, 4, 244, 255, 255, 71, 255, 255, 255, 255};
-DEFINE_GRADIENT_PALETTE(fire_gp){0, 1, 1, 0, 76, 32, 5, 0, 146, 192, 24, 0, 197, 220, 105, 5, 240, 252, 255, 31, 250, 252, 255, 111, 255, 255, 255, 255};
+DEFINE_GRADIENT_PALETTE(fire_gp){0, 0, 0, 0, 76, 32, 5, 0, 146, 192, 24, 0, 197, 220, 105, 5, 240, 252, 255, 31, 250, 252, 255, 111, 255, 255, 255, 255};
 DEFINE_GRADIENT_PALETTE(Colorfull_gp){0, 10, 85, 5, 25, 29, 109, 18, 60, 59, 138, 42, 93, 83, 99, 52, 106, 110, 66, 64, 109, 123, 49, 65, 113, 139, 35, 66, 116, 192, 117, 98, 124, 255, 255, 137, 168, 100, 180, 155, 255, 22, 121, 174};
 DEFINE_GRADIENT_PALETTE(Magenta_Evening_gp){0, 71, 27, 39, 31, 130, 11, 51, 63, 213, 2, 64, 70, 232, 1, 66, 76, 252, 1, 69, 108, 123, 2, 51, 255, 46, 9, 35};
 DEFINE_GRADIENT_PALETTE(Pink_Purple_gp){0, 19, 2, 39, 25, 26, 4, 45, 51, 33, 6, 52, 76, 68, 62, 125, 102, 118, 187, 240, 109, 163, 215, 247, 114, 217, 244, 255, 122, 159, 149, 221, 149, 113, 78, 188, 183, 128, 57, 155, 255, 146, 40, 123};
@@ -475,8 +475,6 @@ NamedPalette paletteList[] = {
 // How many palettes are defined
 const uint16_t NUMpalettes = sizeof(paletteList) / sizeof(paletteList[0]);
 
-CRGBPalette16 currentPalette = paletteList[currentPaletteIndex].Palette;
-CRGBPalette16 targetPalette = paletteList[currentPaletteIndex].Palette;
 /*
 RainbowColors_p;
 RainbowStripeColors_p;

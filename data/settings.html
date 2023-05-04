@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Dymek</title>
+
+  <link href="main.css" type="text/css" rel="stylesheet" media="screen,projection">
+</head>
+
+<body>
+  <div class="area">
+  </div>
+  <section class="wrapper">
+    <div class="card">
+      <ul class="circles">
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+      </ul>
+      <div id="msgbox">
+        <h1> Welcom in onze kroeg</h1>
+        <ul style='display:inline-block;min-width:280px;'>
+          <li><a href="/">Led Strip</a></li>
+          <li><a href="/matrix">Matrix</a></li>
+          <li><a class="active" href="">Settings</a></li>
+        </ul>
+      </div>
+      <BR>
+      <h1 style="font-size: 2em;padding: 0;margin: 0;">Settings</h1><BR>
+
+      <div class="sect">
+        <h3 id="_brigtness">Welcome Message</h3>
+        <div id="messageHolder">(%welcomeMessage%)</div><BR>
+        <div id="brightnessbox">
+          <input id="WMessage" type="text" placeholder="Welcome Message" min="5" max="255"></Input><BR>
+        </div><BR><button onclick="setMessage()">Set Message</button><BR><BR>
+      </div>
+      <div class="sect">
+
+        <BR><button onclick="showMessage()">Show Message</button><BR><BR>
+      </div>
+      <div class="range-slider sect">
+        <h3 id="_brigtness">Microphone Sensitivity</h3>
+        <div id="brightnessbox">
+          <input class="range-slider__range" id="micSens" type="range" value="%micSens%" min="5" max="255"
+            onchange="rangeMicSens(this.value)"></Input>
+          <span id="rangeValueMicSens" class="range-slider__value">%micSens%</span>
+        </div>
+      </div>
+
+      <div class="range-slider sect">
+        <h3 id="_brigtness">Noise Supression</h3>
+        <div id="brightnessbox">
+          <input class="range-slider__range" id="noise" type="range" value="%micSens%" min="5" max="255"
+            onchange="rangeNoise(this.value)"></Input>
+          <span id="rangeValueNoise" class="range-slider__value">%micSens%</span>
+        </div>
+      </div>
+
+      <div class="sect">
+        <h3 id="_brigtness"> Select time for auto change color palette</h3><br>
+        <select id="paletteTime" onchange="paletteTimeSelect()" value="20">
+          <option value="" selected disabled hidden>%paletteTime% sec</option>
+          <option value="10">10 sec</option>
+          <option value="20">20 sec</option>
+          <option value="30">30 sec</option>
+          <option value="40">40 sec</option>
+          <option value="60">60 sec</option>
+          <option value="80">80 sec</option>
+          <option value="100">100 sec</option>
+          <option value="120">120 sec</option>
+        </select>
+      </div>
+
+
+
+
+      <div>
+        <p id="signature" style="font-size: 12px;
+        padding: 22px;
+        margin: 5px;">Designed by: Dymek - 2023
+          (dymek1984@gmail.com)</p>
+      </div>
+      <div style='display:inline-block;min-width:280px;'>
+        <div id="snackbar"></div>
+      </div>
+    </div>
+  </section>
+  <script src="main.js"></script>
+</body>
+
+</html>

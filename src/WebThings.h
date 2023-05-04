@@ -1,63 +1,756 @@
+
 #pragma once
 
-#include "Imports.h"
+#include "imports.h"
 
 String processor(const String &var)
 {
-    if (var == "patternLED")
+    if (var == "welcomeMessage") ///
     {
-        return patternLED;
+        return welcomeMessage;
     }
-    else if (var == "speed")
+    else if (var == "mBright") ///
     {
-        return String(map(patternInterval, 2000, 0, 0, 100));
+        return String(matrixBrightness);
     }
-    else if (var == "paletteLED")
+    else if (var == "sBright") ///
     {
-        return paletteLED;
+        return String(stripBrightness);
     }
-    else if (var == "patternMatrix")
+    else if (var == "patternStrName") //
     {
-        return patternMatrix;
+        return String(patternsStripe[CurrentStripePatternNumber].name);
     }
-    else if (var == "paletteMatrix")
+    else if (var == "patternMatName") //
     {
-        return paletteMatrix;
+        return String(patternsMatrix[CurrentMatrixPatternNumber].name);
     }
-    else if (var == "overAllBrightness")
+    else if (var == "paletteStripe") //
     {
-        return String(overAllBrightness);
+        return String(paletteList[currentPaletteStripeIndex].Name);
     }
-    else if (var == "scrolltext")
+    else if (var == "paletteMatrix") //
     {
-        return String(scrolltext);
+        return String(paletteList[currentPaletteMatrixIndex].Name);
     }
-    else if (var == "SSID")
+    else if (var == "micSens")
     {
-        return String(SSID);
+        return String(micSensytivity);
     }
-    else if (var == "password")
+    else if (var == "stripeSpeed")
     {
-        return String(password);
+        return String(stripeSpeed);
     }
+    else if (var == "matrixSpeed")
+    {
+        return String(matrixSpeed);
+    }
+    else if (var == "currentPatMat")
+    {
+        return String(CurrentMatrixPatternNumber);
+    }
+    else if (var == "currentPatStr")
+    {
+        return String(CurrentStripePatternNumber);
+    }
+    else if (var == "strPatMax")
+    {
+        return String(StripePatternsAmount);
+    }
+    else if (var == "matPatMax")
+    {
+        return String(MatrixPatternsAmount);
+    }
+    else if (var == "isAutoPalStripe")
+    {
+        return autoPalStr == 0 ? "unchecked" : "checked";
+    }
+    else if (var == "isAutoPalMatrix")
+    {
+        return autoPalMat == 0 ? "unchecked" : "checked";
+    }
+    else if (var == "paletteTime")
+    {
+        return String(paletteTime);
+    }
+    else if (var == "clockStatus")
+    {
+        return clockOnOff ? "The clock is on" : "The clock is off";
+    }
+    else if (var == "clockActualColor")
+    {
+        //  return String(clockColor.r + "" + clockColor.g + "" + clockColor.b);
+    }
+
     return String();
 }
-void onRootRequest(AsyncWebServerRequest *request)
+String handleAutopaletteStripeUpdate(uint8_t *data, size_t len)
 {
-    request->send(SPIFFS, "/index.html", "text/html", false, processor);
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    preferences.begin("settings");
+    autoPalStr = int(doc["autoPalStripe"]); // 1
+    preferences.putInt("autoPalStripe", autoPalStr);
+    preferences.end();
+    Serial.print("autoPalStr: ");
+    Serial.print(autoPalStr);
+    Serial.print(" - autoPalStripe handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + String(autoPalStr) + "\"}";
 }
-void notifyClients(String message = "Default", String type = "Default")
+String handleAutopaletteMatrixUpdate(uint8_t *data, size_t len)
 {
-    ws.printfAll("{\"%s\":\"%s\"}", message, type);
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    preferences.begin("settings");
+    autoPalMat = int(doc["autoPalMatrix"]); // 1
+    preferences.putInt("autoPalMatrix", autoPalMat);
+    preferences.end();
+    Serial.print("autoPalMatrix handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + String(autoPalMat) + "\"}";
+}
+String handleMicNoise(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    micSquelch = int(doc["micNoise"]);
+    preferences.begin("settings");
+    preferences.putInt("micNoise", micSquelch);
+    preferences.end();
+    Serial.print("micNoise handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleMicSensytivity(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    micSensytivity = int(doc["micSens"]);
+    preferences.begin("settings");
+    preferences.putInt("micSensytivity", micSensytivity);
+    preferences.end();
+    Serial.print("micSensytivity handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleStripSpeedUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    setSpeedStripe(int(doc["stripeSpeed"]));
+    // stripeSpeed = int(doc["stripeSpeed"]);
+
+    Serial.print("stripeSpeed handle: ");
+    Serial.println(json);
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleMatrixSpeedUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    setSpeedMatrix(int(doc["matrixSpeed"]));
+    Serial.print("matrixSpeed handle: ");
+    Serial.println(json);
+    Serial.print("mapped: ");
+    Serial.println(map(matrixSpeed, 0, 255, 2000, 0));
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleStripBrightnessUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    // stripBrightness = int(doc["Sbrightness"]);
+    //  BRIGHTNESS = int(doc["brightness"]);
+    setBrightStripe(int(doc["Sbrightness"]));
+    Serial.print("brightness handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleMatrixBrightnessUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    // matrixBrightness = int(doc["Mbrightness"]);
+    setBrightMatrix(int(doc["Mbrightness"]));
+    Serial.print("brightness handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleClockColor(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    String color = doc["clockColor"];
+
+    clockColor = stringToCRGB(color);
+    preferences.begin("settings", false);
+    preferences.putString("clockColor", color);
+    preferences.end();
+
+    Serial.print("clockColor handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"clockColor\" : \"" + color + "\"}";
+}
+String handleOnOffClock(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    String tempOnOffClock = doc["onOffClock"];
+    if (tempOnOffClock == "on")
+    {
+        clockOnOff = true;
+    }
+    else
+    {
+        clockOnOff = false;
+    }
+    preferences.begin("settings", false);
+    preferences.putBool("clockOnOff", clockOnOff);
+    preferences.end();
+    String onoff = clockOnOff ? "on" : "off";
+    Serial.print("ON-OFF-Clock handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"onOffClock\" : \"" + onoff + "\"}";
+}
+String handlepaletteTime(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+    paletteTime = int(doc["paletteTime"]); // 1
+    preferences.begin("settings", false);
+    preferences.putInt("paletteTime", paletteTime);
+    preferences.end();
+
+    Serial.print("paletteTime handle: ");
+    Serial.println(json);
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handlePaletteUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    String paletteName = doc["palette"];
+    int patterns;
+    if (paletteName == "prevStripe")
+    {
+        if (autoPalStr == 0)
+        {
+            prevPaletteStripe();
+        }
+        else
+        {
+            return "{\"status\" : \"ok\",  \"paletteStripeName\" : \"AUTO CHANGE - " + paletteList[currentPaletteStripeIndex].Name + "\"}";
+        }
+        return "{\"status\" : \"ok\",  \"paletteStripeName\" : \"" + paletteList[currentPaletteStripeIndex].Name + "\"}";
+    }
+    else if (paletteName == "nextStripe")
+    {
+        if (autoPalStr == 0)
+        {
+            nextPaletteStripe(false);
+        }
+        else
+        {
+            return "{\"status\" : \"ok\",  \"paletteStripeName\" : \"AUTO CHANGE - " + paletteList[currentPaletteStripeIndex].Name + "\"}";
+        }
+        return "{\"status\" : \"ok\",  \"paletteStripeName\" : \"" + paletteList[currentPaletteStripeIndex].Name + "\"}";
+    }
+    else if (paletteName == "prevMatrix")
+    {
+        if (autoPalMat == 0)
+        {
+            prevPaletteMatrix();
+        }
+        else
+        {
+            return "{\"status\" : \"ok\",  \"paletteMatrixName\" : \"AUTO CHANGE - " + paletteList[currentPaletteMatrixIndex].Name + "\"}";
+        }
+        return "{\"status\" : \"ok\",  \"paletteMatrixName\" : \"" + paletteList[currentPaletteMatrixIndex].Name + "\"}";
+    }
+    else if (paletteName == "nextMatrix")
+    {
+        if (autoPalMat == 0)
+        {
+            nextPaletteMatrix(false);
+        }
+        else
+        {
+            return "{\"status\" : \"ok\",  \"paletteMatrixName\" : \"AUTO CHANGE - " + paletteList[currentPaletteMatrixIndex].Name + "\"}";
+        }
+        return "{\"status\" : \"ok\",  \"paletteMatrixName\" : \"" + paletteList[currentPaletteMatrixIndex].Name + "\"}";
+    }
+    preferences.end();
+    Serial.print("palette handle: ");
+    Serial.println(json);
+    return "{\"status\" : \"ok\",  \"data\" : \"" + json + "\"}";
+}
+String handlePatternsUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    /*
+    0 = prevStripe
+    1 = nextStripe
+    2 = prevMatrix
+    3 = nextMatrix
+    */
+    preferences.begin("settings");
+    String patternsName = doc["patterns"];
+    int patterns;
+    bool isAudio;
+    String audioReactive;
+    if (patternsName == "prevStripe")
+    {
+        prevPatternStripe();
+        isAudioStripe ? audioReactive = "AUDIO REACTIVE" : audioReactive = "STATIC";
+        return "{\"status\" : \"ok\", \"isAudio\" : \"" + audioReactive + "\",\"curPatStr\" : \"" + CurrentStripePatternNumber + "\",\"maxPatStr\" : \"" + StripePatternsAmount + "\", \"patternStripe\" : \"" + String(patternStripe) + "\", \"patternStripeName\" : \"" + patternsStripe[CurrentStripePatternNumber].name + "\"}";
+    }
+    else if (patternsName == "nextStripe")
+    {
+        nextPatternStripe();
+        isAudioStripe ? audioReactive = "AUDIO REACTIVE" : audioReactive = "STATIC";
+        return "{\"status\" : \"ok\", \"isAudio\" : \"" + audioReactive + "\",\"curPatStr\" : \"" + CurrentStripePatternNumber + "\",\"maxPatStr\" : \"" + StripePatternsAmount + "\", \"patternStripe\" : \"" + String(patternStripe) + "\", \"patternStripeName\" : \"" + patternsStripe[CurrentStripePatternNumber].name + "\"}";
+    }
+    else if (patternsName == "prevMatrix")
+    {
+        prevPatternMatrix();
+        isAudioMatrix ? audioReactive = "AUDIO REACTIVE" : audioReactive = "STATIC";
+
+        return "{\"status\" : \"ok\", \"isAudio\" : \"" + audioReactive + "\",\"curPatMat\" : \"" + CurrentMatrixPatternNumber + "\",\"maxPatMat\" : \"" + MatrixPatternsAmount + "\", \"patternMatrix\" : \"" + String(patternMatrix) + "\", \"patternMatrixName\" : \"" + patternsMatrix[CurrentMatrixPatternNumber].name + "\"}";
+    }
+    else if (patternsName == "nextMatrix")
+    {
+        nextPatternMatrix();
+        isAudioMatrix ? audioReactive = "AUDIO REACTIVE" : audioReactive = "STATIC";
+        return "{\"status\" : \"ok\", \"isAudio\" : \"" + audioReactive + "\",\"curPatMat\" : \"" + CurrentMatrixPatternNumber + "\",\"maxPatMat\" : \"" + MatrixPatternsAmount + "\", \"patternMatrix\" : \"" + String(patternMatrix) + "\", \"patternMatrixName\" : \"" + patternsMatrix[CurrentMatrixPatternNumber].name + "\"}";
+    }
+
+    Serial.print("patterns handle: ");
+    Serial.println(json);
+    return "{\"status\" : \"ok\", \"patternStripe\" : \"" + String(patternStripe) + "\", \"patternMatrix\" : \"" + String(patternMatrix) + "\"}";
 }
 
-/*
-   Sometimes a page just doesn't exists.. we need to tell them
-*/
+String handleShowMessage(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    // String message = doc["message"].as<String>();
+    runString(welcomeMessage, CRGB::Green, 19);
+    Serial.print("shoiw message handle: ");
+    Serial.println(json);
+
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
+String handleMessageUpdate(uint8_t *data, size_t len)
+{
+    data[len] = '\0';
+    String json = (char *)data;
+
+    DynamicJsonDocument doc(JSON_OBJECT_SIZE(2) + 350);
+    DeserializationError error = deserializeJson(doc, json); // Deserialize the JSON document
+
+    if (error)
+    { // Test if parsing succeeds.
+        Serial.print(F("deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        return "deserializeJson error";
+    }
+
+    welcomeMessage = doc["message"].as<String>();
+
+    Serial.print("Welcome message handle: ");
+    Serial.println(json);
+
+    preferences.begin("settings");
+    preferences.putString("WMessage", welcomeMessage);
+    preferences.end();
+    // return json;
+    return "{\"status\" : \"ok\", \"data\" : \"" + json + "\"}";
+}
 void notFound(AsyncWebServerRequest *request)
 {
     request->send(404, "text/plain", "Not found");
-} // runAPmode()
+}
+void initWebServer()
+{
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/index.html", String(), false, processor); });
+    server.on("/matrix", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/matrix.html", String(), false, processor); });
+    server.on("/settings", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/settings.html", String(), false, processor); });
+    server.on("/main.css", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/main.css", "text/css"); });
+
+    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/main.js", "text/css"); });
+
+    server.on(
+        "/patterns", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            Serial.print("server.on patterns");
+            String myResponse = handlePatternsUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/palette", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            Serial.print("server.on palette");
+            String myResponse = handlePaletteUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+
+    server.on(
+        "/paletteTime", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            Serial.print("server.on palette time");
+            String myResponse = handlepaletteTime(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+
+    server.on(
+        "/message", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleMessageUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+
+    server.on(
+        "/onoffClock", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleOnOffClock(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/clockColor", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleClockColor(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/showMessage", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleShowMessage(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/sBright", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleStripBrightnessUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/mBright", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleMatrixBrightnessUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/micSens", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleMicSensytivity(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/micNoise", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleMicNoise(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/sSpeed", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleStripSpeedUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/mSpeed", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleMatrixSpeedUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/checkBoxS", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleAutopaletteStripeUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+    server.on(
+        "/checkBoxM", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+        [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total)
+        {
+            String myResponse = handleAutopaletteMatrixUpdate(data, len);
+            request->send(200, "text/plain", myResponse);
+        });
+
+    server.onNotFound(notFound);
+
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/favicon.png", "image/png"); });
+    server.on("/finger.png", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/finger.png.png", "image/png"); });
+    // AsyncElegantOTA.begin(&server); //* OTA - Start ElegantOTA
+    server.begin();
+    Serial.println("SERVER STARTED");
+}
+
+void RunAPmode()
+{
+    WiFi.disconnect(true); // End All connections.
+    WiFi.mode(WIFI_AP);
+    WiFi.softAP(ssidAP, passwordAP);                               // Start ACCESSPOINT MODE with basic credentials
+    IPAddress IP = WiFi.softAPIP();                                // GET THE ACCESSPOINT IP
+    Serial.println("The IP of the settings page is: 192.168.4.1"); // SHOW IP IN SERIAL MONITOR
+    // Serial.println(WiFi.localIP());
+    // Make sure we have something to store our preferences in
+    //  server.serveStatic("/", SPIFFS, "/").setDefaultFile("indexAP.html");
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // The Home page so to say.
+        request->send(SPIFFS, "/indexAP.html", "text/html");
+    });
+    server.on("/main.css", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/main.css", "text/css"); });
+
+    server.on("/main.js", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/main.js", "text/css"); });
+    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) { // WHEN SOMEONE SUBMITS SOMETHING.... Like the credentials :)
+        String inputMessage;
+        String inputMessage2;
+        String inputMessage3;
+        const char *PARAM_WIFI = "SSIDname";
+        const char *PARAM_PWD = "SSIDpwd";
+        preferences.begin("settings", false);
+        if (request->hasParam(PARAM_WIFI))
+        {
+            inputMessage = request->getParam(PARAM_WIFI)->value();
+            ssid = inputMessage;
+            preferences.putString("ssid", ssid);
+            inputMessage2 = request->getParam(PARAM_PWD)->value();
+            pass = inputMessage2;
+            preferences.putString("password", pass);
+            inputMessage3 = "Restarting and using new credentials";
+            Serial.println(inputMessage);
+            Serial.println(inputMessage2);
+            Serial.println(inputMessage3);
+            ESP.restart();
+        }
+        else if (request->hasParam(PARAM_PWD))
+        {
+            inputMessage = request->getParam(PARAM_PWD)->value();
+            pass = inputMessage;
+            preferences.putString("password", pass);
+        }
+        else
+        {
+            inputMessage = "Restarting and using new credentials";
+            ESP.restart();
+        }
+        // This prints the submitted variable on the serial monitor.. as a check
+        request->send(200, "text/text", inputMessage);
+    });
+    preferences.end();
+
+    server.onNotFound(notFound);
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
+    server.begin();
+    Serial.print("AP mode runs on core: ");
+    Serial.println(xPortGetCoreID());
+}
+boolean connectToNetwork(String s, String p)
+{
+    const char *ssid = s.c_str();
+    const char *password = p.c_str();
+
+    Serial.print("ACCESSING WIFI: ");
+    Serial.println(ssid);
+    WiFi.begin(ssid, password);
+
+    int timeout = 0;
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(2000);
+        Serial.println("Connecting to WiFi..");
+        if (timeout == 5)
+        {
+            return false;
+            break;
+        }
+        Serial.println(".");
+        timeout++;
+    }
+    Serial.println(WiFi.localIP());
+    return true;
+} // network()
 
 void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
 {
@@ -96,320 +789,4 @@ void listDir(fs::FS &fs, const char *dirname, uint8_t levels)
         }
         file = root.openNextFile();
     }
-}
-const char INDEXAP_HTML[] PROGMEM = R"rawliteral(
-
-<!DOCTYPE HTML>
-<html>
-<head>
-    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
-    <meta name="viewport" content="width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0">
-    <title> ESP32 Led Matrix Clock, update your, WIFI SETTINGS</title>
-    <style>
-        body {
-            background-color: #808080;
-            font-family: Arial, Helvetica, Sans-Serif;
-            Color: #000000;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <h3> Enter your WiFi credentials</ h3>
-        <form action="/get" target="hidden-form">
-            <p><label> SSID : &nbsp;</label>
-                <input maxlength="30" name="SSIDname"><br>
-                <input type="submit" value="Save">
-        </form>
-        <form action="/get" target="hidden-form">
-            <label>Key: </label><input maxlength="30" name="SSIDpwd"><br>
-            <input type="submit" value="Save">
-            </p>
-        </form>
-        <form action="/get" target="hidden-form">
-            Press this button to reboot with the new Password and SSID name<br />
-            <input type="submit" value="Reboot">
-            <br />
-        </form>
-        <p></p>
-        <iframe style="display:none" name="hidden-form"></iframe>
-</body>
-</html>
-  )rawliteral";
-
-void RunAPmode()
-{
-    WiFi.disconnect(true); // End All connections.
-    WiFi.mode(WIFI_AP);
-    WiFi.softAP(ssidAP, passwordAP);                               // Start ACCESSPOINT MODE with basic credentials
-    IPAddress IP = WiFi.softAPIP();                                // GET THE ACCESSPOINT IP
-    Serial.println("The IP of the settings page is: 192.168.4.1"); // SHOW IP IN SERIAL MONITOR
-    // Serial.println(WiFi.localIP());
-    preferences.begin("wificreds", false);                        // Make sure we have something to store our preferences in
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { // The Home page so to say.
-        request->send_P(200, "text/html", INDEXAP_HTML, processor);
-    });
-
-    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) { // WHEN SOMEONE SUBMITS SOMETHING.... Like the credentials :)
-        String inputMessage;
-        const char *PARAM_WIFI = "SSIDname";
-        const char *PARAM_PWD = "SSIDpwd";
-        preferences.begin("wificreds", false);
-
-        if (request->hasParam(PARAM_WIFI))
-        {
-            inputMessage = request->getParam(PARAM_WIFI)->value();
-            preferences.putString("ssid", inputMessage);
-        }
-        else if (request->hasParam(PARAM_PWD))
-        {
-            inputMessage = request->getParam(PARAM_PWD)->value();
-            preferences.putString("password", inputMessage);
-        }
-        else
-        {
-            inputMessage = "Restarting and using new credentials";
-            ESP.restart();
-        }
-        Serial.println(inputMessage); // This prints the submitted variable on the serial monitor.. as a check
-        request->send(200, "text/text", inputMessage);
-    });
-    server.onNotFound(notFound);
-    server.begin();
-    Serial.print("AP mode runs on core: ");
-    Serial.println(xPortGetCoreID());
-
-    for (;;)
-    {
-        preferences.begin("wificreds", false);
-        delay(5000);
-        Serial.print(".");
-        //  Serial.println(preferences.getString("ssid"));
-        //  Serial.println(preferences.getString("password"));
-        preferences.end();
-    }
-}
-
-// ----------------------------------------------------------------------------
-// Web server initialization
-// ----------------------------------------------------------------------------
-
-void initWebServer()
-{
-    server.on("/", onRootRequest);
-    server.serveStatic("/", SPIFFS, "/");
-
-    server.on("/logo", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(SPIFFS, "/logo.png", "image/png"); });
-    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(SPIFFS, "/style.css", "text/css"); });
-    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request)
-              { request->send(SPIFFS, "/script.js", "text/css"); });
-    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request)
-              {
-                  preferences.end(); // In case preferences was still 'open' but in a different 'domain'
-                  String inputMessage;
-                  preferences.begin("matrixsettings", false); // Open the matrixsettings preferences 'domain'
-                  Serial.print("New variable received: ");
-                  int i;
-                  int params = request->params();
-                  for (i = 0; i < params; i++)
-                  {
-                      AsyncWebParameter *p = request->getParam(i);
-                      if (p->isFile())
-                      {
-                          Serial.printf("_FILE[%s]: %s, size: %u\n", p->name().c_str(), p->value().c_str(), p->size());
-                      }
-                      else if (p->isPost())
-                      {
-                          Serial.printf("_POST[%s]: %s\n", p->name().c_str(), p->value().c_str());
-                      }
-                      else
-                      {
-                          Serial.printf("_GET[%s]: %s\n", p->name().c_str(), p->value().c_str());
-                      }
-                  }
-
-                  if (request->hasParam("patternLED"))
-                  {
-                      inputMessage = request->getParam("patternLED")->value();
-                      // preferences.putString("patternLED", inputMessage);
-                      //  writeFile(SPIFFS, "/inputString.txt", inputMessage.c_str());
-                      Serial.println("received patternLED");
-                      Serial.println(inputMessage);
-                      request->send(200, "text/text", "success");
-                  }
-                  else if (request->hasParam("overAllBrightness"))
-                  {
-                      inputMessage = request->getParam("overAllBrightness")->value();
-                      overAllBrightness = inputMessage.toInt();
-                      preferences.putUInt("oaBrightness", overAllBrightness);
-                  }
-                  else if (request->hasParam("welcommessage"))
-                  {
-                      inputMessage = request->getParam("welcommessage")->value();
-                      preferences.putString("welcommessage", inputMessage);
-                      runString(welcommessage, CRGB::Red, 20);
-                    //  scrolltext = inputMessage;
-                  }
-                  else if (request->hasParam("scrollspeed"))
-                  {
-                      inputMessage = request->getParam("scrollspeed")->value();
-                      preferences.putString("scrollspeed", inputMessage);
-                      scrollspeed = inputMessage.toInt();
-                  }
-                  else
-                  {
-                      inputMessage = "No message sent";
-                  }
-                  // request->send(SPIFFS, "/index.html", "text/html");
-                  request->send(200, "text/text", inputMessage);
-                  preferences.end(); // don't leave the door open :) always close when you leave.
-              });
-
-    server.onNotFound(notFound);
-    server.begin();
-    Serial.print("Web server runs on core: ");
-    Serial.println(xPortGetCoreID());
-}
-
-// ----------------------------------------------------------------------------
-// WebSocket initialization
-// ----------------------------------------------------------------------------
-
-void sendAll()
-{
-    String json = "{";
-
-    json += "\"brightness\":" + String(map(overAllBrightness, 255, 0, 100, 0)) + ",";
-
-    json += "\"speed\":" + String(map(patternInterval, 2000, 0, 0, 100));
-    +",";
-
-    json += "\"currentPatternStripe\":{";
-    json += "\"index\":" + String(CurrentStripePatternNumber);
-    json += ",\"name\":\"" + patternsStripe[CurrentStripePatternNumber].name + "\"}";
-
-    json += "\"currentPatternMatrix\":{";
-    json += "\"index\":" + String(CurrentMatrixPatternNumber);
-    json += ",\"name\":\"" + patternsMatrix[CurrentMatrixPatternNumber].name + "\"}";
-
-    json += ",\"currentPalette\":{";
-    json += "\"index\":" + String(currentPaletteIndex);
-    json += ",\"name\":\"" + paletteList[currentPaletteIndex].Name + "\"}";
-
-    json += "}";
-    ws.printfAll(json.c_str());
-    // server.send(200, "text/json", json);
-    json = String();
-}
-void handleWebSocketMessage(void *arg, uint8_t *data, size_t len)
-{
-    AwsFrameInfo *info = (AwsFrameInfo *)arg;
-    if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
-    {
-
-        const uint8_t size = JSON_OBJECT_SIZE(6);
-        StaticJsonDocument<size> json;
-        DeserializationError err = deserializeJson(json, data);
-        if (err)
-        {
-            Serial.print(F("deserializeJson() failed with code "));
-            Serial.println(err.c_str());
-            return;
-        }
-
-        const char *action = json["action"];
-        if (strcmp(action, "nextPattern") == 0)
-        {
-            nextPattern();
-            Serial.print(String(CurrentStripePatternNumber));
-            Serial.print("/");
-            Serial.print(String(StripePatternsAmount));
-            Serial.print(" ");
-            Serial.println(String(patternsStripe[CurrentStripePatternNumber].name));
-            notifyClients("patternNumber", String(CurrentStripePatternNumber));
-            sendAll();
-        }
-        if (strcmp(action, "prevPattern") == 0)
-        {
-            prevPattern();
-            Serial.print(String(CurrentStripePatternNumber));
-            Serial.print("/");
-            Serial.print(String(StripePatternsAmount));
-            Serial.print(" ");
-            Serial.println(String(patternsStripe[CurrentStripePatternNumber].name));
-            sendAll();
-            notifyClients("patternNumber", String(CurrentStripePatternNumber));
-        }
-        if (strcmp(action, "speedSlider") == 0)
-        {
-            setSpeed(map(json["speedValue"], 0, 100, 2000, 0));
-            sendAll();
-        }
-
-        if (strcmp(action, "nextMatrix") == 0)
-        {
-            nextMatrix();
-            Serial.print(String(CurrentMatrixPatternNumber));
-            Serial.print("/");
-            Serial.print(String(MatrixPatternsAmount));
-            Serial.print(" ");
-            Serial.println(String(patternsMatrix[CurrentMatrixPatternNumber].name));
-            //  notifyClients("patternNameMatrix", String() )
-        }
-
-        if (strcmp(action, "prevMatrix") == 0)
-        {
-            prevMatrix();
-            Serial.print(String(CurrentMatrixPatternNumber));
-            Serial.print("/");
-            Serial.print(String(MatrixPatternsAmount));
-            Serial.print(" ");
-            Serial.println(String(patternsMatrix[CurrentMatrixPatternNumber].name));
-            //  notifyClients("patternNameMatrix", String() )
-        }
-        if (strcmp(action, "brightnessSlider") == 0)
-        {
-            setBright(map(json["brightnessValue"], 0, 100, 1, 255));
-            sendAll();
-        }
-    }
-}
-
-void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
-{
-    switch (type)
-    {
-    case WS_EVT_CONNECT:
-        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
-        break;
-    case WS_EVT_DISCONNECT:
-        Serial.printf("WebSocket client #%u disconnected\n", client->id());
-        break;
-    case WS_EVT_DATA:
-        handleWebSocketMessage(arg, data, len);
-        break;
-    case WS_EVT_PONG:
-    case WS_EVT_ERROR:
-        break;
-    }
-    // notifyClients();
-}
-
-void initWebSocket()
-{
-    ws.onEvent(onEvent);
-    server.addHandler(&ws);
-    Serial.println("WebSocket server started.");
-}
-
-// ----------------------------------------------------------------------------
-// SPIFFS initialization
-// ----------------------------------------------------------------------------
-void setupWebServer()
-{
-    Serial.println("setupWebServer");
-    initWebSocket();
-    initWebServer();
 }

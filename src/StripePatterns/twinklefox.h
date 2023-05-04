@@ -258,7 +258,7 @@ CRGB computeOneTwinkle(uint32_t ms, uint8_t salt)
     CRGB c;
     if (bright > 0)
     {
-        c = ColorFromPalette(currentPalette, hue, bright, NOBLEND);
+        c = ColorFromPalette(currentPaletteStripe, hue, bright, NOBLEND);
         if (COOL_LIKE_INCANDESCENT == 1)
         {
             coolLikeIncandescent(c, fastcycle8);
@@ -295,9 +295,9 @@ void drawTwinkles(uint8_t twinkleSpeed = 4, uint8_t twinkleDensity = 5)
     // that color is used for the background color
     CRGB bg;
     if ((AUTO_SELECT_BACKGROUND_COLOR == 1) &&
-        (currentPalette[0] == currentPalette[1]))
+        (currentPaletteStripe[0] == currentPaletteStripe[1]))
     {
-        bg = currentPalette[0];
+        bg = currentPaletteStripe[0];
         uint8_t bglight = bg.getAverageLight();
         if (bglight > 64)
         {

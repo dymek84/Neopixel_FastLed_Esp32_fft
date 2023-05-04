@@ -1,150 +1,109 @@
-﻿<!DOCTYPE HTML>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://code.jquery.com/jquery-3.6.3.js"></script>
-    <title>Men cave LEDs controller</title>
-    <link rel="stylesheet" href="style.css" type="text/css">
-    <script type="text/javascript" async="" src="script.js"></script>
-    <script src="script.js"></script>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Message Board</title>
+
+  <link href="main.css" type="text/css" rel="stylesheet" media="screen,projection">
+
+
+
+
 </head>
-<div name="hidden-form" id="snackbar">
-</div>
 
-<body class="centered-wrapper">
-    <div class="centered-content tabs">
-        <ul class="circles">
-            <li>
-                <div> <img src="finger.png" height="84px" width="60px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="42px" width="30px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="63px" width="45px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="127px" width="100px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="84px" width="60px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="84px" width="60px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="42px" width="30px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="63px" width="45px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="/finger.png" height="127px" width="100px"></img>
-                </div>
-                <div>
-            </li>
-            <li>
-                <div> <img src="finger.png" height="84px" width="60px"></img>
-                </div>
-                <div>
-            </li>
+<body>
+  <div class="area">
+
+  </div>
+  <section class="wrapper">
+    <div class="card">
+      <ul class="circles">
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+      </ul>
+      <div id="msgbox">
+        <h1 style="    color: linear-gradient(45deg, #5ddcff, #3c67e3, #4e00c2, #764ab9, #77156f, #e903ca, #c22856, #a5304d);background-size: 800% 100%;
+          animation: gradient 20s linear infinite;
+          animation-direction: alternate;
+          margin-inline: 17px;">
+          Welcom in onze kroeg</h1>
+        <ul style='display:inline-block;min-width:280px;'>
+          <li><a class="active" href="">Led Strip</a></li>
+          <li><a href="/matrix">Matrix</a></li>
+          <li><a href="/settings">Settings</a></li>
         </ul>
-        <div class="tab">
-            <button class="tablinks" onclick="openCity(event,
-                    'StripeEffects')" id="defaultOpen">LED Effects</button>
-            <button class="tablinks" onclick="openCity(event,
-                    'MatrixEffects')">Clock Effects</button>
-            <button class="tablinks" onclick="openCity(event, 'Options')">Options</button>
-        </div>
+      </div>
+      <BR>
+      <h1 style="font-size: 2em;padding: 0;margin: 0;">LEDS</h1><BR>
+      <div class="sect" style='display:inline-block;min-width:280px;'>
+        <!--  <div id="patStrNumber">%stripePatternNumber%/%totalNumber% </div>  -->
+        <div id="patStrNumber">%currentPatStr%/%strPatMax% </div>
+        <h3 id="_brigtness">Current Pattern Name</h3>
+        <div id="patStrName">%patternStrName%</div>
+        <div class="sect" id="isAudio" style='color:#4e00c2;display:inline-block;min-width:280px;'>AUDIO REACTIVE</div>
+        <BR><BR>
+        <button onclick="PatternStripe('prevStripe')">Prev</button>
+        <button onclick="PatternStripe('nextStripe')">Next</button>
+      </div>
+      <div class="sect" style='display:inline-block;min-width:280px;'>
+        <h3 id="_brigtness">Current Color Palette </h3>
+        <div id="palStrName">%paletteStripe%</div><BR>
 
-        <!-- Stripe / leds -->
-        <div id="StripeEffects" class="tabcontent led">
-            <h3>LED Stripe Effects</h3>
-            <div class="wrapper">
-                <div> Current effect: - <div id="patternName"> %patternLED%</div>
-                    <div id="currentPatternStripe"></div>
-                </div>
-              
-            </div>
-            <div> <button class="btn btn-custom" type="submit" value="prev" onclick="prevPattern()"
-                    name="patternLED">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <button class="btn btn-custom" type="submit" value="next" name="patternLED"
-                    onclick="nextPattern()">Next</button>
-            </div><BR><BR><BR><BR>
-        </div>
+        <div class="sect" style='display:inline-block;min-width:280px;'>
 
-        <!-- Matrix / clock -->
-        <div id="MatrixEffects" class="tabcontent clock">
-            <h3>Clock/Controller Settings</h3>
-
-            <div class="wrapper">
-                Current effect: - %patternMatrix% <br><br> </div>
-            <div><button type="submit" class="btn btn-custom" name="patternMatrix" value="prev"
-                    onclick="prevMatrix()">Previous</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button
-                    type="submit" class="btn btn-custom" name="patternMatrix" value="next"
-                    onclick="nextMatrix()">Next</button></div>
-
-            <BR><BR><BR><BR>
-
-        </div>
-        <div id="Options" class="tabcontent">
-
-
-            <form action="/get" target="hidden-form">
-                <h3>Overall Brighness</h3>
-                <div class="wrapper">
-                    <input type="range" onchange="updateSliderBrightness(this)" id="slider1" min="0" max="100" step="1"
-                        value="0" class="slider">
-                    <p class="state">Brightness: <span id="brightnessSliderVal"></span> &percnt;</p>
-                </div>
-            </form>
-            <form action="/get" target="hidden-form">
-                <h3>Patterns Speed</h3>
-                <div class="wrapper" id="speed">
-
-                    <input type="range" onchange="updateSliderSpeed(this)" id="slider2" min="0" max="100" step="1"
-                        value="%speed%" class="slider">
-                    <p class="state">Speed: <span id="speedSliderVal"></span> &percnt;</p>
-                </div>
-            </form>
-            <h3>
-                
-            </h3>
-            <form action="/get" target="hidden-form">
-                Welcome message text <br>
-                <input type="text" id="welcommessage" name="welcommessage" value="" maxlength="20">
-                <input type="submit" value="Submit">
-            </form>
+          <div class="squaredThree">
+            <input onclick="autopalletteStripe(event.target)" type="checkbox" value="None" id="squaredThree"
+              name="check" %isAutoPalStripe% />
+            <label for="squaredThree"></label>Auto Change Palette
+          </div>
 
 
 
         </div>
+
+        <button class="disabled" id="stripeButtonPal" onclick="PaletteStripe('prevStripe')">Prev</button> <button
+          id="stripeButtonPal" onclick="PaletteStripe('nextStripe')">Next</button>
+      </div>
+      <div class="range-slider sect">
+        <h3 id="_brigtness">Led Strip Brightness</h3>
+        <div id="brightnessbox">
+          <input class="range-slider__range" id="stripeBright" type="range" value="%sBright%" min="5" max="255"
+            onchange="rangeStripBright(this.value)"></input>
+          <span id="rangeValueSBright" class="range-slider__value">%sBright%</span>
+        </div>
+      </div>
+      <div class="range-slider sect">
+        <h3 id="_brigtness">Led Strip Pattern Speed</h3>
+        <div id="brightnessbox">
+          <input class="range-slider__range" id="stripeSpeed" type="range" value="%stripeSpeed%" min="5" max="255"
+            onchange="rangeStripSpeed(this.value)"></Input>
+          <span id="rangeValueSSpeed" class="range-slider__value">%stripeSpeed%</span>
+        </div>
+      </div>
+
+
+
+
+      <div>
+        <p id="signature" style="font-size: 12px;
+        padding: 22px;
+        margin: 5px;">Designed by: Dymek - 2023
+          (dymek1984@gmail.com)</p>
+      </div>
+
     </div>
-    <iframe style="display:none" name="hidden-form"></iframe>
+  </section>
+  <div id="snackbar"></div>
+  <script src="main.js"></script>
 </body>
-
-<script>
-    // Get the element with id="defaultOpen" and click on it
-    document.getElementById("defaultOpen").click();
-</script>
 
 </html>

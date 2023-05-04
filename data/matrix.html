@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Message Board</title>
+
+  <link href="main.css" type="text/css" rel="stylesheet" media="screen,projection">
+
+
+
+
+</head>
+
+<body>
+  <div class="area">
+
+  </div>
+  <section class="wrapper">
+    <div class="card">
+      <ul class="circles">
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+        <li> </li>
+      </ul>
+      <div id="msgbox">
+        <h1> Welcom in onze kroeg</h1>
+        <ul style='display:inline-block;min-width:280px;'>
+          <li><a href="/">Led Strip</a></li>
+          <li><a class="active" href="">Matrix</a></li>
+          <li><a href="/settings">Settings</a></li>
+        </ul>
+      </div>
+      <BR>
+      <h1 style="font-size: 2em;padding: 0;margin: 0;">MATRIX / CLOCK</h1><BR>
+      <div class="sect" style='display:inline-block;min-width:280px;'>
+        <div id="patMatNumber">%currentPatMat%/%matPatMax% </div>
+        <h3 id="_brigtness">Current Pattern </h3>
+        <div id="patMatName">%patternMatName%</div>
+        <div class="sect" id="isAudio" style='color:#4e00c2;display:inline-block;min-width:280px;'>AUDIO REACTIVE</div>
+        <BR> <BR>
+        <button onclick="PatternMatrix('prevMatrix')">Prev</button> <button
+          onclick="PatternMatrix('nextMatrix')">Next</button>
+      </div>
+      <div class="sect" style='display:inline-block;min-width:280px;'>
+
+        <h3 id="_brigtness">Current Color Palette </h3>
+        <div id="palMatName">%paletteMatrix%</div><BR>
+
+        <div class="sect" style='display:inline-block;min-width:280px;'>
+
+          <div class="squaredThree">
+            <input onclick="autopalletteMatrix(event.target)" type="checkbox" value="None" id="checkBoxMatrix"
+              name="check" %isAutoPalMatrix% />
+            <label for="checkBoxMatrix"></label>Auto Change Palette
+          </div>
+
+
+
+        </div>
+        <button id="matrixButtonPal" onclick="PaletteMatrix('prevMatrix')">Prev</button> <button id="matrixButtonPal"
+          onclick="PaletteMatrix('nextMatrix')">Next</button>
+      </div>
+      <div class="range-slider sect">
+        <h3 id="_brigtness">Matrix Brightness</h3>
+        <div id="brightnessbox">
+          <input class="range-slider__range" id="matrixBright" type="range" value="%mBright%" min="5" max="255"
+            onchange="rangeMatrixBright(this.value)"></Input>
+          <span id="rangeValueMBright" class="range-slider__value">%mBright%</span>
+        </div>
+      </div>
+      <div class="range-slider sect">
+        <h3 id="_brigtness">Matrix Pattern Speed</h3>
+        <div id="brightnessbox">
+          <input class="range-slider__range" id="matrixSpeed" type="range" value="%matrixSpeed%" min="5" max="255"
+            onchange="rangeMatrixSpeed(this.value)"></Input>
+          <span id="rangeValueMSpeed" class="range-slider__value">%matrixSpeed%</span>
+        </div>
+      </div>
+
+
+
+
+      <div class="sect" style='display:inline-block;min-width:280px;'>
+
+        <h3 id="_brigtness">Matrix Clock</h3>
+        <div id="onOffClock">%clockStatus%</div><BR>
+        <button id="matrixButtonPal" onclick="onOffClock('off')">Hide </button> <button id="matrixButtonPal"
+          onclick="onOffClock('on')">Show </button>
+        <div class="sect" style='display:inline-block;min-width:280px;'>
+
+          <h3 id="_brigtness">Choose a Clock Color</h3>
+
+          <button class="btn-color" style="background: hsl(0, 50&#37;, 100&#37;);" onclick="clockColor('white')"
+            title="Red">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(15, 0&#37;, 50&#37;);" onclick="clockColor('gray')"
+            title="Red">&nbsp;</button>
+          <button class=" btn-color" style="background: hsl(30, 100&#37;, 0&#37;);" onclick="clockColor('black')"
+            title="Orange">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(0, 100&#37;, 50&#37;);" onclick="clockColor('0')"
+            title="Red">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(15, 100&#37;, 50&#37;);" onclick="clockColor('15')"
+            title="Red">&nbsp;</button>
+          <button class=" btn-color" style="background: hsl(30, 100&#37;, 50&#37;);" onclick="clockColor('30')"
+            title="Orange">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(45, 100&#37;, 50&#37;);" onclick="clockColor('45')"
+            title="Red">&nbsp;</button>
+          <button class=" btn-color" style="background: hsl(60, 100&#37;, 50&#37;);" onclick="clockColor('60')"
+            title="Yellow">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(75, 100&#37;, 50&#37;);" onclick="clockColor('75')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(90, 100&#37;, 50&#37;);" onclick="clockColor('90')"
+            title="Chartreuse">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(105, 100&#37;, 50&#37;);" onclick="clockColor('105')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(120, 100&#37;, 50&#37;);" onclick="clockColor('120')"
+            title="Green">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(135, 100&#37;, 50&#37;);" onclick="clockColor('135')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(150, 100&#37;, 50&#37;);" onclick="clockColor('150')"
+            title="Spring Green">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(165, 100&#37;, 50&#37;);" onclick="clockColor('165')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(180, 100&#37;, 50&#37;);" onclick="clockColor('180')"
+            title="Cyan">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(195, 100&#37;, 50&#37;);" onclick="clockColor('195')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(210, 100&#37;, 50&#37;);" onclick="clockColor('210')"
+            title="Azure">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(225, 100&#37;, 50&#37;);" onclick="clockColor('225')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(240, 100&#37;, 50&#37;);" onclick="clockColor('240')"
+            title="Blue">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(255, 100&#37;, 50&#37;);" onclick="clockColor('255')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(270, 100&#37;, 50&#37;);" onclick="clockColor('270')"
+            title="Violet">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(285, 100&#37;, 50&#37;);" onclick="clockColor('285')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(300, 100&#37;, 50&#37;);" onclick="clockColor('300')"
+            title="Magenta">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(315, 100&#37;, 50&#37;);" onclick="clockColor('315')"
+            title="Red">&nbsp;</button>
+
+          <button class=" btn-color" style="background: hsl(330, 100&#37;, 50&#37;);" onclick="clockColor('330')"
+            title="Rose">&nbsp;</button>
+          <button class="btn-color" style="background: hsl(345, 100&#37;, 50&#37;);" onclick="clockColor('345')"
+            title="Red">&nbsp;</button>
+
+
+
+
+
+        </div>
+
+      </div>
+
+
+
+
+      <div>
+        <p id="signature" style="font-size: 12px;
+        padding: 22px;
+        margin: 5px;">Designed by: Dymek - 2023
+          (dymek1984@gmail.com)</p>
+      </div>
+      <div style='display:inline-block;min-width:280px;'>
+        <div id="snackbar"></div>
+      </div>
+    </div>
+  </section>
+  <script src="main.js"></script>
+</body>
+
+</html>

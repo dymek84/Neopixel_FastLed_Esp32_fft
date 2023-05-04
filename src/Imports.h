@@ -1,42 +1,32 @@
 
 #pragma once
 
-#include <ThreeWire.h>
 #include <Arduino.h>
-#include <EEPROM.h>
+#include <Wire.h>
 #include <Adafruit_NeoPixel.h>
 #include <FastLED.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
+#include <driver/i2s.h>
 #include <arduinoFFT.h>
 #include <FastLED_NeoMatrix.h>
+#include <Adafruit_NeoPixel.h>
 #include "Time.h"
-#include <RtcDS1302.h>
-
-// WebThings
+#include "RTClib.h"
 
 #include <WiFi.h>
-// #include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 #include <SPIFFS.h>
-// #include <Arduino_JSON.h>
 #include <ArduinoJson.h>
-//  #include <ESPmDNS.h>
-//  #include <HTTPClient.h>      // Needed to get some information from the internetz.. .like weather data
-//  #include <AsyncElegantOTA.h> // A library to allow Over The Air Updates :)
-//   PREFERENCES
-#include <Preferences.h> // Store the prefences in permanent memory in a much easier way than SPIFFS
+#include <Preferences.h>
+
 #include "main.h"
-// #include "colorWipe.cpp"
-// #include "pixelChase.cpp"
-// #include "rainbow.h"
-#include <Adafruit_NeoPixel.h>
-// #include "buttons.ino"
-// #include "clock.ino"
+
 #include "define.h"
 #include "objects.h"
 #include "colorsAndPallette.h"
 #include "helperFuction.h"
+#include "WebThings.h"
 #include "audioProcess.h"
 #include "displayClock.h"
 
@@ -44,7 +34,3 @@
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
 #include "StripeGames/randomGame.h"
-
-#include "WebThings.h"
-
-// #include "HTMLSite.h"

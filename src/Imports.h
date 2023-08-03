@@ -1,7 +1,8 @@
 
+#include <Arduino.h>
+
 #pragma once
 
-#include <Arduino.h>
 #include <Wire.h>
 #include <Adafruit_NeoPixel.h>
 #include <FastLED.h>
@@ -26,7 +27,7 @@
 #include "objects.h"
 #include "colorsAndPallette.h"
 #include "helperFuction.h"
-#include "WebThings.h"
+
 #include "audioProcess.h"
 #include "displayClock.h"
 
@@ -34,3 +35,4 @@
 #include "MatrixPatterns/MatrixPatterns.h"
 #include "StripePatterns/StripePatterns.h"
 #include "StripeGames/randomGame.h"
+#include "WebThings.h"

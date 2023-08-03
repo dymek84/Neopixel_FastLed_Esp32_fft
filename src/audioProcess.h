@@ -172,7 +172,7 @@ char Filtername[4][6] = {
     "White",
     "Brown"};
 
-//static int BandCutoffTable[16] = {40, 60, 100, 150, 250, 400, 650, 1000, 1600, 2500, 4000, 6250, 12000, 14000, 16000, 17000};
+// static int BandCutoffTable[16] = {40, 60, 100, 150, 250, 400, 650, 1000, 1600, 2500, 4000, 6250, 12000, 14000, 16000, 17000};
 static double BandCalibration_Pink[16] = {4.52, 5.48, 5.54, 6.06, 2.98, 1.72, 1.49, 1.36, 1.00, 1.49, 2.04, 1.71, 2.19, 2.68, 1.85, 5.69};
 static double BandCalibration_White[16] = {169.55, 148.58, 141.29, 124.24, 35.59, 10.76, 6.97, 5.18, 2.89, 4.19, 4.24, 1.99, 1.00, 1.60, 1.53, 5.48};
 static double BandCalibration_Brown[16] = {1.81, 2.17, 2.49, 2.89, 1.57, 1.00, 1.10, 1.30, 1.22, 3.74, 113.96, 774.90, 7.76, 645.75, 2583.00, 7749.00};
@@ -240,8 +240,6 @@ void i2s_read_fft2()
             }
         }
 
-
-
         // ############ Step 5: Determine the VU value  and mingle in the readout...( cheating the bands ) ############ Step
         float t = averageSum / (SAMPLEBLOCK / 2);
         gVU = max(t, (oldVU * 3 + t) / 4);
@@ -263,6 +261,6 @@ void i2s_read_fft2()
             Serial.print(FreqBins[i]);
         }
         Serial.printf("\n");
-        Serial.printf("gVU: %d\n", (int) gVU);
-
+        Serial.printf("gVU: %d\n", (int)gVU);
     }
+}

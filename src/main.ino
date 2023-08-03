@@ -85,8 +85,8 @@ void setup()
     if (!RTC.begin())
     {
         Serial.println("Couldn't find RTC");
-        while (1)
-            ;
+        // while (1)
+        //     ;
     }
     else
     {

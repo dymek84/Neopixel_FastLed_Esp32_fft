@@ -3,7 +3,7 @@
 #define stripethickness 33
 #include "Imports.h"
 #include "pgmspace.h"
-#include "esp_Analyzer_Copy.h"
+// #include "esp_Analyzer_Copy.h"
 
 CRGBPalette16 Pal = CRGBPalette16(CRGB::Black, CRGB::Red);
 
@@ -957,123 +957,8 @@ void backgroundVuMatrix2()
   }
 }
 
-void changingBarsLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    changingBarsLS(band, matrixValues[band]);
-  }
-}
-
-void TriBarLSTriPeakLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    TriBarLS(band, matrixValues[band]);
-    TriPeakLS(band);
-  }
-}
-
-void rainbowBarsLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    rainbowBarsLS(band, matrixValues[band]);
-    NormalPeakLS(band, PeakColor1);
-  }
-}
-
-void purpleBarsLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    purpleBarsLS(band, matrixValues[band]);
-    NormalPeakLS(band, PeakColor2);
-  }
-}
-
-void SameBarLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    SameBarLS(band, matrixValues[band]);
-    NormalPeakLS(band, PeakColor3);
-  }
-}
-
-void SameBar2LS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    SameBar2LS(band, matrixValues[band]);
-    NormalPeakLS(band, PeakColor3);
-  }
-}
-
-void centerBarsLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    centerBarsLS(band, matrixValues[band]);
-  }
-}
-
-void centerBars2LS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    centerBars2LS(band, matrixValues[band]);
-  }
-}
-
-void centerBars3LS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    centerBars3LS(band, matrixValues[band]);
-  }
-}
-
-void outrunPeakLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    BlackBarLS(band, matrixValues[band]);
-    outrunPeakLS(band);
-  }
-}
-
-void NormalPeakLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    BlackBarLS(band, matrixValues[band]);
-    NormalPeakLS(band, PeakColor5);
-  }
-}
-
-void BlackBarLS()
-{
-  for (int band = 0; band < numBands; band++)
-  {
-    BlackBarLS(band, matrixValues[band]);
-    TriPeak2LS(band);
-  }
-}
-
 const PatternAndNameList patternsMatrix = {
-    {changingBarsLS, "changingBarsLS", true},
-    {TriBarLSTriPeakLS, "TriBarLSTriPeakLS", true},
-    {rainbowBarsLS, "rainbowBarsLS", true},
-    {purpleBarsLS, "purpleBarsLS", true},
-    {SameBarLS, "SameBarLS", true},
-    {SameBar2LS, "SameBar2LS", true},
-    {centerBarsLS, "centerBarsLS", true},
-    {centerBars2LS, "centerBars2LS", true},
-    {centerBars3LS, "centerBars3LS", true},
-    {outrunPeakLS, "outrunPeakLS", true},
-    {NormalPeakLS, "NormalPeakLS", true},
-    {BlackBarLS, "BlackBarLS", true},
+
     {drawEffectnr2, "Draw Effectnr2", true},
     {matrixSpectrum, "Matrix Spectrum", true},
     {backgroundVuMatrix, "Background", true},
